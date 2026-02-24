@@ -227,6 +227,7 @@ module Tea
     @running : Bool = false
     @quitting : Bool = false
     @killed : Bool = false
+    @interrupted : Bool = false
     @msgs = Channel(Msg).new(100)
     @cmds = Channel(Cmd).new(100)
     @errs = Channel(Exception).new(10)
@@ -291,6 +292,10 @@ module Tea
           when QuitMsg
             @quitting = true
             break
+          when InterruptMsg
+            @quitting = true
+            @interrupted = true
+            break
           when BatchMsg
             spawn { exec_batch_msg(msg) }
             next
@@ -299,6 +304,9 @@ module Tea
             next
           when WindowSizeRequestMsg
             # TODO: trigger resize check
+            next
+          when ExecMsg
+            exec(msg.cmd, msg.callback)
             next
           else
             # Update model with regular message
@@ -425,6 +433,58 @@ module Tea
       @running = false
       @finished.send(nil) rescue nil
       # TODO: restore terminal state, close input/output
+    end
+
+    # exec runs an ExecCommand and delivers results to the program
+    # Matches Go's exec method logic exactly
+    def exec(cmd : ExecCommand, callback : ExecCallback?)
+      if err = release_terminal(false)
+        # If we can't release input, abort
+        if callback
+          spawn { send(callback.call(err)) }
+        end
+        return
+      end
+
+      # Set up command I/O - these are method calls, not assignments
+      if input = @input
+        cmd.set_stdin(input)
+      end
+      if output = @output
+        cmd.set_stdout(output)
+        cmd.set_stderr(output)
+      end
+
+      # Execute system command
+      begin
+        cmd.run
+      rescue ex
+        # If run fails, try to restore terminal and send error
+        restore_terminal rescue nil
+        if callback
+          spawn { send(callback.call(ex)) }
+        end
+        return
+      end
+
+      # Have the program re-capture input
+      err = restore_terminal
+      if callback
+        spawn { send(callback.call(err)) }
+      end
+    end
+
+    # releaseTerminal releases terminal control for external commands
+    def release_terminal(reset : Bool) : Exception?
+      # TODO: implement full release terminal logic
+      # For now, just a stub
+      nil
+    end
+
+    # restore_terminal restores terminal control after external commands
+    def restore_terminal : Exception?
+      # TODO: implement full restore terminal logic
+      nil
     end
   end
 

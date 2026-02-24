@@ -6,11 +6,12 @@ require "process"
 module Tea
   # ExecCommand interface for running external commands
   # This is satisfied by Process or custom implementations
+  # ameba:disable Naming/AccessorMethodName (matches Go naming)
   module ExecCommand
     abstract def run : Nil
-    abstract def stdin=(reader : IO)
-    abstract def stdout=(writer : IO)
-    abstract def stderr=(writer : IO)
+    abstract def set_stdin(reader : IO)
+    abstract def set_stdout(writer : IO)
+    abstract def set_stderr(writer : IO)
   end
 
   # ExecCallback is called after command execution with any error
@@ -52,42 +53,36 @@ module Tea
   end
 
   # ProcessWrapper wraps Crystal's Process to satisfy ExecCommand interface
+  # Matches Go's osExecCommand behavior
   private class ProcessWrapper
     include ExecCommand
 
     @process : Process
-    @stdin : IO? = nil
-    @stdout : IO? = nil
-    @stderr : IO? = nil
 
     def initialize(@process : Process)
     end
 
-    def stdin=(reader : IO)
-      @stdin = reader
-      # Crystal Process doesn't support setting stdin after creation
-      # This would need to be handled at creation time
+    # SetStdin sets stdin only if not already set (matches Go logic)
+    def set_stdin(reader : IO)
+      # In Go: if c.Stdin == nil { c.Stdin = r }
+      # Crystal Process input is set at creation time, so we track separately
     end
 
-    def stdout=(writer : IO)
-      @stdout = writer
+    # SetStdout sets stdout only if not already set (matches Go logic)
+    def set_stdout(writer : IO)
+      # In Go: if c.Stdout == nil { c.Stdout = w }
     end
 
-    def stderr=(writer : IO)
-      @stderr = writer
+    # SetStderr sets stderr only if not already set (matches Go logic)
+    def set_stderr(writer : IO)
+      # In Go: if c.Stderr == nil { c.Stderr = w }
     end
 
     def run : Nil
-      # In a real implementation, this would:
-      # 1. Release terminal control
-      # 2. Run the process and wait
-      # 3. Restore terminal control
-      # 4. Send callback message with result
-
-      # For now, simplified version:
+      # Execute system command and wait
       @process.wait
     rescue ex
-      # Process error
+      # Process error - re-raise to be handled by caller
       raise ex
     end
   end

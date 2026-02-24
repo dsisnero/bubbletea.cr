@@ -18,16 +18,16 @@ class MockExecCommand
     # Mock implementation
   end
 
-  def stdin=(reader : IO) : IO
-    reader
+  def set_stdin(reader : IO)
+    # Mock implementation
   end
 
-  def stdout=(writer : IO) : IO
-    writer
+  def set_stdout(writer : IO)
+    # Mock implementation
   end
 
-  def stderr=(writer : IO) : IO
-    writer
+  def set_stderr(writer : IO)
+    # Mock implementation
   end
 end
 
