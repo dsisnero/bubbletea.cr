@@ -9,14 +9,33 @@ crystal: '>= 1.19.1'
 license: MIT
 
 dependencies:
+  # Terminal styling and colors
   lipgloss:
     github: dsisnero/lipgloss
+  
+  # ANSI sequences and terminal handling
   ansi:
     github: dsisnero/ansi
+  
+  # Cell wrapping and buffer management
   cellwrap:
     github: dsisnero/cellwrap
+  
   cancel_reader:
     github: dsisnero/cancel_reader
+  
+  colorprofile:
+    github: dsisnero/colorprofile
+
+  colorful:
+    github: dsisnero/colorful
+  
+  # Terminal utilities
+  # term:
+  #   github: dsisnero/term
+  
+  ultraviolet:
+    github: dsisnero/ultraviolet
 
 targets:
   bubbletea:

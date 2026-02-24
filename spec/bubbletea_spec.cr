@@ -1,9 +1,27 @@
 require "./spec_helper"
 
 describe Bubbletea do
-  # TODO: Write tests
+  it "provides access to Tea module" do
+    Bubbletea::VERSION.should eq(Tea::VERSION)
+  end
 
-  it "works" do
-    false.should eq(true)
+  it "wraps values as messages" do
+    msg = Bubbletea.wrap("test")
+    msg.should be_a(Tea::Value(String))
+  end
+
+  it "creates commands" do
+    cmd = Bubbletea.batch
+    cmd.should be_nil
+  end
+
+  it "provides quit command" do
+    msg = Bubbletea.quit
+    msg.should be_a(Tea::QuitMsg)
+  end
+
+  it "provides key constants" do
+    Bubbletea::ModShift.should eq(Tea::UVKeyMod::Shift)
+    Bubbletea::ModCtrl.should eq(Tea::UVKeyMod::Ctrl)
   end
 end
