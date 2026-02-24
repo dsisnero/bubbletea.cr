@@ -141,15 +141,15 @@ module Bubbletea
     Tea.interrupt
   end
 
-  def key(rune_or_type, modifiers = UVKeyMod::None)
+  def key(rune_or_type, modifiers = Ultraviolet::KeyMod::None)
     Tea.key(rune_or_type, modifiers)
   end
 
-  def mouse_click(x, y, button = UVMouseButton::Left)
+  def mouse_click(x, y, button = Ultraviolet::MouseButton::Left)
     Tea.mouse_click(x, y, button)
   end
 
-  def mouse_release(x, y, button = UVMouseButton::Left)
+  def mouse_release(x, y, button = Ultraviolet::MouseButton::Left)
     Tea.mouse_release(x, y, button)
   end
 
@@ -270,15 +270,15 @@ module Bubbletea
   KEY_NAMES = Tea::KEY_NAMES
 
   # KeyMod constants (from mod.go)
-  ModShift      = Tea::UVKeyMod::Shift
-  ModAlt        = Tea::UVKeyMod::Alt
-  ModCtrl       = Tea::UVKeyMod::Ctrl
-  ModMeta       = Tea::UVKeyMod::Meta
-  ModHyper      = Tea::UVKeyMod::Hyper
-  ModSuper      = Tea::UVKeyMod::Super
-  ModCapsLock   = Tea::UVKeyMod::CapsLock
-  ModNumLock    = Tea::UVKeyMod::NumLock
-  ModScrollLock = Tea::UVKeyMod::ScrollLock
+  ModShift      = Ultraviolet::ModShift
+  ModAlt        = Ultraviolet::ModAlt
+  ModCtrl       = Ultraviolet::ModCtrl
+  ModMeta       = Ultraviolet::ModMeta
+  ModHyper      = Ultraviolet::ModHyper
+  ModSuper      = Ultraviolet::ModSuper
+  ModCapsLock   = Ultraviolet::ModCapsLock
+  ModNumLock    = Ultraviolet::ModNumLock
+  ModScrollLock = Ultraviolet::ModScrollLock
 end
 
 # Also make Tea available at the top level for convenience

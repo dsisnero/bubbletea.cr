@@ -21,7 +21,7 @@ describe Bubbletea do
   end
 
   it "provides key constants" do
-    Bubbletea::ModShift.should eq(Tea::UVKeyMod::Shift)
-    Bubbletea::ModCtrl.should eq(Tea::UVKeyMod::Ctrl)
+    Bubbletea::ModShift.should eq(Tea::ModShift)
+    Bubbletea::ModCtrl.should eq(Tea::ModCtrl)
   end
 end

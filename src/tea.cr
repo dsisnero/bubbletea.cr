@@ -463,38 +463,38 @@ module Tea
     private def map_uv_key_type(uv_key : Ultraviolet::Key) : KeyType
       # This is a simplified mapping - full implementation would map all UV keys
       case uv_key.type
-      when UVKeys::KeyUp
+      when Ultraviolet::KeyUp
         KeyType::Up
-      when UVKeys::KeyDown
+      when Ultraviolet::KeyDown
         KeyType::Down
-      when UVKeys::KeyLeft
+      when Ultraviolet::KeyLeft
         KeyType::Left
-      when UVKeys::KeyRight
+      when Ultraviolet::KeyRight
         KeyType::Right
-      when UVKeys::KeyHome
+      when Ultraviolet::KeyHome
         KeyType::Home
-      when UVKeys::KeyEnd
+      when Ultraviolet::KeyEnd
         KeyType::End
-      when UVKeys::KeyPgUp
+      when Ultraviolet::KeyPgUp
         KeyType::PageUp
-      when UVKeys::KeyPgDown
+      when Ultraviolet::KeyPgDown
         KeyType::PageDown
-      when UVKeys::KeyInsert
+      when Ultraviolet::KeyInsert
         KeyType::Insert
-      when UVKeys::KeyDelete
+      when Ultraviolet::KeyDelete
         KeyType::Delete
-      when UVKeys::KeyBackspace
+      when Ultraviolet::KeyBackspace
         KeyType::Backspace
-      when UVKeys::KeyTab
+      when Ultraviolet::KeyTab
         KeyType::Tab
-      when UVKeys::KeyEnter
+      when Ultraviolet::KeyEnter
         KeyType::Enter
-      when UVKeys::KeyEscape
+      when Ultraviolet::KeyEscape
         KeyType::Escape
-      when UVKeys::KeySpace
+      when Ultraviolet::KeySpace
         KeyType::Space
-      when UVKeys::KeyF1..UVKeys::KeyF35
-        KeyType.new(uv_key.type - UVKeys::KeyF1 + KeyType::F1.value)
+      when Ultraviolet::KeyF1..Ultraviolet::KeyF35
+        KeyType.new(uv_key.type - Ultraviolet::KeyF1 + KeyType::F1.value)
       else
         KeyType::Null
       end
@@ -502,13 +502,13 @@ module Tea
 
     # Convert ultraviolet modifiers to Tea KeyMod
     private def convert_uv_modifiers(uv_mod : Ultraviolet::KeyMod) : KeyMod
-      result = UVKeyMod::None
-      result |= UVKeyMod::Shift if uv_mod.shift?
-      result |= UVKeyMod::Alt if uv_mod.alt?
-      result |= UVKeyMod::Ctrl if uv_mod.ctrl?
-      result |= UVKeyMod::Meta if uv_mod.meta?
-      result |= UVKeyMod::Super if uv_mod.super?
-      result |= UVKeyMod::Hyper if uv_mod.hyper?
+      result = Ultraviolet::KeyMod::None
+      result |= Ultraviolet::KeyMod::Shift if uv_mod.shift?
+      result |= Ultraviolet::KeyMod::Alt if uv_mod.alt?
+      result |= Ultraviolet::KeyMod::Ctrl if uv_mod.ctrl?
+      result |= Ultraviolet::KeyMod::Meta if uv_mod.meta?
+      result |= Ultraviolet::KeyMod::Super if uv_mod.super?
+      result |= Ultraviolet::KeyMod::Hyper if uv_mod.hyper?
       result
     end
 
@@ -526,29 +526,29 @@ module Tea
     private def convert_uv_mouse_button(uv_button : Ultraviolet::MouseButton) : MouseButton
       case uv_button
       when Ultraviolet::MouseButton::Left
-        UVMouseButton::Left
+        Ultraviolet::MouseButton::Left
       when Ultraviolet::MouseButton::Middle
-        UVMouseButton::Middle
+        Ultraviolet::MouseButton::Middle
       when Ultraviolet::MouseButton::Right
-        UVMouseButton::Right
+        Ultraviolet::MouseButton::Right
       when Ultraviolet::MouseButton::WheelUp
-        UVMouseButton::WheelUp
+        Ultraviolet::MouseButton::WheelUp
       when Ultraviolet::MouseButton::WheelDown
-        UVMouseButton::WheelDown
+        Ultraviolet::MouseButton::WheelDown
       when Ultraviolet::MouseButton::WheelLeft
-        UVMouseButton::WheelLeft
+        Ultraviolet::MouseButton::WheelLeft
       when Ultraviolet::MouseButton::WheelRight
-        UVMouseButton::WheelRight
+        Ultraviolet::MouseButton::WheelRight
       when Ultraviolet::MouseButton::Backward
-        UVMouseButton::Backward
+        Ultraviolet::MouseButton::Backward
       when Ultraviolet::MouseButton::Forward
-        UVMouseButton::Forward
+        Ultraviolet::MouseButton::Forward
       when Ultraviolet::MouseButton::Button10
-        UVMouseButton::Button10
+        Ultraviolet::MouseButton::Button10
       when Ultraviolet::MouseButton::Button11
-        UVMouseButton::Button11
+        Ultraviolet::MouseButton::Button11
       else
-        UVMouseButton::None
+        Ultraviolet::MouseButton::None
       end
     end
 
@@ -715,19 +715,22 @@ module Tea
   end
 
   # KeyMod constants from mod.go
-  # These are aliases to UVKeyMod values for API compatibility
-  ModShift      = UVKeyMod::Shift
-  ModAlt        = UVKeyMod::Alt
-  ModCtrl       = UVKeyMod::Ctrl
-  ModMeta       = UVKeyMod::Meta
-  ModHyper      = UVKeyMod::Hyper
-  ModSuper      = UVKeyMod::Super
-  ModCapsLock   = UVKeyMod::CapsLock
-  ModNumLock    = UVKeyMod::NumLock
-  ModScrollLock = UVKeyMod::ScrollLock
+  # These are aliases to Ultraviolet values for API compatibility
+  ModShift      = Ultraviolet::ModShift
+  ModAlt        = Ultraviolet::ModAlt
+  ModCtrl       = Ultraviolet::ModCtrl
+  ModMeta       = Ultraviolet::ModMeta
+  ModHyper      = Ultraviolet::ModHyper
+  ModSuper      = Ultraviolet::ModSuper
+  ModCapsLock   = Ultraviolet::ModCapsLock
+  ModNumLock    = Ultraviolet::ModNumLock
+  ModScrollLock = Ultraviolet::ModScrollLock
 end
 
-# Require ultraviolet compatibility layer first
+# Require ultraviolet shard (core terminal library)
+require "ultraviolet"
+
+# Require Tea-specific extensions to ultraviolet types (adds enum methods)
 require "./tea/ultraviolet"
 
 # Require all message types
@@ -739,3 +742,8 @@ require "./tea/screen"
 require "./tea/options"
 require "./tea/clipboard"
 require "./tea/exec"
+
+# Require renderer implementations
+require "./tea/renderer"
+require "./tea/cursed_renderer"
+require "./tea/nil_renderer"

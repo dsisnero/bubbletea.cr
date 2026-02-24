@@ -2,8 +2,8 @@
 # In Go: MouseButton = uv.MouseButton
 
 module Tea
-  # MouseButton is an alias for UVMouseButton (from ultraviolet)
-  alias MouseButton = UVMouseButton
+  # MouseButton is an alias for Ultraviolet::MouseButton (from ultraviolet)
+  alias MouseButton = Ultraviolet::MouseButton
 
   # Mouse button constants (aliases to UV constants)
   # Based on X11 mouse button codes:
@@ -17,18 +17,18 @@ module Tea
   #   8 = 4th button (aka browser backward button)
   #   9 = 5th button (aka browser forward button)
   #   10, 11 = additional buttons
-  MouseNone       = UVMouseButton::None
-  MouseLeft       = UVMouseButton::Left
-  MouseMiddle     = UVMouseButton::Middle
-  MouseRight      = UVMouseButton::Right
-  MouseWheelUp    = UVMouseButton::WheelUp
-  MouseWheelDown  = UVMouseButton::WheelDown
-  MouseWheelLeft  = UVMouseButton::WheelLeft
-  MouseWheelRight = UVMouseButton::WheelRight
-  MouseBackward   = UVMouseButton::Backward
-  MouseForward    = UVMouseButton::Forward
-  MouseButton10   = UVMouseButton::Button10
-  MouseButton11   = UVMouseButton::Button11
+  MouseNone       = Ultraviolet::MouseButton::None
+  MouseLeft       = Ultraviolet::MouseButton::Left
+  MouseMiddle     = Ultraviolet::MouseButton::Middle
+  MouseRight      = Ultraviolet::MouseButton::Right
+  MouseWheelUp    = Ultraviolet::MouseButton::WheelUp
+  MouseWheelDown  = Ultraviolet::MouseButton::WheelDown
+  MouseWheelLeft  = Ultraviolet::MouseButton::WheelLeft
+  MouseWheelRight = Ultraviolet::MouseButton::WheelRight
+  MouseBackward   = Ultraviolet::MouseButton::Backward
+  MouseForward    = Ultraviolet::MouseButton::Forward
+  MouseButton10   = Ultraviolet::MouseButton::Button10
+  MouseButton11   = Ultraviolet::MouseButton::Button11
 
   # Mouse represents mouse event data
   struct Mouse
@@ -47,8 +47,8 @@ module Tea
     def initialize(
       @x : Int32,
       @y : Int32,
-      @button : MouseButton = UVMouseButton::None,
-      @modifiers : KeyMod = UVKeyMod::None,
+      @button : MouseButton = Ultraviolet::MouseButton::None,
+      @modifiers : KeyMod = Ultraviolet::KeyMod::None,
     )
     end
 
@@ -57,19 +57,19 @@ module Tea
     end
 
     def shift?
-      @modifiers.shift?
+      KeyModHelpers.shift?(@modifiers)
     end
 
     def alt?
-      @modifiers.alt?
+      KeyModHelpers.alt?(@modifiers)
     end
 
     def ctrl?
-      @modifiers.ctrl?
+      KeyModHelpers.ctrl?(@modifiers)
     end
 
     def meta?
-      @modifiers.meta?
+      KeyModHelpers.meta?(@modifiers)
     end
 
     # Returns a string representation of the mouse event
@@ -159,19 +159,19 @@ module Tea
     end
 
     def wheel_up?
-      @mouse.button == UVMouseButton::WheelUp
+      @mouse.button == Ultraviolet::MouseButton::WheelUp
     end
 
     def wheel_down?
-      @mouse.button == UVMouseButton::WheelDown
+      @mouse.button == Ultraviolet::MouseButton::WheelDown
     end
 
     def wheel_left?
-      @mouse.button == UVMouseButton::WheelLeft
+      @mouse.button == Ultraviolet::MouseButton::WheelLeft
     end
 
     def wheel_right?
-      @mouse.button == UVMouseButton::WheelRight
+      @mouse.button == Ultraviolet::MouseButton::WheelRight
     end
   end
 
@@ -196,7 +196,7 @@ module Tea
     def to_s(io : IO)
       io << "MouseMotion("
       @mouse.to_s(io)
-      if @mouse.button != UVMouseButton::None
+      if @mouse.button != Ultraviolet::MouseButton::None
         io << "+motion"
       else
         io << "motion"
@@ -206,11 +206,11 @@ module Tea
   end
 
   # Helper to create a mouse message
-  def self.mouse_click(x : Int32, y : Int32, button : MouseButton = UVMouseButton::Left) : MouseClickMsg
+  def self.mouse_click(x : Int32, y : Int32, button : MouseButton = Ultraviolet::MouseButton::Left) : MouseClickMsg
     MouseClickMsg.new(Mouse.new(x, y, button))
   end
 
-  def self.mouse_release(x : Int32, y : Int32, button : MouseButton = UVMouseButton::Left) : MouseReleaseMsg
+  def self.mouse_release(x : Int32, y : Int32, button : MouseButton = Ultraviolet::MouseButton::Left) : MouseReleaseMsg
     MouseReleaseMsg.new(Mouse.new(x, y, button))
   end
 
@@ -219,6 +219,6 @@ module Tea
   end
 
   def self.mouse_motion(x : Int32, y : Int32) : MouseMotionMsg
-    MouseMotionMsg.new(Mouse.new(x, y, UVMouseButton::None))
+    MouseMotionMsg.new(Mouse.new(x, y, Ultraviolet::MouseButton::None))
   end
 end

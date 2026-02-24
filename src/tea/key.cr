@@ -2,8 +2,8 @@
 # In Go: KeyMod = uv.KeyMod, Key constants from uv package
 
 module Tea
-  # KeyMod is an alias for UVKeyMod (from ultraviolet)
-  alias KeyMod = UVKeyMod
+  # KeyMod is an alias for Ultraviolet::KeyMod
+  alias KeyMod = Ultraviolet::KeyMod
 
   # Key represents a keyboard key
   struct Key
@@ -27,7 +27,7 @@ module Tea
     def initialize(
       @type : KeyType,
       @rune : Char? = nil,
-      @modifiers : KeyMod = UVKeyMod::None,
+      @modifiers : KeyMod = Ultraviolet::KeyMod::None,
       @is_repeat : Bool = false,
       @alternate : KeyType? = nil,
     )
@@ -192,12 +192,12 @@ module Tea
   }
 
   # Helper to create a Key from a rune
-  def self.key(rune : Char, modifiers : KeyMod = UVKeyMod::None) : Key
+  def self.key(rune : Char, modifiers : KeyMod = Ultraviolet::KeyMod::None) : Key
     Key.new(KeyType::Null, rune, modifiers)
   end
 
   # Helper to create a Key from a special key type
-  def self.key(type : KeyType, modifiers : KeyMod = UVKeyMod::None) : Key
+  def self.key(type : KeyType, modifiers : KeyMod = Ultraviolet::KeyMod::None) : Key
     Key.new(type, nil, modifiers)
   end
 end

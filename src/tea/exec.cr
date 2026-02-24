@@ -6,7 +6,6 @@ require "process"
 module Tea
   # ExecCommand interface for running external commands
   # This is satisfied by Process or custom implementations
-  # ameba:disable Naming/AccessorMethodName (matches Go naming)
   module ExecCommand
     abstract def run : Nil
     abstract def set_stdin(reader : IO)
