@@ -5,6 +5,31 @@ module Tea
   # MouseButton is an alias for UVMouseButton (from ultraviolet)
   alias MouseButton = UVMouseButton
 
+  # Mouse button constants (aliases to UV constants)
+  # Based on X11 mouse button codes:
+  #   1 = left button
+  #   2 = middle button (pressing the scroll wheel)
+  #   3 = right button
+  #   4 = turn scroll wheel up
+  #   5 = turn scroll wheel down
+  #   6 = push scroll wheel left
+  #   7 = push scroll wheel right
+  #   8 = 4th button (aka browser backward button)
+  #   9 = 5th button (aka browser forward button)
+  #   10, 11 = additional buttons
+  MouseNone       = UVMouseButton::None
+  MouseLeft       = UVMouseButton::Left
+  MouseMiddle     = UVMouseButton::Middle
+  MouseRight      = UVMouseButton::Right
+  MouseWheelUp    = UVMouseButton::WheelUp
+  MouseWheelDown  = UVMouseButton::WheelDown
+  MouseWheelLeft  = UVMouseButton::WheelLeft
+  MouseWheelRight = UVMouseButton::WheelRight
+  MouseBackward   = UVMouseButton::Backward
+  MouseForward    = UVMouseButton::Forward
+  MouseButton10   = UVMouseButton::Button10
+  MouseButton11   = UVMouseButton::Button11
+
   # Mouse represents mouse event data
   struct Mouse
     # X position (column)
@@ -46,6 +71,16 @@ module Tea
     def meta?
       @modifiers.meta?
     end
+
+    # Returns a string representation of the mouse event
+    def to_s(io : IO)
+      io << "Mouse(x=#{@x}, y=#{@y}, button=#{@button}"
+      io << ", shift" if shift?
+      io << ", alt" if alt?
+      io << ", ctrl" if ctrl?
+      io << ", meta" if meta?
+      io << ")"
+    end
   end
 
   # MouseMsg is the interface for all mouse messages
@@ -64,6 +99,18 @@ module Tea
 
     def initialize(@mouse : Mouse)
     end
+
+    # Returns the underlying mouse event
+    def mouse : Mouse
+      @mouse
+    end
+
+    # Returns a string representation
+    def to_s(io : IO)
+      io << "MouseClick("
+      @mouse.to_s(io)
+      io << ")"
+    end
   end
 
   # MouseReleaseMsg is sent when a mouse button is released
@@ -75,6 +122,18 @@ module Tea
 
     def initialize(@mouse : Mouse)
     end
+
+    # Returns the underlying mouse event
+    def mouse : Mouse
+      @mouse
+    end
+
+    # Returns a string representation
+    def to_s(io : IO)
+      io << "MouseRelease("
+      @mouse.to_s(io)
+      io << ")"
+    end
   end
 
   # MouseWheelMsg is sent for mouse wheel events
@@ -85,6 +144,18 @@ module Tea
     property mouse : Mouse
 
     def initialize(@mouse : Mouse)
+    end
+
+    # Returns the underlying mouse event
+    def mouse : Mouse
+      @mouse
+    end
+
+    # Returns a string representation
+    def to_s(io : IO)
+      io << "MouseWheel("
+      @mouse.to_s(io)
+      io << ")"
     end
 
     def wheel_up?
@@ -112,6 +183,25 @@ module Tea
     property mouse : Mouse
 
     def initialize(@mouse : Mouse)
+    end
+
+    # Returns the underlying mouse event
+    def mouse : Mouse
+      @mouse
+    end
+
+    # Returns a string representation
+    # In Go: if m.Button != 0 { return m.String() + "+motion" }
+    #        return m.String() + "motion"
+    def to_s(io : IO)
+      io << "MouseMotion("
+      @mouse.to_s(io)
+      if @mouse.button != UVMouseButton::None
+        io << "+motion"
+      else
+        io << "motion"
+      end
+      io << ")"
     end
   end
 
