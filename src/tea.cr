@@ -199,21 +199,46 @@ module Tea
     BarBlinking
   end
 
+  # Position represents a 2D position
+  struct Position
+    property x : Int32
+    property y : Int32
+
+    def initialize(@x : Int32, @y : Int32)
+    end
+  end
+
   # Program is a terminal user interface
   class Program
     # Configuration options
     property fps : Int32 = 60
     property initial_model : Model? = nil
     property? disable_input : Bool = false
+    property? disable_signal_handler : Bool = false
+    property? disable_catch_panics : Bool = false
     property? disable_renderer : Bool = false
     property filter : Proc(Model, Msg, Msg?)? = nil
+
+    # Terminal dimensions
+    property width : Int32 = 0
+    property height : Int32 = 0
 
     # Internal state
     @running : Bool = false
     @quitting : Bool = false
+    @killed : Bool = false
     @msgs = Channel(Msg).new(100)
     @cmds = Channel(Cmd).new(100)
+    @errs = Channel(Exception).new(10)
+    @finished = Channel(Nil).new(1)
     @mutex = Mutex.new
+
+    # Output handling
+    @output : IO? = nil
+    @output_buf = IO::Memory.new
+
+    # Input handling
+    @input : IO? = nil
 
     def initialize(@initial_model : Model? = nil)
     end
@@ -361,6 +386,45 @@ module Tea
     # Check if the program is running
     def running?
       @running
+    end
+
+    # Kill stops the program immediately and restores terminal state
+    def kill
+      @killed = true
+      @quitting = true
+      @running = false
+      shutdown(true)
+    end
+
+    # Wait blocks until the program finishes
+    def wait
+      @finished.receive
+    end
+
+    # Execute writes an ANSI sequence to the output buffer
+    def execute(sequence : String)
+      @mutex.synchronize do
+        @output_buf << sequence
+      end
+    end
+
+    # Flush writes the output buffer to the actual output
+    def flush
+      @mutex.synchronize do
+        return if @output_buf.size == 0
+        if output = @output
+          output.write(@output_buf.to_slice)
+          output.flush
+        end
+        @output_buf.clear
+      end
+    end
+
+    # Shutdown performs cleanup and restores terminal state
+    def shutdown(kill : Bool)
+      @running = false
+      @finished.send(nil) rescue nil
+      # TODO: restore terminal state, close input/output
     end
   end
 
