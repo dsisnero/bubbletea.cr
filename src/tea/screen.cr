@@ -154,12 +154,11 @@ module Tea
     }
   end
 
-  # ClearScreen clears the screen
+  # ClearScreen clears the screen before the next update.
+  # This can be used to move the cursor to the top left of the screen
+  # and clear visual clutter when the alt screen is not in use.
   def self.clear_screen : Cmd
-    -> : Msg? {
-      Screen.clear
-      nil
-    }
+    -> : Msg? { ClearScreenMsg.new }
   end
 
   # HideCursor hides the cursor

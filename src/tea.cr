@@ -312,6 +312,11 @@ module Tea
             # Write raw message to output without formatting
             execute(msg.msg)
             next
+          when ClearScreenMsg
+            # Clear the screen via renderer
+            # TODO: implement renderer.clear_screen
+            execute("\e[2J\e[H")
+            next
           else
             # Update model with regular message
             model, cmd = model.update(msg)
