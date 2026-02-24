@@ -1,0 +1,28 @@
+name: bubbletea
+version: 0.1.0
+
+authors:
+  - Dominic Sisneros <dsisnero@gmail.com>
+
+crystal: '>= 1.19.1'
+
+license: MIT
+
+dependencies:
+  lipgloss:
+    github: dsisnero/lipgloss
+  ansi:
+    github: dsisnero/ansi
+  cellwrap:
+    github: dsisnero/cellwrap
+  cancel_reader:
+    github: dsisnero/cancel_reader
+
+targets:
+  bubbletea:
+    main: src/bubbletea.cr
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 1.0
