@@ -308,6 +308,10 @@ module Tea
           when ExecMsg
             exec(msg.cmd, msg.callback)
             next
+          when RawMsg
+            # Write raw message to output without formatting
+            execute(msg.msg)
+            next
           else
             # Update model with regular message
             model, cmd = model.update(msg)

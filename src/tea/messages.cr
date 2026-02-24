@@ -108,12 +108,13 @@ module Tea
     end
   end
 
-  # RawMsg for raw input events
+  # RawMsg is a message that contains a string to be printed to the terminal
+  # without any intermediate processing.
   struct RawMsg
     include Msg
-    property data : Bytes
+    property msg : String
 
-    def initialize(@data : Bytes)
+    def initialize(@msg : String)
     end
   end
 
@@ -217,5 +218,12 @@ module Tea
   # RequestCursorColor returns a command that requests the terminal cursor color
   def self.request_cursor_color : Cmd
     -> : Msg? { CursorColorMsg.new(Colorful::Color.new(1.0, 1.0, 1.0)) }
+  end
+
+  # Raw prints the given string to the terminal without any formatting.
+  # This is intended for advanced use cases where you need to query the terminal
+  # or send escape sequences directly.
+  def self.raw(msg : String) : Cmd
+    -> : Msg? { RawMsg.new(msg) }
   end
 end
