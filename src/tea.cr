@@ -385,6 +385,174 @@ module Tea
       end
     end
 
+    # translate_input_event translates an ultraviolet event into a Bubble Tea message
+    # Matches Go's translateInputEvent function
+    # ameba:disable Metrics/CyclomaticComplexity
+    def translate_input_event(event : Ultraviolet::Event) : Msg
+      case event
+      when Ultraviolet::ClipboardEvent
+        ClipboardMsg.new(event.content)
+      when Ultraviolet::ForegroundColorEvent
+        ForegroundColorMsg.new(event.color)
+      when Ultraviolet::BackgroundColorEvent
+        BackgroundColorMsg.new(event.color)
+      when Ultraviolet::CursorColorEvent
+        CursorColorMsg.new(event.color)
+      when Ultraviolet::CursorPositionEvent
+        CursorPositionMsg.new(event.x, event.y)
+      when Ultraviolet::FocusEvent
+        FocusMsg.new
+      when Ultraviolet::BlurEvent
+        BlurMsg.new
+      when Ultraviolet::Key
+        # Key press event from ultraviolet
+        KeyPressMsg.new(convert_uv_key(event))
+      when Ultraviolet::MouseClickEvent
+        MouseClickMsg.new(convert_uv_mouse(event.mouse))
+      when Ultraviolet::MouseMotionEvent
+        MouseMotionMsg.new(convert_uv_mouse(event.mouse))
+      when Ultraviolet::MouseReleaseEvent
+        MouseReleaseMsg.new(convert_uv_mouse(event.mouse))
+      when Ultraviolet::MouseWheelEvent
+        MouseWheelMsg.new(convert_uv_mouse(event.mouse))
+      when Ultraviolet::PasteEvent
+        PasteMsg.new(event.content)
+      when Ultraviolet::PasteStartEvent
+        PasteStartMsg.new
+      when Ultraviolet::PasteEndEvent
+        PasteEndMsg.new
+      when Ultraviolet::WindowSizeEvent
+        WindowSizeMsg.new(event.width, event.height)
+      when Ultraviolet::CapabilityEvent
+        CapabilityMsg.new(event.content, "")
+      when Ultraviolet::TerminalVersionEvent
+        TerminalVersionMsg.new(event.name)
+      when Ultraviolet::KeyboardEnhancementsEvent
+        KeyboardEnhancementsMsg.new(convert_uv_enhancements(event))
+      when Ultraviolet::ModeReportEvent
+        ModeReportMsg.new(event.mode, event.value)
+      else
+        event
+      end
+    end
+
+    # Convert ultraviolet Key to Tea Key
+    private def convert_uv_key(uv_key : Ultraviolet::Key) : Key
+      # Map ultraviolet key to our Key struct
+      key_type = map_uv_key_type(uv_key)
+      Key.new(
+        type: key_type,
+        rune: uv_key.rune,
+        modifiers: convert_uv_modifiers(uv_key.mod),
+        is_repeat: false, # TODO: track repeat state
+        alternate: nil
+      )
+    end
+
+    # Map ultraviolet key type to Tea KeyType
+    # ameba:disable Metrics/CyclomaticComplexity
+    private def map_uv_key_type(uv_key : Ultraviolet::Key) : KeyType
+      # This is a simplified mapping - full implementation would map all UV keys
+      case uv_key.type
+      when UVKeys::KeyUp
+        KeyType::Up
+      when UVKeys::KeyDown
+        KeyType::Down
+      when UVKeys::KeyLeft
+        KeyType::Left
+      when UVKeys::KeyRight
+        KeyType::Right
+      when UVKeys::KeyHome
+        KeyType::Home
+      when UVKeys::KeyEnd
+        KeyType::End
+      when UVKeys::KeyPgUp
+        KeyType::PageUp
+      when UVKeys::KeyPgDown
+        KeyType::PageDown
+      when UVKeys::KeyInsert
+        KeyType::Insert
+      when UVKeys::KeyDelete
+        KeyType::Delete
+      when UVKeys::KeyBackspace
+        KeyType::Backspace
+      when UVKeys::KeyTab
+        KeyType::Tab
+      when UVKeys::KeyEnter
+        KeyType::Enter
+      when UVKeys::KeyEscape
+        KeyType::Escape
+      when UVKeys::KeySpace
+        KeyType::Space
+      when UVKeys::KeyF1..UVKeys::KeyF35
+        KeyType.new(uv_key.type - UVKeys::KeyF1 + KeyType::F1.value)
+      else
+        KeyType::Null
+      end
+    end
+
+    # Convert ultraviolet modifiers to Tea KeyMod
+    private def convert_uv_modifiers(uv_mod : Ultraviolet::KeyMod) : KeyMod
+      result = UVKeyMod::None
+      result |= UVKeyMod::Shift if uv_mod.shift?
+      result |= UVKeyMod::Alt if uv_mod.alt?
+      result |= UVKeyMod::Ctrl if uv_mod.ctrl?
+      result |= UVKeyMod::Meta if uv_mod.meta?
+      result |= UVKeyMod::Super if uv_mod.super?
+      result |= UVKeyMod::Hyper if uv_mod.hyper?
+      result
+    end
+
+    # Convert ultraviolet Mouse to Tea Mouse
+    private def convert_uv_mouse(uv_mouse : Ultraviolet::Mouse) : Mouse
+      Mouse.new(
+        x: uv_mouse.x,
+        y: uv_mouse.y,
+        button: convert_uv_mouse_button(uv_mouse.button),
+        modifiers: convert_uv_modifiers(uv_mouse.mod)
+      )
+    end
+
+    # Convert ultraviolet MouseButton to Tea MouseButton
+    private def convert_uv_mouse_button(uv_button : Ultraviolet::MouseButton) : MouseButton
+      case uv_button
+      when Ultraviolet::MouseButton::Left
+        UVMouseButton::Left
+      when Ultraviolet::MouseButton::Middle
+        UVMouseButton::Middle
+      when Ultraviolet::MouseButton::Right
+        UVMouseButton::Right
+      when Ultraviolet::MouseButton::WheelUp
+        UVMouseButton::WheelUp
+      when Ultraviolet::MouseButton::WheelDown
+        UVMouseButton::WheelDown
+      when Ultraviolet::MouseButton::WheelLeft
+        UVMouseButton::WheelLeft
+      when Ultraviolet::MouseButton::WheelRight
+        UVMouseButton::WheelRight
+      when Ultraviolet::MouseButton::Backward
+        UVMouseButton::Backward
+      when Ultraviolet::MouseButton::Forward
+        UVMouseButton::Forward
+      when Ultraviolet::MouseButton::Button10
+        UVMouseButton::Button10
+      when Ultraviolet::MouseButton::Button11
+        UVMouseButton::Button11
+      else
+        UVMouseButton::None
+      end
+    end
+
+    # Convert ultraviolet KeyboardEnhancementsEvent to Tea KeyboardEnhancements
+    private def convert_uv_enhancements(uv_event : Ultraviolet::KeyboardEnhancementsEvent) : KeyboardEnhancements
+      enhancements = KeyboardEnhancements.new
+      # Map UV flags to Tea enhancements
+      enhancements.report_event_types = uv_event.supports_event_types?
+      enhancements.report_alternate_keys = uv_event.supports_key_disambiguation?
+      enhancements.report_all_keys = uv_event.supports_uniform_key_layout?
+      enhancements
+    end
+
     # Quit the program
     def quit
       @quitting = true
