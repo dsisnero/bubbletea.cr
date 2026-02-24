@@ -81,6 +81,21 @@ module Tea
 
     def initialize(@enhancements : KeyboardEnhancements)
     end
+
+    # Returns whether the terminal supports key disambiguation
+    # (e.g., distinguishing between different modifier keys)
+    def supports_key_disambiguation? : Bool
+      # Non-zero flags indicates basic key disambiguation support
+      enhancements.report_alternate_keys? ||
+        enhancements.report_event_types? ||
+        enhancements.report_all_keys?
+    end
+
+    # Returns whether the terminal supports reporting different types
+    # of key events (press, release, and repeat)
+    def supports_event_types? : Bool
+      enhancements.report_event_types?
+    end
   end
 
   # CursorPositionMsg reports the cursor position
