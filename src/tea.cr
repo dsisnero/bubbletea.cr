@@ -750,3 +750,6 @@ require "./tea/nil_renderer"
 
 # Require TTY and signal handling
 require "./tea/tty"
+
+# Require logging
+require "./tea/logging"
