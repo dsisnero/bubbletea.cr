@@ -747,3 +747,6 @@ require "./tea/exec"
 require "./tea/renderer"
 require "./tea/cursed_renderer"
 require "./tea/nil_renderer"
+
+# Require TTY and signal handling
+require "./tea/tty"
