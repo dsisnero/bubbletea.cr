@@ -155,10 +155,26 @@ module Tea
   # TerminalVersionMsg reports the terminal version
   struct TerminalVersionMsg
     include Msg
-    property version : String
+    property name : String
 
-    def initialize(@version : String)
+    def initialize(@name : String)
     end
+
+    # Returns the terminal name as a string
+    def to_s : String
+      @name
+    end
+  end
+
+  # TerminalVersionRequestMsg is an internal message that queries the terminal version
+  struct TerminalVersionRequestMsg
+    include Msg
+  end
+
+  # RequestTerminalVersion is a command that queries the terminal for its
+  # version using XTVERSION. Note that some terminals may not support this.
+  def self.request_terminal_version : Cmd
+    -> : Msg? { TerminalVersionRequestMsg.new }
   end
 
   # ModeReportMsg reports terminal mode status
