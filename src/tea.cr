@@ -228,6 +228,7 @@ module Tea
     @quitting : Bool = false
     @killed : Bool = false
     @interrupted : Bool = false
+    @ignore_signals : Bool = false
     @msgs = Channel(Msg).new(100)
     @cmds = Channel(Cmd).new(100)
     @errs = Channel(Exception).new(10)
@@ -235,11 +236,17 @@ module Tea
     @mutex = Mutex.new
 
     # Output handling
-    @output : IO? = nil
+    property output : IO? = nil
     @output_buf = IO::Memory.new
 
     # Input handling
-    @input : IO? = nil
+    property input : IO? = nil
+
+    # Environment
+    property env : Ultraviolet::Environ = Ultraviolet::Environ.new([] of String)
+
+    # Color profile
+    property profile : Ultraviolet::ColorProfile = Ultraviolet::ColorProfile::TrueColor
 
     def initialize(@initial_model : Model? = nil)
     end
