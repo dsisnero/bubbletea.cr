@@ -126,6 +126,30 @@ module Tea
 
     def initialize(@capability : String, @value : String)
     end
+
+    # Returns the capability content as a string
+    def to_s : String
+      @capability
+    end
+  end
+
+  # RequestCapabilityMsg is an internal message that requests terminal capabilities
+  struct RequestCapabilityMsg
+    include Msg
+    property capability : String
+
+    def initialize(@capability : String)
+    end
+  end
+
+  # RequestCapability is a command that requests the terminal to send its
+  # Termcap/Terminfo response for the given capability.
+  #
+  # Bubble Tea recognizes the following capabilities:
+  #   - "RGB" Xterm direct color
+  #   - "Tc" True color support
+  def self.request_capability(capability : String) : Cmd
+    -> : Msg? { RequestCapabilityMsg.new(capability) }
   end
 
   # TerminalVersionMsg reports the terminal version
