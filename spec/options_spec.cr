@@ -5,11 +5,12 @@ describe "Options" do
   describe "output" do
     it "sets custom output" do
       buf = IO::Memory.new
-      model = Tea::View.new("test")
-      # Note: Options.with_output returns a ProgramOption proc
-      # We'd need to apply it to verify it works
       opt = Tea::Options.with_output(buf)
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.output.should eq(buf)
     end
   end
 
@@ -25,10 +26,13 @@ describe "Options" do
   end
 
   describe "without signals" do
-    pending "ignores signals" do
-      # This feature may not be fully implemented yet
-      opt = Tea.without_input
+    it "ignores signals" do
+      opt = Tea.without_signals
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.ignore_signals?.should be_true
     end
   end
 
@@ -49,19 +53,18 @@ describe "Options" do
       ctx = Tea::ExecutionContext.new
       opt = Tea::Options.with_context(ctx)
       opt.should be_a(Tea::ProgramOption)
-
-      # Would verify context is set when applied to program
     end
   end
 
   describe "input options" do
-    pending "handles nil input" do
-      # Note: with_input doesn't accept nil in current implementation
-      # opt = Tea::Options.with_input(nil)
-      # opt.should be_a(Tea::ProgramOption)
-      # program = Tea::Program.new
-      # opt.call(program)
-      # program.disable_input?.should be_true
+    it "handles nil input" do
+      opt = Tea::Options.with_input(nil)
+      opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.disable_input?.should be_true
+      program.input.should be_nil
     end
 
     it "handles custom input" do
@@ -69,21 +72,65 @@ describe "Options" do
       opt = Tea::Options.with_input(buf)
       opt.should be_a(Tea::ProgramOption)
 
-      # Would verify input is set when applied
+      program = Tea::Program.new
+      opt.call(program)
+      program.input.should eq(buf)
+      program.disable_input?.should be_false
     end
   end
 
   describe "startup options" do
-    pending "without catch panics" do
-      # Feature may not be fully implemented
-      opt = Tea.without_input
+    it "without catch panics" do
+      opt = Tea.without_catch_panics
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.disable_catch_panics?.should be_true
     end
 
-    pending "without signal handler" do
-      # Feature may not be fully implemented
-      opt = Tea.without_input
+    it "without signal handler" do
+      opt = Tea.without_signal_handler
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.disable_signal_handler?.should be_true
+    end
+  end
+
+  describe "environment" do
+    it "sets environment variables" do
+      env = Ultraviolet::Environ.new(["TERM=xterm-256color", "HOME=/home/user"])
+      opt = Tea.with_environment(env)
+      opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.env.should eq(env)
+    end
+  end
+
+  describe "color profile" do
+    it "sets color profile" do
+      opt = Tea.with_color_profile(Ultraviolet::ColorProfile::ANSI256)
+      opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.profile.should eq(Ultraviolet::ColorProfile::ANSI256)
+    end
+  end
+
+  describe "window size" do
+    it "sets window size" do
+      opt = Tea.with_window_size(80, 24)
+      opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.width.should eq(80)
+      program.height.should eq(24)
     end
   end
 
@@ -97,6 +144,10 @@ describe "Options" do
     it "provides without_input" do
       opt = Tea.without_input
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.disable_input?.should be_true
     end
 
     it "provides without_renderer" do
@@ -110,18 +161,18 @@ describe "Options" do
 
       program = Tea::Program.new
       opt.call(program)
-      program.fps.should eq 30
+      program.fps.should eq(30)
     end
 
     it "clamps fps to valid range" do
       opt = Tea.with_fps(200)
       program = Tea::Program.new
       opt.call(program)
-      program.fps.should eq 120
+      program.fps.should eq(120)
 
       opt = Tea.with_fps(0)
       opt.call(program)
-      program.fps.should eq 1
+      program.fps.should eq(1)
     end
 
     it "provides with_filter" do

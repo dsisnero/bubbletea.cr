@@ -224,11 +224,11 @@ module Tea
     property height : Int32 = 0
 
     # Internal state
+    property? ignore_signals : Bool = false
     @running : Bool = false
     @quitting : Bool = false
     @killed : Bool = false
     @interrupted : Bool = false
-    @ignore_signals : Bool = false
     @msgs = Channel(Msg).new(100)
     @cmds = Channel(Cmd).new(100)
     @errs = Channel(Exception).new(10)
