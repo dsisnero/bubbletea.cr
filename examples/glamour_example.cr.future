@@ -1,0 +1,86 @@
+require "../src/bubbletea"
+
+CONTENT = <<-MD
+# Today's Menu
+
+## Appetizers
+- Tsukemono ($2)
+- Tomato Soup ($4)
+- Okonomiyaki ($4)
+- Curry ($3)
+
+## Seasonal Dishes
+- Steamed bitter melon ($2)
+- Takoyaki ($3)
+- Winter squash ($3)
+
+## Desserts
+- Dorayaki ($4)
+- Banana Split ($5)
+- Cream Puff ($3)
+
+Press q to quit.
+MD
+
+class GlamourExample
+  include Bubbletea::Model
+
+  def initialize
+    @offset = 0
+    @lines = CONTENT.split('\n')
+    @viewport_height = 20
+    @viewport_width = 78
+  end
+
+  def init : Bubbletea::Cmd?
+    nil
+  end
+
+  def update(msg : Tea::Msg)
+    case msg
+    when Bubbletea::KeyPressMsg
+      case msg.string_with_mods
+      when "q", "ctrl+c", "esc"
+        {self, Bubbletea.quit}
+      when "up", "k"
+        @offset -= 1
+        @offset = 0 if @offset < 0
+        {self, nil}
+      when "down", "j"
+        max_offset = {@lines.size - @viewport_height, 0}.max
+        @offset += 1
+        @offset = max_offset if @offset > max_offset
+        {self, nil}
+      else
+        {self, nil}
+      end
+    when Bubbletea::WindowSizeMsg
+      @viewport_width = msg.width > 0 ? msg.width : @viewport_width
+      @viewport_height = {msg.height - 3, 5}.max
+      {self, nil}
+    else
+      {self, nil}
+    end
+  end
+
+  def view : Bubbletea::View
+    visible = @lines[@offset, @viewport_height]? || [] of String
+    frame = String.build do |io|
+      io << "+" << "-" * ({@viewport_width - 2, 1}.max) << "+\n"
+      visible.each do |line|
+        width = {@viewport_width - 4, 1}.max
+        io << "| " << line[0, width]? .to_s.ljust(width) << " |\n"
+      end
+      io << "+" << "-" * ({@viewport_width - 2, 1}.max) << "+"
+    end
+
+    Bubbletea::View.new(frame + "\n  ↑/↓: Navigate • q: Quit\n")
+  end
+end
+
+program = Bubbletea::Program.new(GlamourExample.new)
+_model, err = program.run
+if err
+  STDERR.puts "Bummer, there's been an error: #{err.message}"
+  exit 1
+end

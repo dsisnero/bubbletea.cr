@@ -18,9 +18,16 @@ test:
 
 build-examples:
 	mkdir -p ./temp/examples
+	set -e; \
 	for file in ./examples/*.cr; do \
 		name=$$(basename "$$file" .cr); \
-		crystal build "$$file" -o "./temp/examples/$$name"; \
+		out="./temp/examples/$$name"; \
+		if [ -f "$$out" ] && [ "$$file" -ot "$$out" ]; then \
+			echo "[build-examples] $$name (skip, up-to-date)"; \
+		else \
+			echo "[build-examples] $$name (build)"; \
+			crystal build "$$file" -o "$$out"; \
+		fi; \
 	done
 
 clean:
