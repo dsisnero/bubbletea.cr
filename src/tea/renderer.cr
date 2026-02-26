@@ -30,8 +30,18 @@ module Tea
     # Set whether to use synchronized updates
     abstract def syncd_updates=(enabled : Bool)
 
+    # Set terminal width computation strategy
+    # ameba:disable Naming/AccessorMethodName
+    abstract def set_width_method(method : Ultraviolet::WidthMethod)
+    # ameba:enable Naming/AccessorMethodName
+
     # Notify the renderer of a terminal resize
     abstract def resize(width : Int32, height : Int32)
+
+    # Set the terminal color profile
+    # ameba:disable Naming/AccessorMethodName
+    abstract def set_color_profile(profile : Ultraviolet::ColorProfile)
+    # ameba:enable Naming/AccessorMethodName
 
     # Clear the screen
     abstract def clear_screen

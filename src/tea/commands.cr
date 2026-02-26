@@ -138,7 +138,13 @@ module Tea
 
   # WindowSize produces a command that queries the terminal size
   def self.window_size : Cmd
-    -> { WindowSizeRequestMsg.new } # Requests terminal size check
+    -> : Msg? { WindowSizeRequestMsg.new } # Requests terminal size check
+  end
+
+  # RequestWindowSize is a message that requests terminal size check.
+  # Go parity: RequestWindowSize() Msg.
+  def self.request_window_size : Msg
+    WindowSizeRequestMsg.new
   end
 
   # Timer mimics Go's time.Timer using Crystal channels

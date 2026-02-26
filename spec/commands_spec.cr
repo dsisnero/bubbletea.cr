@@ -19,6 +19,13 @@ describe "Tick" do
     msg.should be_a(Tea::Value(String))
     msg.as(Tea::Value(String)).value.should eq expected
   end
+
+  it "ports TestTick semantics from Go" do
+    expected = "tick"
+    msg = Tea.tick(1.millisecond) { Tea.wrap(expected) }.call
+    msg.should be_a(Tea::Value(String))
+    msg.as(Tea::Value(String)).value.should eq expected
+  end
 end
 
 describe "Sequentially" do
@@ -83,6 +90,16 @@ describe "Batch" do
     batch_msg = msg.as(Tea::BatchMsg)
     batch_msg.commands.should eq [cmd1, cmd2]
   end
+
+  it "handles mixed nil commands like Go TestBatch" do
+    cmd1 = -> { Tea.wrap("a").as(Tea::Msg?) }
+    cmd2 = -> { Tea.wrap("b").as(Tea::Msg?) }
+    cmd = Tea.batch(nil, cmd1, nil, cmd2, nil)
+    cmd.should_not be_nil
+    msg = cmd.not_nil!.call
+    msg.should be_a(Tea::BatchMsg)
+    msg.as(Tea::BatchMsg).commands.size.should eq 2
+  end
 end
 
 describe "Sequence" do
@@ -111,5 +128,23 @@ describe "Sequence" do
     msg.should be_a(Tea::SequenceMsg)
     seq_msg = msg.as(Tea::SequenceMsg)
     seq_msg.commands.should eq [cmd1, cmd2]
+  end
+
+  it "ports TestSequence mixed nil command semantics from Go" do
+    cmd1 = -> { Tea.wrap("a").as(Tea::Msg?) }
+    cmd2 = -> { Tea.wrap("b").as(Tea::Msg?) }
+    cmd = Tea.sequence(nil, cmd1, nil, cmd2, nil)
+    cmd.should_not be_nil
+    if command = cmd
+      msg = command.call
+      msg.should be_a(Tea::SequenceMsg)
+      msg.as(Tea::SequenceMsg).commands.size.should eq 2
+    end
+  end
+end
+
+describe "RequestWindowSize" do
+  it "returns a WindowSizeRequestMsg" do
+    Tea.request_window_size.should be_a(Tea::WindowSizeRequestMsg)
   end
 end

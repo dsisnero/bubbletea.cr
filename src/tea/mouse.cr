@@ -81,6 +81,11 @@ module Tea
       io << ", meta" if meta?
       io << ")"
     end
+
+    # Go parity helper for Mouse.String().
+    def string : String
+      String.build { |io| to_s(io) }
+    end
   end
 
   # MouseMsg is the interface for all mouse messages
@@ -111,6 +116,11 @@ module Tea
       @mouse.to_s(io)
       io << ")"
     end
+
+    # Go parity helper for MouseClickMsg.String().
+    def string : String
+      mouse.string
+    end
   end
 
   # MouseReleaseMsg is sent when a mouse button is released
@@ -134,6 +144,11 @@ module Tea
       @mouse.to_s(io)
       io << ")"
     end
+
+    # Go parity helper for MouseReleaseMsg.String().
+    def string : String
+      mouse.string
+    end
   end
 
   # MouseWheelMsg is sent for mouse wheel events
@@ -156,6 +171,11 @@ module Tea
       io << "MouseWheel("
       @mouse.to_s(io)
       io << ")"
+    end
+
+    # Go parity helper for MouseWheelMsg.String().
+    def string : String
+      mouse.string
     end
 
     def wheel_up?
@@ -202,6 +222,12 @@ module Tea
         io << "motion"
       end
       io << ")"
+    end
+
+    # Go parity helper for MouseMotionMsg.String().
+    def string : String
+      base = mouse.string
+      mouse.button == Ultraviolet::MouseButton::None ? "#{base}motion" : "#{base}+motion"
     end
   end
 

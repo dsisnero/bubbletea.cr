@@ -3,6 +3,12 @@
 # Provides file-based logging for debugging
 
 module Tea
+  # LogOptionsSetter mirrors Go's logging abstraction.
+  module LogOptionsSetter
+    abstract def set_output(output : IO) : Nil
+    abstract def set_prefix(prefix : String) : Nil
+  end
+
   # LogToFile sets up logging to a file with the given path and prefix.
   # This is helpful since the TUI occupies the terminal.
   # If the file doesn't exist, it will be created.
@@ -27,14 +33,26 @@ module Tea
     raise Exception.new("error opening file for logging: #{ex}")
   end
 
-  # LogToFileWith allows using a custom logger setup.
-  # The block receives the file handle and can configure logging.
+  # LogToFileWith does allows to call LogToFile with a custom LogOptionsSetter.
+  def self.log_to_file_with(path : String, prefix : String, logger : LogOptionsSetter) : File
+    file = File.open(path, "a")
+    logger.set_output(file)
+
+    final_prefix = prefix
+    if final_prefix.size > 0 && !final_prefix[-1].whitespace?
+      final_prefix += " "
+    end
+    logger.set_prefix(final_prefix)
+
+    file
+  rescue ex
+    raise Exception.new("error opening file for logging: #{ex}")
+  end
+
+  # Block-based helper for local custom setup.
   def self.log_to_file_with(path : String, prefix : String, &block : File -> Nil) : File
     file = File.open(path, "a")
-
-    # Call the block with the file for custom configuration
     block.call(file)
-
     file
   rescue ex
     raise Exception.new("error opening file for logging: #{ex}")

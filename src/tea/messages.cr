@@ -53,6 +53,11 @@ module Tea
 
     def initialize(@content : String)
     end
+
+    # Go parity helper for PasteMsg.String().
+    def string : String
+      content
+    end
   end
 
   # PasteStartMsg signals the start of a paste operation
@@ -68,9 +73,9 @@ module Tea
   # ColorProfileMsg reports the terminal color profile
   struct ColorProfileMsg
     include Msg
-    property profile : String
+    property profile : Ultraviolet::ColorProfile
 
-    def initialize(@profile : String)
+    def initialize(@profile : Ultraviolet::ColorProfile)
     end
   end
 
@@ -91,11 +96,25 @@ module Tea
         enhancements.report_all_keys?
     end
 
+    # Go parity helper for KeyboardEnhancementsMsg.SupportsKeyDisambiguation().
+    # ameba:disable Naming/PredicateName
+    def supports_key_disambiguation : Bool
+      supports_key_disambiguation?
+    end
+    # ameba:enable Naming/PredicateName
+
     # Returns whether the terminal supports reporting different types
     # of key events (press, release, and repeat)
     def supports_event_types? : Bool
       enhancements.report_event_types?
     end
+
+    # Go parity helper for KeyboardEnhancementsMsg.SupportsEventTypes().
+    # ameba:disable Naming/PredicateName
+    def supports_event_types : Bool
+      supports_event_types?
+    end
+    # ameba:enable Naming/PredicateName
   end
 
   # CursorPositionMsg reports the cursor position
@@ -121,15 +140,19 @@ module Tea
   # CapabilityMsg reports terminal capabilities
   struct CapabilityMsg
     include Msg
-    property capability : String
-    property value : String
+    property content : String
 
-    def initialize(@capability : String, @value : String)
+    def initialize(@content : String)
     end
 
     # Returns the capability content as a string
     def to_s : String
-      @capability
+      @content
+    end
+
+    # Go parity helper for CapabilityMsg.String().
+    def string : String
+      to_s
     end
   end
 
@@ -164,6 +187,11 @@ module Tea
     def to_s : String
       @name
     end
+
+    # Go parity helper for TerminalVersionMsg.String().
+    def string : String
+      to_s
+    end
   end
 
   # TerminalVersionRequestMsg is an internal message that queries the terminal version
@@ -192,8 +220,25 @@ module Tea
     include Msg
     property key : String
     property value : String
+    property environ : Ultraviolet::Environ
 
     def initialize(@key : String, @value : String)
+      @environ = Ultraviolet::Environ.new(["#{@key}=#{@value}"])
+    end
+
+    def initialize(@environ : Ultraviolet::Environ)
+      @key = ""
+      @value = ""
+    end
+
+    # Getenv returns the value of the environment variable named by the key.
+    def getenv(key : String) : String
+      @environ.getenv(key)
+    end
+
+    # LookupEnv retrieves the value of the environment variable named by key.
+    def lookup_env(key : String) : Tuple(String, Bool)
+      @environ.lookup_env(key)
     end
   end
 
@@ -211,6 +256,11 @@ module Tea
       color.hex
     end
 
+    # Go parity helper for BackgroundColorMsg.String().
+    def string : String
+      to_s
+    end
+
     # Returns whether the color is dark
     # ameba:disable Naming/PredicateName
     def is_dark? : Bool
@@ -219,6 +269,13 @@ module Tea
       luminance = 0.299 * r + 0.587 * g + 0.114 * b
       luminance < 0.5
     end
+
+    # Go parity helper for BackgroundColorMsg.IsDark().
+    # ameba:disable Naming/PredicateName
+    def is_dark : Bool
+      is_dark?
+    end
+    # ameba:enable Naming/PredicateName
   end
 
   # ForegroundColorMsg sets the foreground color
@@ -235,6 +292,11 @@ module Tea
       color.hex
     end
 
+    # Go parity helper for ForegroundColorMsg.String().
+    def string : String
+      to_s
+    end
+
     # Returns whether the color is dark
     # ameba:disable Naming/PredicateName
     def is_dark? : Bool
@@ -243,6 +305,48 @@ module Tea
       luminance = 0.299 * r + 0.587 * g + 0.114 * b
       luminance < 0.5
     end
+
+    # Go parity helper for ForegroundColorMsg.IsDark().
+    # ameba:disable Naming/PredicateName
+    def is_dark : Bool
+      is_dark?
+    end
+    # ameba:enable Naming/PredicateName
+  end
+
+  # CursorColorMsg sets the cursor color
+  struct CursorColorMsg
+    include Msg
+
+    getter color : Colorful::Color
+
+    def initialize(@color : Colorful::Color)
+    end
+
+    # Returns hex representation of the color
+    def to_s : String
+      color.hex
+    end
+
+    # Go parity helper for CursorColorMsg.String().
+    def string : String
+      to_s
+    end
+
+    # Returns whether the color is dark
+    # ameba:disable Naming/PredicateName
+    def is_dark? : Bool
+      r, g, b = color.r, color.g, color.b
+      luminance = 0.299 * r + 0.587 * g + 0.114 * b
+      luminance < 0.5
+    end
+
+    # Go parity helper for CursorColorMsg.IsDark().
+    # ameba:disable Naming/PredicateName
+    def is_dark : Bool
+      is_dark?
+    end
+    # ameba:enable Naming/PredicateName
   end
 
   # RequestBackgroundColor returns a command that requests the terminal background color

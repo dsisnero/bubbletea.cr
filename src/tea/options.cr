@@ -7,8 +7,7 @@ module Tea
     # WithContext sets the context for the program
     def self.with_context(ctx : ExecutionContext) : ProgramOption
       ->(program : Program) do
-        # Context is passed directly to run method, not stored
-        # This is a no-op for compatibility
+        program.external_context = ctx
       end
     end
 
@@ -110,35 +109,35 @@ module Tea
     # WithAltScreen starts the program with alternate screen enabled
     def self.with_alt_screen : ProgramOption
       ->(program : Program) do
-        # Would be handled during initialization
+        program.startup_alt_screen = true
       end
     end
 
     # WithMouseCellMotion enables mouse cell motion tracking
     def self.with_mouse_cell_motion : ProgramOption
       ->(program : Program) do
-        # Would be handled during initialization
+        program.startup_mouse_mode = MouseMode::CellMotion
       end
     end
 
     # WithMouseAllMotion enables all mouse motion tracking
     def self.with_mouse_all_motion : ProgramOption
       ->(program : Program) do
-        # Would be handled during initialization
+        program.startup_mouse_mode = MouseMode::AllMotion
       end
     end
 
     # WithReportFocus enables focus reporting
     def self.with_report_focus : ProgramOption
       ->(program : Program) do
-        # Would be handled during initialization
+        program.startup_report_focus = true
       end
     end
 
     # WithBracketedPaste enables bracketed paste mode
     def self.with_bracketed_paste : ProgramOption
       ->(program : Program) do
-        # Would be handled during initialization
+        program.startup_bracketed_paste = true
       end
     end
   end

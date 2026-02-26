@@ -52,9 +52,12 @@ module Tea
     end
 
     # Set the method for calculating the width of the terminal - no-op
-    def set_width_method(method : ANSI::Method)
+    # ameba:disable Naming/AccessorMethodName
+    def set_width_method(method : Ultraviolet::WidthMethod)
       # No operation
     end
+
+    # ameba:enable Naming/AccessorMethodName
 
     # Notify the renderer of a terminal resize - no-op
     # Implements renderer interface
@@ -64,9 +67,12 @@ module Tea
 
     # Set the color profile - no-op
     # Implements renderer interface
-    def set_color_profile(profile : ColorProfile::Profile)
+    # ameba:disable Naming/AccessorMethodName
+    def set_color_profile(profile : Ultraviolet::ColorProfile)
       # No operation
     end
+
+    # ameba:enable Naming/AccessorMethodName
 
     # Clear the screen - no-op
     # Implements renderer interface

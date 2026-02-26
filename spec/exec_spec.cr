@@ -62,7 +62,7 @@ class ExecTestModel
       if msg.error
         @error = msg.error
       end
-      return {self, -> { Tea.quit.as(Tea::Msg?) }}
+      return {self, Tea.quit}
     end
 
     {self, nil}

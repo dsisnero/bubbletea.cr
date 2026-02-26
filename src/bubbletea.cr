@@ -108,12 +108,12 @@ module Bubbletea
     Tea.sequentially(*commands)
   end
 
-  def every(duration, fn)
-    Tea.every(duration, fn)
+  def every(duration, fn : Time -> Tea::Msg?)
+    Tea.every(duration) { |time| fn.call(time) }
   end
 
-  def tick(duration, fn)
-    Tea.tick(duration, fn)
+  def tick(duration, fn : Time -> Tea::Msg?)
+    Tea.tick(duration) { |time| fn.call(time) }
   end
 
   # ameba:disable Naming/AccessorMethodName

@@ -34,6 +34,8 @@ module Tea
 
   # Extend Program class with TTY functionality
   class Program
+    @console : Ultraviolet::Console? = nil
+
     # TTY input/output file descriptors
     @tty_input : IO::FileDescriptor? = nil
     @tty_output : IO::FileDescriptor? = nil
@@ -46,6 +48,7 @@ module Tea
     @cancel_reader : Ultraviolet::CancelReader? = nil
     @input_scanner : Ultraviolet::TerminalReader? = nil
     @read_loop_done : Channel(Nil)? = nil
+    @reader_stop : Channel(Nil)? = nil
 
     # Terminal dimensions
     @pixel_width : Int32 = 0
@@ -57,7 +60,7 @@ module Tea
     # Suspend the program (send SIGTSTP)
     def suspend
       # Release terminal before suspending
-      if err = release_terminal(true)
+      if release_terminal(true)
         # If we can't release input, abort
         return
       end
@@ -74,7 +77,7 @@ module Tea
 
     # Initialize terminal (called at program start)
     def init_terminal : Exception?
-      return nil if @disable_renderer
+      return if @disable_renderer
       init_input
     end
 
@@ -89,18 +92,18 @@ module Tea
 
     # Restore TTY input to original state
     def restore_input : Exception?
-      if tty_input = @tty_input
-        if prev_state = @previous_tty_input_state
-          # Restore using ultraviolet's restore mechanism
-          # TODO: implement term restore in ultraviolet
-        end
+      if stop = @reader_stop
+        stop.close rescue nil
+        @reader_stop = nil
       end
 
-      if tty_output = @tty_output
-        if prev_state = @previous_output_state
-          # Restore using ultraviolet's restore mechanism
-          # TODO: implement term restore in ultraviolet
-        end
+      @cancel_reader.try(&.cancel)
+      wait_for_read_loop
+
+      begin
+        @console.try(&.restore)
+      rescue ex
+        return ex
       end
 
       nil
@@ -113,7 +116,7 @@ module Tea
         wait_for_read_loop
       end
 
-      term_type = @env.get("TERM", "")
+      term_type = @env.getenv("TERM")
 
       # Initialize cancelable reader
       if input = @input
@@ -127,6 +130,7 @@ module Tea
       end
 
       @read_loop_done = Channel(Nil).new(1)
+      @reader_stop = Channel(Nil).new(1)
 
       # Start read loop in background
       spawn { read_loop }
@@ -141,11 +145,23 @@ module Tea
 
       begin
         if scanner = @input_scanner
-          # Stream events from input scanner
-          # TODO: implement event streaming
+          eventc = Channel(Ultraviolet::Event).new
+          stop = @reader_stop
+
+          spawn do
+            begin
+              scanner.stream_events(eventc, stop)
+            rescue ex
+              @errs.send(ex) rescue nil
+            ensure
+              eventc.close
+            end
+          end
+
           while @running
-            # Read and process events
-            sleep 1.millisecond
+            event = eventc.receive?
+            break unless event
+            send(translate_input_event(event))
           end
         end
       rescue ex
@@ -169,41 +185,39 @@ module Tea
 
     # Check and report terminal resize
     def check_resize
-      return unless tty_output = @tty_output
-
-      # Get current terminal size
-      if tty_output.is_a?(IO::FileDescriptor)
-        begin
-          size = Ultraviolet::SizeNotifier.size(tty_output)
-          @width = size.width
-          @height = size.height
-          send(WindowSizeMsg.new(@width, @height))
-        rescue ex
-          @errs.send(ex) rescue nil
-        end
+      if console = @console
+        width, height = console.size
+        @width = width
+        @height = height
+        send(WindowSizeMsg.new(@width, @height))
       end
+    rescue ex
+      # Bubble Tea treats size probing as best-effort; don't terminate the
+      # program when a terminal reports ioctl errors.
+      if ex.is_a?(IO::Error) && ex.message.to_s.includes?("ioctl")
+        return
+      end
+      @errs.send(ex) rescue nil
     end
 
     # Initialize TTY input (set raw mode, etc.)
     # Platform-specific implementation
     def init_input : Exception?
-      # Check if input is a terminal
-      if input = @input
-        if input.is_a?(IO::FileDescriptor) && input.tty?
-          @tty_input = input
-          # TODO: Make raw mode via ultraviolet
-          # @previous_tty_input_state = make_raw(@tty_input)
+      @input ||= STDIN
+      @output ||= STDOUT
 
-          # Check for optimized cursor movements
-          # TODO: check_optimized_movements
-        end
+      if input = @input
+        @tty_input = input.as?(IO::FileDescriptor)
+      end
+      if output = @output
+        @tty_output = output.as?(IO::FileDescriptor)
       end
 
-      # Check if output is a terminal
-      if output = @output
-        if output.is_a?(IO::FileDescriptor) && output.tty?
-          @tty_output = output
-        end
+      begin
+        @console = Ultraviolet::Console.new(@input, @output, @env.items)
+        @console.try(&.make_raw)
+      rescue ex
+        return ex
       end
 
       nil
@@ -217,11 +231,11 @@ module Tea
         cont_channel = Channel(Nil).new(1)
 
         Signal::CONT.trap do
-          cont_channel.try_send(nil)
+          cont_channel.send(nil) rescue nil
         end
 
         # Send TSTP to suspend
-        Process.kill(Signal::TSTP, 0)
+        Process.signal(Signal::TSTP, 0)
 
         # Wait for CONT signal
         cont_channel.receive

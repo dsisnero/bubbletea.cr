@@ -5,6 +5,7 @@
 
 require "time"
 require "json"
+require "base64"
 require "colorful"
 
 module Tea
@@ -69,7 +70,11 @@ module Tea
   # This is the interface that user models must implement.
   module Model
     abstract def init : Cmd?
-    abstract def update(msg : Msg) : Tuple(Model, Cmd?)
+    # Update may return:
+    # - {Model, Cmd?} (native command flow)
+    # - {Model, Msg?} (Go-style convenience; message is wrapped as a Cmd)
+    # - Model (state change only; no command)
+    abstract def update(msg : Msg)
     abstract def view : View
   end
 
@@ -121,15 +126,53 @@ module Tea
       view.content = content
       view
     end
+
+    # Go parity helper for View.SetContent().
+    # ameba:disable Naming/AccessorMethodName
+    def set_content(content : String) : self
+      @content = content
+      self
+    end
+    # ameba:enable Naming/AccessorMethodName
   end
 
-  # ProgressBar represents a terminal progress bar
+  # ProgressBarState represents the state of the terminal progress bar.
+  enum ProgressBarState
+    None
+    Default
+    Error
+    Indeterminate
+    Warning
+
+    # Go parity helper for ProgressBarState.String().
+    def string : String
+      to_s
+    end
+  end
+
+  # Go parity constants for ProgressBarState values.
+  ProgressBarNone = ProgressBarState::None
+  ProgressBarDefault = ProgressBarState::Default
+  ProgressBarError = ProgressBarState::Error
+  ProgressBarIndeterminate = ProgressBarState::Indeterminate
+  ProgressBarWarning = ProgressBarState::Warning
+
+  # ProgressBar represents a terminal progress bar.
   struct ProgressBar
+    property state : ProgressBarState = ProgressBarState::None
     property value : Float64 = 0.0
     property max : Float64 = 100.0
     property label : String = ""
 
-    def initialize(@value = 0.0, @max = 100.0, @label = "")
+    def initialize(@state = ProgressBarState::None, @value = 0.0, @max = 100.0, @label = "")
+      unless @state.in?({ProgressBarState::None, ProgressBarState::Indeterminate})
+        @value = @value.clamp(0.0, 100.0)
+      end
+    end
+
+    # Backward-compatible initializer used by older specs/examples.
+    def initialize(@value : Float64, @max : Float64 = 100.0, @label : String = "")
+      @state = ProgressBarState::Default
     end
 
     def percent
@@ -143,6 +186,11 @@ module Tea
     CellMotion
     AllMotion
   end
+
+  # Go parity constants for MouseMode values.
+  MouseModeNone = MouseMode::None
+  MouseModeCellMotion = MouseMode::CellMotion
+  MouseModeAllMotion = MouseMode::AllMotion
 
   # KeyboardEnhancements describes requested keyboard features
   struct KeyboardEnhancements
@@ -189,6 +237,32 @@ module Tea
     end
   end
 
+  # Go parity helper for NewView().
+  def self.new_view(content : String = "") : View
+    View.new(content)
+  end
+
+  # Go parity helper for NewCursor().
+  def self.new_cursor(
+    x : Int32 = 0,
+    y : Int32 = 0,
+    visible : Bool = true,
+    style : CursorStyle = CursorStyle::Block,
+    color : Colorful::Color? = nil
+  ) : Cursor
+    Cursor.new(x, y, visible, style, color)
+  end
+
+  # Go parity helper for NewProgressBar().
+  def self.new_progress_bar(
+    state : ProgressBarState = ProgressBarState::None,
+    value : Float64 = 0.0,
+    max : Float64 = 100.0,
+    label : String = ""
+  ) : ProgressBar
+    ProgressBar.new(state, value, max, label)
+  end
+
   # CursorStyle defines the cursor appearance
   enum CursorStyle
     Block
@@ -198,6 +272,12 @@ module Tea
     Bar
     BarBlinking
   end
+
+  # Go parity alias from cursor.go
+  alias CursorShape = CursorStyle
+  CursorBlock     = CursorShape::Block
+  CursorUnderline = CursorShape::Underline
+  CursorBar       = CursorShape::Bar
 
   # Position represents a 2D position
   struct Position
@@ -218,10 +298,15 @@ module Tea
     property? disable_catch_panics : Bool = false
     property? disable_renderer : Bool = false
     property filter : Proc(Model, Msg, Msg?)? = nil
+    property external_context : ExecutionContext? = nil
 
     # Terminal dimensions
     property width : Int32 = 0
     property height : Int32 = 0
+    property? startup_alt_screen : Bool = false
+    property startup_mouse_mode : MouseMode? = nil
+    property? startup_report_focus : Bool = false
+    property? startup_bracketed_paste : Bool = false
 
     # Internal state
     property? ignore_signals : Bool = false
@@ -234,6 +319,7 @@ module Tea
     @errs = Channel(Exception).new(10)
     @finished = Channel(Nil).new(1)
     @mutex = Mutex.new
+    @signal_stop : Channel(Nil)? = nil
 
     # Output handling
     property output : IO? = nil
@@ -247,17 +333,42 @@ module Tea
 
     # Color profile
     property profile : Ultraviolet::ColorProfile = Ultraviolet::ColorProfile::TrueColor
+    @renderer : Renderer? = nil
+    @logger : Ultraviolet::Logger? = nil
+    @renderer_done : Channel(Nil)? = nil
 
     def initialize(@initial_model : Model? = nil)
     end
 
     # Start the program with the given context
     # ameba:disable Metrics/CyclomaticComplexity
-    def run(context : ExecutionContext = ExecutionContext.default) : Tuple(Model?, Exception?)
+    def run(context : ExecutionContext? = nil) : Tuple(Model?, Exception?)
       model = @initial_model
       return {nil, Exception.new("No initial model provided")} unless model
+      run_context = context || @external_context || ExecutionContext.default
+
+      @output ||= STDOUT
+      @input ||= STDIN
+      if @env.items.empty?
+        @env = Ultraviolet::Environ.new(ENV.map { |k, v| "#{k}=#{v}" })
+      end
 
       @running = true
+      @quitting = false
+      @interrupted = false
+      @killed = false
+
+      if err = init_terminal
+        return {model, err}
+      end
+      if err = init_input_reader
+        return {model, err}
+      end
+      check_resize
+      start_signal_handler
+      init_renderer
+      start_renderer
+      render(model)
 
       # Start command processor
       _command_processor = spawn do
@@ -269,7 +380,7 @@ module Tea
                 msg = cmd.call
                 send(msg) if msg
               rescue ex
-                # TODO: handle panic
+                handle_runtime_exception(ex)
               end
             end
           when timeout(100.milliseconds)
@@ -284,7 +395,16 @@ module Tea
 
       # Main event loop
       loop do
+        if run_context.cancelled?
+          @killed = true
+          break
+        end
+
         select
+        when err = @errs.receive
+          @killed = true
+          shutdown(true)
+          return {model, err}
         when msg = @msgs.receive
           break if @quitting
 
@@ -303,32 +423,74 @@ module Tea
             @quitting = true
             @interrupted = true
             break
+          when SuspendMsg
+            suspend if SUSPEND_SUPPORTED
           when BatchMsg
             spawn { exec_batch_msg(msg) }
             next
           when SequenceMsg
             spawn { exec_sequence_msg(msg) }
             next
+          when MouseClickMsg, MouseReleaseMsg, MouseWheelMsg, MouseMotionMsg
+            if renderer = @renderer
+              if cmd = renderer.on_mouse(msg.as(MouseMsg))
+                send(cmd)
+              end
+            end
+          when ReadClipboardMsg
+            execute("\e]52;c;?\a")
+          when SetClipboardMsg
+            execute("\e]52;c;#{Base64.strict_encode(msg.content)}\a")
+          when ReadPrimaryClipboardMsg
+            execute("\e]52;p;?\a")
+          when SetPrimaryClipboardMsg
+            execute("\e]52;p;#{Base64.strict_encode(msg.content)}\a")
+          when BackgroundColorMsg
+            execute("\e]11;?\a")
+          when ForegroundColorMsg
+            execute("\e]10;?\a")
+          when CursorColorMsg
+            execute("\e]12;?\a")
+          when TerminalVersionRequestMsg
+            execute("\e[>q")
+          when RequestCapabilityMsg
+            execute("\eP+q#{msg.capability}\e\\")
+          when CapabilityMsg
+            if (msg.content == "RGB" || msg.content == "Tc") && @profile != Ultraviolet::ColorProfile::TrueColor
+              @profile = Ultraviolet::ColorProfile::TrueColor
+              send(ColorProfileMsg.new(@profile))
+            end
+          when ColorProfileMsg
+            @profile = msg.profile
+            @renderer.try &.set_color_profile(msg.profile)
+          when ModeReportMsg
+            if msg.mode == 2026 && msg.value != 0
+              @renderer.try &.syncd_updates=(true)
+            elsif msg.mode == 2027
+              grapheme_width = ->(value : String) { Ansi.string_width(Ansi::Method::GraphemeWidth, value) }
+              @renderer.try &.set_width_method(grapheme_width)
+            end
+          when WindowSizeMsg
+            @renderer.try &.resize(msg.width, msg.height)
+            @width = msg.width
+            @height = msg.height
           when WindowSizeRequestMsg
-            # TODO: trigger resize check
-            next
+            spawn { check_resize }
+          when PrintLineMsg
+            @renderer.try(&.insert_above(msg.content))
           when ExecMsg
             exec(msg.cmd, msg.callback)
-            next
           when RawMsg
             # Write raw message to output without formatting
             execute(msg.msg)
-            next
           when ClearScreenMsg
-            # Clear the screen via renderer
-            # TODO: implement renderer.clear_screen
-            execute("\e[2J\e[H")
-            next
-          else
-            # Update model with regular message
-            model, cmd = model.update(msg)
-            send(cmd) if cmd
+            @renderer.try &.clear_screen
           end
+
+          # Update model for all non-terminal control flow messages.
+          model, cmd = normalize_update_result(model.update(msg))
+          send(cmd) if cmd
+          render(model)
         when timeout(1.millisecond)
           # Timeout to allow checking @quitting
         end
@@ -337,9 +499,17 @@ module Tea
       end
 
       @running = false
-      {model, nil}
+      shutdown(false)
+      if @interrupted
+        {model, InterruptedError.new("program was interrupted")}
+      elsif @killed
+        {model, ProgramKilledError.new("program was killed")}
+      else
+        {model, nil}
+      end
     rescue ex
       @running = false
+      shutdown(true)
       {model, ex}
     end
 
@@ -349,6 +519,42 @@ module Tea
       @cmds.send(cmd) rescue nil
     end
 
+    # Normalize a model update return value into {Model, Cmd?}
+    private def normalize_update_result(result) : Tuple(Model, Cmd?)
+      case result
+      when Model
+        {result, nil}
+      when Tuple
+        unless result.size == 2
+          raise Exception.new("Model#update tuple must have exactly 2 elements")
+        end
+
+        model = result[0]
+        unless model.is_a?(Model)
+          raise Exception.new("First element of Model#update tuple must implement Tea::Model")
+        end
+
+        {model, normalize_update_action(result[1])}
+      else
+        raise Exception.new("Model#update must return Model or Tuple(Model, Cmd?/Msg?)")
+      end
+    end
+
+    # Accept either Cmd or Msg as the update action.
+    # Returning Msg mirrors the Go ergonomics (e.g. Tea.quit).
+    private def normalize_update_action(action) : Cmd?
+      case action
+      when Nil
+        nil
+      when Cmd
+        action
+      when Msg
+        -> : Msg? { action }
+      else
+        raise Exception.new("Second element of Model#update tuple must be Cmd, Msg, or nil")
+      end
+    end
+
     # Send a message to the program
     def send(msg : Msg)
       @msgs.send(msg) rescue nil
@@ -356,7 +562,6 @@ module Tea
 
     # Execute a batch message (commands run concurrently)
     private def exec_batch_msg(msg : BatchMsg)
-      # TODO: implement panic catching
       commands = msg.commands
       return if commands.empty?
 
@@ -375,7 +580,7 @@ module Tea
               send(result) if result
             end
           rescue ex
-            # TODO: handle panic
+            handle_runtime_exception(ex)
           end
           done.send(nil)
         end
@@ -386,17 +591,20 @@ module Tea
 
     # Execute a sequence message (commands run sequentially)
     private def exec_sequence_msg(msg : SequenceMsg)
-      # TODO: implement panic catching
       msg.commands.each do |cmd|
         next unless cmd
-        result = cmd.call
-        case result
-        when BatchMsg
-          exec_batch_msg(result)
-        when SequenceMsg
-          exec_sequence_msg(result)
-        else
-          send(result) if result
+        begin
+          result = cmd.call
+          case result
+          when BatchMsg
+            exec_batch_msg(result)
+          when SequenceMsg
+            exec_sequence_msg(result)
+          else
+            send(result) if result
+          end
+        rescue ex
+          handle_runtime_exception(ex)
         end
       end
     end
@@ -409,11 +617,11 @@ module Tea
       when Ultraviolet::ClipboardEvent
         ClipboardMsg.new(event.content)
       when Ultraviolet::ForegroundColorEvent
-        ForegroundColorMsg.new(event.color)
+        ForegroundColorMsg.new(convert_uv_color(event.color))
       when Ultraviolet::BackgroundColorEvent
-        BackgroundColorMsg.new(event.color)
+        BackgroundColorMsg.new(convert_uv_color(event.color))
       when Ultraviolet::CursorColorEvent
-        CursorColorMsg.new(event.color)
+        CursorColorMsg.new(convert_uv_color(event.color))
       when Ultraviolet::CursorPositionEvent
         CursorPositionMsg.new(event.x, event.y)
       when Ultraviolet::FocusEvent
@@ -422,7 +630,7 @@ module Tea
         BlurMsg.new
       when Ultraviolet::Key
         # Key press event from ultraviolet
-        KeyPressMsg.new(convert_uv_key(event))
+        convert_uv_key(event)
       when Ultraviolet::MouseClickEvent
         MouseClickMsg.new(convert_uv_mouse(event.mouse))
       when Ultraviolet::MouseMotionEvent
@@ -440,7 +648,7 @@ module Tea
       when Ultraviolet::WindowSizeEvent
         WindowSizeMsg.new(event.width, event.height)
       when Ultraviolet::CapabilityEvent
-        CapabilityMsg.new(event.content, "")
+        CapabilityMsg.new(event.content)
       when Ultraviolet::TerminalVersionEvent
         TerminalVersionMsg.new(event.name)
       when Ultraviolet::KeyboardEnhancementsEvent
@@ -448,7 +656,7 @@ module Tea
       when Ultraviolet::ModeReportEvent
         ModeReportMsg.new(event.mode, event.value)
       else
-        event
+        Tea.wrap(event)
       end
     end
 
@@ -456,11 +664,15 @@ module Tea
     private def convert_uv_key(uv_key : Ultraviolet::Key) : Key
       # Map ultraviolet key to our Key struct
       key_type = map_uv_key_type(uv_key)
+      rune = nil
+      if !uv_key.text.empty? && uv_key.text.size == 1
+        rune = uv_key.text[0]
+      end
       Key.new(
         type: key_type,
-        rune: uv_key.rune,
+        rune: rune,
         modifiers: convert_uv_modifiers(uv_key.mod),
-        is_repeat: false, # TODO: track repeat state
+        is_repeat: uv_key.is_repeat?,
         alternate: nil
       )
     end
@@ -468,8 +680,9 @@ module Tea
     # Map ultraviolet key type to Tea KeyType
     # ameba:disable Metrics/CyclomaticComplexity
     private def map_uv_key_type(uv_key : Ultraviolet::Key) : KeyType
+      code = uv_key.code
       # This is a simplified mapping - full implementation would map all UV keys
-      case uv_key.type
+      case code
       when Ultraviolet::KeyUp
         KeyType::Up
       when Ultraviolet::KeyDown
@@ -501,7 +714,7 @@ module Tea
       when Ultraviolet::KeySpace
         KeyType::Space
       when Ultraviolet::KeyF1..Ultraviolet::KeyF35
-        KeyType.new(uv_key.type - Ultraviolet::KeyF1 + KeyType::F1.value)
+        KeyType.new(code - Ultraviolet::KeyF1 + KeyType::F1.value)
       else
         KeyType::Null
       end
@@ -509,13 +722,13 @@ module Tea
 
     # Convert ultraviolet modifiers to Tea KeyMod
     private def convert_uv_modifiers(uv_mod : Ultraviolet::KeyMod) : KeyMod
-      result = Ultraviolet::KeyMod::None
-      result |= Ultraviolet::KeyMod::Shift if uv_mod.shift?
-      result |= Ultraviolet::KeyMod::Alt if uv_mod.alt?
-      result |= Ultraviolet::KeyMod::Ctrl if uv_mod.ctrl?
-      result |= Ultraviolet::KeyMod::Meta if uv_mod.meta?
-      result |= Ultraviolet::KeyMod::Super if uv_mod.super?
-      result |= Ultraviolet::KeyMod::Hyper if uv_mod.hyper?
+      result = 0
+      result |= Ultraviolet::ModShift if Tea::KeyModHelpers.shift?(uv_mod)
+      result |= Ultraviolet::ModAlt if Tea::KeyModHelpers.alt?(uv_mod)
+      result |= Ultraviolet::ModCtrl if Tea::KeyModHelpers.ctrl?(uv_mod)
+      result |= Ultraviolet::ModMeta if Tea::KeyModHelpers.meta?(uv_mod)
+      result |= Ultraviolet::ModSuper if Tea::KeyModHelpers.super?(uv_mod)
+      result |= Ultraviolet::ModHyper if Tea::KeyModHelpers.hyper?(uv_mod)
       result
     end
 
@@ -569,6 +782,14 @@ module Tea
       enhancements
     end
 
+    private def convert_uv_color(uv_color : Ultraviolet::Color) : Colorful::Color
+      Colorful::Color.new(
+        uv_color.r.to_f64 / 255.0,
+        uv_color.g.to_f64 / 255.0,
+        uv_color.b.to_f64 / 255.0
+      )
+    end
+
     # Quit the program
     def quit
       @quitting = true
@@ -615,8 +836,12 @@ module Tea
     # Shutdown performs cleanup and restores terminal state
     def shutdown(kill : Bool)
       @running = false
+      stop_signal_handler
+      @cancel_reader.try(&.cancel)
+      wait_for_read_loop unless kill
+      stop_renderer(kill)
+      restore_terminal_state rescue nil
       @finished.send(nil) rescue nil
-      # TODO: restore terminal state, close input/output
     end
 
     # exec runs an ExecCommand and delivers results to the program
@@ -660,15 +885,126 @@ module Tea
 
     # releaseTerminal releases terminal control for external commands
     def release_terminal(reset : Bool) : Exception?
-      # TODO: implement full release terminal logic
-      # For now, just a stub
+      begin
+        flush if reset
+      rescue ex
+        return ex
+      end
+
+      err = restore_input
+      return err if err
+
       nil
     end
 
     # restore_terminal restores terminal control after external commands
     def restore_terminal : Exception?
-      # TODO: implement full restore terminal logic
+      err = init_input
+      return err if err
+
+      err = init_input_reader(true)
+      return err if err
+
       nil
+    end
+
+    # render renders the current model view
+    private def render(model : Model)
+      if renderer = @renderer
+        view = model.view
+        view.alt_screen = true if @startup_alt_screen
+        if mode = @startup_mouse_mode
+          view.mouse_mode = mode if view.mouse_mode == MouseMode::None
+        end
+        view.report_focus = true if @startup_report_focus
+        view.disable_bracketed_paste = false if @startup_bracketed_paste
+        renderer.render(view)
+      end
+    end
+
+    private def init_renderer
+      if @disable_renderer
+        @renderer = NilRenderer.new
+      else
+        width = @width > 0 ? @width : 80
+        height = @height > 0 ? @height : 24
+        output = @output || STDOUT
+        @renderer = CursedRenderer.new(output, @env, width, height)
+      end
+      @renderer.try &.set_color_profile(@profile)
+    end
+
+    private def start_renderer
+      renderer = @renderer
+      return unless renderer
+
+      done = Channel(Nil).new(1)
+      @renderer_done = done
+      interval = (1.0 / @fps).seconds
+
+      renderer.start
+
+      spawn do
+        loop do
+          select
+          when done.receive
+            break
+          when timeout(interval)
+            flush
+            renderer.flush(false)
+          end
+        end
+      end
+    end
+
+    private def stop_renderer(kill : Bool)
+      if renderer = @renderer
+        if done = @renderer_done
+          done.send(nil) rescue nil
+          @renderer_done = nil
+        end
+        renderer.flush(true) unless kill
+        renderer.close
+      end
+    end
+
+    private def handle_runtime_exception(ex : Exception)
+      if @disable_catch_panics
+        @errs.send(ex) rescue nil
+      else
+        @errs.send(ProgramPanicError.new("program experienced a panic: #{ex.message}")) rescue nil
+      end
+    end
+
+    private def start_signal_handler
+      return if @disable_signal_handler
+      return if @ignore_signals
+
+      stop = Channel(Nil).new(1)
+      @signal_stop = stop
+
+      {% if flag?(:unix) %}
+        Signal::INT.trap do
+          send(InterruptMsg.new) unless @ignore_signals
+        end
+
+        Signal::TERM.trap do
+          send(QuitMsg.new) unless @ignore_signals
+        end
+
+        spawn do
+          stop.receive
+          Signal::INT.reset
+          Signal::TERM.reset
+        end
+      {% end %}
+    end
+
+    private def stop_signal_handler
+      if stop = @signal_stop
+        stop.send(nil) rescue nil
+        @signal_stop = nil
+      end
     end
   end
 
@@ -707,18 +1043,18 @@ module Tea
   end
 
   # Quit returns a command that signals the program to quit
-  def self.quit : Msg
-    QuitMsg.new
+  def self.quit : Cmd
+    -> : Msg? { QuitMsg.new }
   end
 
   # Suspend returns a command that suspends the program
-  def self.suspend : Msg
-    SuspendMsg.new
+  def self.suspend : Cmd
+    -> : Msg? { SuspendMsg.new }
   end
 
   # Interrupt returns a command that interrupts the program
-  def self.interrupt : Msg
-    InterruptMsg.new
+  def self.interrupt : Cmd
+    -> : Msg? { InterruptMsg.new }
   end
 
   # KeyMod constants from mod.go

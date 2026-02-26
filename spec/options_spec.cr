@@ -53,6 +53,10 @@ describe "Options" do
       ctx = Tea::ExecutionContext.new
       opt = Tea::Options.with_context(ctx)
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.external_context.should eq(ctx)
     end
   end
 
@@ -183,21 +187,46 @@ describe "Options" do
     it "provides with_alt_screen" do
       opt = Tea.with_alt_screen
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.startup_alt_screen?.should be_true
     end
 
     it "provides with_mouse_cell_motion" do
       opt = Tea.with_mouse_cell_motion
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.startup_mouse_mode.should eq(Tea::MouseMode::CellMotion)
     end
 
     it "provides with_mouse_all_motion" do
       opt = Tea.with_mouse_all_motion
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.startup_mouse_mode.should eq(Tea::MouseMode::AllMotion)
     end
 
     it "provides with_report_focus" do
       opt = Tea.with_report_focus
       opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.startup_report_focus?.should be_true
+    end
+
+    it "provides with_bracketed_paste" do
+      opt = Tea.with_bracketed_paste
+      opt.should be_a(Tea::ProgramOption)
+
+      program = Tea::Program.new
+      opt.call(program)
+      program.startup_bracketed_paste?.should be_true
     end
   end
 end

@@ -21,6 +21,11 @@ module Tea
     def to_s : String
       @content
     end
+
+    # Go parity helper for ClipboardMsg.String().
+    def string : String
+      to_s
+    end
   end
 
   # SetClipboard produces a command that sets the system clipboard using OSC52

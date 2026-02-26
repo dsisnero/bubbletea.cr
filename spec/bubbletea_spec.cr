@@ -16,7 +16,9 @@ describe Bubbletea do
   end
 
   it "provides quit command" do
-    msg = Bubbletea.quit
+    cmd = Bubbletea.quit
+    cmd.should be_a(Tea::Cmd)
+    msg = cmd.call
     msg.should be_a(Tea::QuitMsg)
   end
 

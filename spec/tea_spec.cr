@@ -43,7 +43,7 @@ class TestModel
     when Tea::KeyPressMsg
       case msg.to_s
       when "q", "ctrl+c"
-        return {self, -> { Tea.quit.as(Tea::Msg?) }}
+        return {self, Tea.quit}
       end
     when PanicMsg
       raise "testing panic behavior"
@@ -315,7 +315,7 @@ describe "Tea" do
       program = Tea::Program.new(model)
 
       spawn do
-        seq = Tea::SequenceMsg.new([inc_cmd, inc_cmd, -> { Tea.quit.as(Tea::Msg?) }] of Tea::Cmd)
+        seq = Tea::SequenceMsg.new([inc_cmd, inc_cmd, Tea.quit] of Tea::Cmd)
         program.send(seq)
       end
 
@@ -336,7 +336,7 @@ describe "Tea" do
       program = Tea::Program.new(model)
 
       spawn do
-        seq = Tea::SequenceMsg.new([batch_cmd, inc_cmd, -> { Tea.quit.as(Tea::Msg?) }] of Tea::Cmd)
+        seq = Tea::SequenceMsg.new([batch_cmd, inc_cmd, Tea.quit] of Tea::Cmd)
         program.send(seq)
       end
 
@@ -359,7 +359,7 @@ describe "Tea" do
         seq = Tea::SequenceMsg.new([
           inc_cmd,
           -> { Tea.sequence([inc_cmd, inc_cmd, Tea.batch([inc_cmd, inc_cmd])]).call.as(Tea::Msg?) },
-          -> { Tea.quit.as(Tea::Msg?) },
+          Tea.quit,
         ] of Tea::Cmd)
         program.send(seq)
       end

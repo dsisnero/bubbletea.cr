@@ -8,9 +8,15 @@ module Tea
   # This is satisfied by Process or custom implementations
   module ExecCommand
     abstract def run : Nil
+    # Crystal idiom: `stdin=`, `stdout=`, `stderr=`.
+    # Kept as Go-parity API names.
+    # ameba:disable Naming/AccessorMethodName
     abstract def set_stdin(reader : IO)
+    # ameba:disable Naming/AccessorMethodName
     abstract def set_stdout(writer : IO)
+    # ameba:disable Naming/AccessorMethodName
     abstract def set_stderr(writer : IO)
+    # ameba:enable Naming/AccessorMethodName
   end
 
   # ExecCallback is called after command execution with any error
@@ -62,20 +68,25 @@ module Tea
     end
 
     # SetStdin sets stdin only if not already set (matches Go logic)
+    # ameba:disable Naming/AccessorMethodName
     def set_stdin(reader : IO)
       # In Go: if c.Stdin == nil { c.Stdin = r }
       # Crystal Process input is set at creation time, so we track separately
     end
 
     # SetStdout sets stdout only if not already set (matches Go logic)
+    # ameba:disable Naming/AccessorMethodName
     def set_stdout(writer : IO)
       # In Go: if c.Stdout == nil { c.Stdout = w }
     end
 
     # SetStderr sets stderr only if not already set (matches Go logic)
+    # ameba:disable Naming/AccessorMethodName
     def set_stderr(writer : IO)
       # In Go: if c.Stderr == nil { c.Stderr = w }
     end
+
+    # ameba:enable Naming/AccessorMethodName
 
     def run : Nil
       # Execute system command and wait

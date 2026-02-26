@@ -40,6 +40,35 @@ class ScreenTestModel
 end
 
 describe "Screen" do
+  describe "Go parity screen tests" do
+    it "ports TestClearMsg semantics" do
+      Tea.clear_screen.should be_a(Tea::Cmd)
+      Tea.read_clipboard.should be_a(Tea::Cmd)
+      Tea.set_clipboard("success").should be_a(Tea::Cmd)
+      Tea.request_foreground_color.should be_a(Tea::Cmd)
+      Tea.request_background_color.should be_a(Tea::Cmd)
+      Tea.request_cursor_color.should be_a(Tea::Cmd)
+    end
+
+    it "ports TestViewModel semantics" do
+      model = ScreenTestModel.new
+      model.alt_screen = true
+      model.mouse_mode = Tea::MouseMode::AllMotion
+      model.show_cursor = true
+      model.disable_bp = true
+      model.report_event_types = true
+      model.bg_color = Colorful::Color.hex("#FFFFFF")
+
+      view = model.view
+      view.alt_screen?.should be_true
+      view.mouse_mode.should eq Tea::MouseMode::AllMotion
+      view.cursor.should_not be_nil
+      view.disable_bracketed_paste?.should be_true
+      view.keyboard_enhancements.report_event_types?.should be_true
+      view.background_color.should eq Colorful::Color.hex("#FFFFFF")
+    end
+  end
+
   describe "View options" do
     it "toggles alt screen" do
       model = ScreenTestModel.new
