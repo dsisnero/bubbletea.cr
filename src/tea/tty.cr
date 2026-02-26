@@ -213,6 +213,10 @@ module Tea
         @tty_output = output.as?(IO::FileDescriptor)
       end
 
+      input_is_tty = @tty_input.try(&.tty?) || false
+      output_is_tty = @tty_output.try(&.tty?) || false
+      return nil unless input_is_tty && output_is_tty
+
       begin
         @console = Ultraviolet::Console.new(@input, @output, @env.items)
         @console.try(&.make_raw)

@@ -184,7 +184,7 @@ module Tea
     def initialize(
       @type : KeyType,
       @rune : Char? = nil,
-      @modifiers : KeyMod = Ultraviolet::KeyMod::None,
+      @modifiers : KeyMod = 0,
       @is_repeat : Bool = false,
       @alternate : KeyType? = nil,
     )
@@ -373,12 +373,12 @@ module Tea
   }
 
   # Helper to create a Key from a rune
-  def self.key(rune : Char, modifiers : KeyMod = Ultraviolet::KeyMod::None) : Key
+  def self.key(rune : Char, modifiers : KeyMod = 0) : Key
     Key.new(KeyType::Null, rune, modifiers)
   end
 
   # Helper to create a Key from a special key type
-  def self.key(type : KeyType, modifiers : KeyMod = Ultraviolet::KeyMod::None) : Key
+  def self.key(type : KeyType, modifiers : KeyMod = 0) : Key
     Key.new(type, nil, modifiers)
   end
 end

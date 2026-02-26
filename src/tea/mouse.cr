@@ -48,7 +48,7 @@ module Tea
       @x : Int32,
       @y : Int32,
       @button : MouseButton = Ultraviolet::MouseButton::None,
-      @modifiers : KeyMod = Ultraviolet::KeyMod::None,
+      @modifiers : KeyMod = 0,
     )
     end
 

@@ -141,7 +141,7 @@ module Bubbletea
     Tea.interrupt
   end
 
-  def key(rune_or_type, modifiers = Ultraviolet::KeyMod::None)
+  def key(rune_or_type, modifiers = 0)
     Tea.key(rune_or_type, modifiers)
   end
 
