@@ -2,6 +2,8 @@
 /lib/
 /bin/
 /.shards/
+/.crystal-cache/
+/temp/
 *.dwarf
 
 # Libraries don't need dependency lock
