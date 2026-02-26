@@ -213,12 +213,12 @@ module Tea
 
           # Reset bracketed paste
           unless last.disable_bracketed_paste?
-            @buf << Ansi::ResetModeBracketedPaste
+            @scr.write_string(Ansi::ResetModeBracketedPaste)
           end
 
           # Reset focus reporting
           if last.report_focus?
-            @buf << Ansi::ResetModeFocusEvent
+            @scr.write_string(Ansi::ResetModeFocusEvent)
           end
 
           # Reset mouse mode
@@ -226,9 +226,9 @@ module Tea
           when MouseMode::None
             # No mouse
           when MouseMode::CellMotion, MouseMode::AllMotion
-            @buf << Ansi::ResetModeMouseButtonEvent +
-                    Ansi::ResetModeMouseAnyEvent +
-                    Ansi::ResetModeMouseExtSgr
+            @scr.write_string(Ansi::ResetModeMouseButtonEvent +
+                              Ansi::ResetModeMouseAnyEvent +
+                              Ansi::ResetModeMouseExtSgr)
           end
 
           # Clear window title

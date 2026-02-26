@@ -368,7 +368,10 @@ module Tea
       start_signal_handler
       init_renderer
       start_renderer
-      render(model)
+
+      if !@disable_renderer && should_query_synchronized_output(@env)
+        execute(Ansi::RequestModeSynchronizedOutput + Ansi::RequestModeUnicodeCore)
+      end
 
       # Start command processor
       _command_processor = spawn do
@@ -392,6 +395,9 @@ module Tea
       # Initialize
       cmd = model.init
       send(cmd) if cmd
+
+      # Render initial view after startup side effects and init command dispatch.
+      render(model)
 
       # Main event loop
       loop do
@@ -1005,6 +1011,23 @@ module Tea
         stop.send(nil) rescue nil
         @signal_stop = nil
       end
+    end
+
+    # Matches Go's shouldQuerySynchronizedOutput terminal heuristic.
+    private def should_query_synchronized_output(environ : Ultraviolet::Environ) : Bool
+      term_type = environ.getenv("TERM")
+      term_program, has_term_program = environ.lookup_env("TERM_PROGRAM")
+      _ssh_tty, has_ssh_tty = environ.lookup_env("SSH_TTY")
+      _wt_session, has_wt_session = environ.lookup_env("WT_SESSION")
+
+      (!has_term_program && !has_ssh_tty) ||
+        has_wt_session ||
+        (has_term_program && !term_program.includes?("Apple") && !has_ssh_tty) ||
+        term_type.includes?("ghostty") ||
+        term_type.includes?("wezterm") ||
+        term_type.includes?("alacritty") ||
+        term_type.includes?("kitty") ||
+        term_type.includes?("rio")
     end
   end
 
