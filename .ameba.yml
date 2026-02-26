@@ -1,0 +1,11 @@
+Version: "1.7.0-dev"
+
+Excluded:
+  - vendor
+  - lib
+  - temp
+  - spec
+
+Metrics/CyclomaticComplexity:
+  Excluded:
+    - src/tea/cursed_renderer.cr
