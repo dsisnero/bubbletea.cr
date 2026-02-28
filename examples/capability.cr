@@ -1,13 +1,21 @@
-require "../src/bubbletea"
+require "bubbles"
 
 class CapabilityModel
   include Bubbletea::Model
 
-  def initialize(@input = "", @width = 0, @last = "")
+  property input : Bubbles::TextInput::Model
+  property width : Int32
+  property last : String
+
+  def initialize
+    @input = Bubbles::TextInput.new
+    @input.placeholder = "Enter capability name to request"
+    @width = 0
+    @last = ""
   end
 
   def init : Bubbletea::Cmd?
-    nil
+    @input.focus
   end
 
   def update(msg : Tea::Msg)
@@ -16,41 +24,29 @@ class CapabilityModel
       @width = msg.width
       {self, nil}
     when Bubbletea::CapabilityMsg
-      @last = "Got capability: #{msg}"
-      {self, Bubbletea.println(@last)}
+      {self, Bubbletea.println("Got capability: #{msg}")}
     when Bubbletea::KeyPressMsg
       case msg.string_with_mods
       when "ctrl+c", "esc"
         {self, Bubbletea.quit}
       when "enter"
-        query = @input.empty? ? "RGB" : @input
-        @input = ""
-        {self, Tea.request_capability(query)}
-      when "backspace"
-        @input = @input[0...-1] unless @input.empty?
-        {self, nil}
-      else
-        if rune = msg.rune
-          @input += rune.to_s
-        end
-        {self, nil}
+        input_value = @input.value
+        @input.reset
+        {self, Tea.request_capability(input_value.empty? ? "RGB" : input_value)}
       end
-    else
-      {self, nil}
     end
+
+    @input, cmd = @input.update(msg)
+    {self, cmd}
   end
 
   def view : Bubbletea::View
-    width = {@width, 60}.min
-    width = 60 if width <= 0
-    lines = [] of String
-    lines << "Query for terminal capabilities (e.g. TN, RGB, cols)."
-    lines << "Input: #{@input}"
-    lines << ""
-    lines << "Press enter to request capability, or ctrl+c to quit."
-    lines << ""
-    lines << @last unless @last.empty?
-    Bubbletea::View.new(lines.join("\n")[0, width * 6]? || lines.join("\n"))
+    _width = {@width, 60}.min
+    _width = 60 if _width <= 0
+
+    instructions = "Query for terminal capabilities. You can enter things like 'TN', 'RGB', 'cols', and so on. This will not work in all terminals and multiplexers."
+
+    Bubbletea::View.new("\n" + instructions + "\n\n" + @input.view + "\n\nPress enter to request capability, or ctrl+c to quit.")
   end
 end
 

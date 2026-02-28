@@ -1,21 +1,51 @@
-require "../src/bubbletea"
+require "bubbles"
+require "lipgloss"
 
 struct KeyMap
-  getter up = {"up", "k"}
-  getter down = {"down", "j"}
-  getter left = {"left", "h"}
-  getter right = {"right", "l"}
-  getter help = {"?"}
-  getter quit = {"q", "esc", "ctrl+c"}
+  include Bubbles::Help::KeyMap
 
-  def short_help : Array(String)
-    ["?: toggle help", "q: quit"]
+  property up : Bubbles::Key::Binding
+  property down : Bubbles::Key::Binding
+  property left : Bubbles::Key::Binding
+  property right : Bubbles::Key::Binding
+  property help : Bubbles::Key::Binding
+  property quit : Bubbles::Key::Binding
+
+  def initialize
+    @up = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("up", "k"),
+      Bubbles::Key.with_help("↑/k", "move up")
+    )
+    @down = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("down", "j"),
+      Bubbles::Key.with_help("↓/j", "move down")
+    )
+    @left = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("left", "h"),
+      Bubbles::Key.with_help("←/h", "move left")
+    )
+    @right = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("right", "l"),
+      Bubbles::Key.with_help("→/l", "move right")
+    )
+    @help = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("?"),
+      Bubbles::Key.with_help("?", "toggle help")
+    )
+    @quit = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("q", "esc", "ctrl+c"),
+      Bubbles::Key.with_help("q", "quit")
+    )
   end
 
-  def full_help : Array(Array(String))
+  def short_help : Array(Bubbles::Key::Binding)
+    [@help, @quit]
+  end
+
+  def full_help : Array(Array(Bubbles::Key::Binding))
     [
-      ["↑/k move up", "↓/j move down", "←/h move left", "→/l move right"],
-      short_help,
+      [@up, @down, @left, @right], # first column
+      [@help, @quit],              # second column
     ]
   end
 end
@@ -23,12 +53,18 @@ end
 class HelpModel
   include Bubbletea::Model
 
+  property keys : KeyMap
+  property help : Bubbles::Help::Model
+  property input_style : Lipgloss::Style
+  property last_key : String
+  property? quitting : Bool
+
   def initialize
     @keys = KeyMap.new
-    @show_all = false
+    @help = Bubbles::Help::Model.new
+    @input_style = Lipgloss::Style.new.foreground("#FF75B7")
     @last_key = ""
     @quitting = false
-    @width = 80
   end
 
   def init : Bubbletea::Cmd?
@@ -38,21 +74,22 @@ class HelpModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::WindowSizeMsg
-      @width = msg.width
+      # If we set a width on the help menu it can gracefully truncate
+      # its view as needed.
+      @help.width = msg.width
     when Bubbletea::KeyPressMsg
-      key = msg.string_with_mods
       case
-      when @keys.up.includes?(key)
+      when Bubbles::Key.matches?(msg, @keys.up)
         @last_key = "↑"
-      when @keys.down.includes?(key)
+      when Bubbles::Key.matches?(msg, @keys.down)
         @last_key = "↓"
-      when @keys.left.includes?(key)
+      when Bubbles::Key.matches?(msg, @keys.left)
         @last_key = "←"
-      when @keys.right.includes?(key)
+      when Bubbles::Key.matches?(msg, @keys.right)
         @last_key = "→"
-      when @keys.help.includes?(key)
-        @show_all = !@show_all
-      when @keys.quit.includes?(key)
+      when Bubbles::Key.matches?(msg, @keys.help)
+        @help.show_all = !@help.show_all
+      when Bubbles::Key.matches?(msg, @keys.quit)
         @quitting = true
         return {self, Bubbletea.quit}
       end
@@ -64,14 +101,10 @@ class HelpModel
   def view : Bubbletea::View
     return Bubbletea::View.new("Bye!\n") if @quitting
 
-    status = @last_key.empty? ? "Waiting for input..." : "You chose: #{@last_key}"
-    help_view = if @show_all
-                  @keys.full_help.map(&.join(" • ")).join("\n")
-                else
-                  @keys.short_help.join(" • ")
-                end
-
+    status = @last_key.empty? ? "Waiting for input..." : "You chose: #{@input_style.render(@last_key)}"
+    help_view = @help.view(@keys)
     height = {8 - status.count('\n') - help_view.count('\n'), 1}.max
+
     Bubbletea::View.new(status + "\n" * height + help_view)
   end
 end
