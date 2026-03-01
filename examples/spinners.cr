@@ -22,7 +22,7 @@ class SpinnersModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "ctrl+c", "q", "esc"
         return {self, Bubbletea.quit}
       when "h", "left"

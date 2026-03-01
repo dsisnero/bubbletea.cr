@@ -13,7 +13,7 @@ class PipeModel
 
   def update(msg : Tea::Msg)
     if msg.is_a?(Bubbletea::KeyPressMsg)
-      case msg.string_with_mods
+      case msg.keystroke
       when "ctrl+c", "esc", "enter"
         return {self, Bubbletea.quit}
       when "backspace"

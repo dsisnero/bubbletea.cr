@@ -21,7 +21,7 @@ class FullscreenModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      return {self, Bubbletea.quit} if msg.string_with_mods.in?({"q", "esc", "ctrl+c"})
+      return {self, Bubbletea.quit} if msg.keystroke.in?({"q", "esc", "ctrl+c"})
     when CountdownTickMsg
       @remaining -= 1
       return {self, Bubbletea.quit} if @remaining <= 0

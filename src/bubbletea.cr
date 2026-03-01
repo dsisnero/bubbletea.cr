@@ -18,7 +18,6 @@ module Bubbletea
 
   # Key types
   alias Key = Tea::Key
-  alias KeyType = Tea::KeyType
   alias KeyMod = Tea::KeyMod
   alias KeyPressMsg = Tea::KeyPressMsg
   alias KeyReleaseMsg = Tea::KeyReleaseMsg

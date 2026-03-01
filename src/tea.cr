@@ -151,11 +151,11 @@ module Tea
   end
 
   # Go parity constants for ProgressBarState values.
-  ProgressBarNone = ProgressBarState::None
-  ProgressBarDefault = ProgressBarState::Default
-  ProgressBarError = ProgressBarState::Error
+  ProgressBarNone          = ProgressBarState::None
+  ProgressBarDefault       = ProgressBarState::Default
+  ProgressBarError         = ProgressBarState::Error
   ProgressBarIndeterminate = ProgressBarState::Indeterminate
-  ProgressBarWarning = ProgressBarState::Warning
+  ProgressBarWarning       = ProgressBarState::Warning
 
   # ProgressBar represents a terminal progress bar.
   struct ProgressBar
@@ -188,9 +188,9 @@ module Tea
   end
 
   # Go parity constants for MouseMode values.
-  MouseModeNone = MouseMode::None
+  MouseModeNone       = MouseMode::None
   MouseModeCellMotion = MouseMode::CellMotion
-  MouseModeAllMotion = MouseMode::AllMotion
+  MouseModeAllMotion  = MouseMode::AllMotion
 
   # KeyboardEnhancements describes requested keyboard features
   struct KeyboardEnhancements
@@ -248,7 +248,7 @@ module Tea
     y : Int32 = 0,
     visible : Bool = true,
     style : CursorStyle = CursorStyle::Block,
-    color : Colorful::Color? = nil
+    color : Colorful::Color? = nil,
   ) : Cursor
     Cursor.new(x, y, visible, style, color)
   end
@@ -258,7 +258,7 @@ module Tea
     state : ProgressBarState = ProgressBarState::None,
     value : Float64 = 0.0,
     max : Float64 = 100.0,
-    label : String = ""
+    label : String = "",
   ) : ProgressBar
     ProgressBar.new(state, value, max, label)
   end
@@ -331,8 +331,8 @@ module Tea
     # Environment
     property env : Ultraviolet::Environ = Ultraviolet::Environ.new([] of String)
 
-    # Color profile
-    property profile : Ultraviolet::ColorProfile = Ultraviolet::ColorProfile::TrueColor
+    # Color profile override (nil = auto-detect from renderer/terminal)
+    property profile : Ultraviolet::ColorProfile? = nil
     @renderer : Renderer? = nil
     @logger : Ultraviolet::Logger? = nil
     @renderer_done : Channel(Nil)? = nil
@@ -464,7 +464,7 @@ module Tea
           when CapabilityMsg
             if (msg.content == "RGB" || msg.content == "Tc") && @profile != Ultraviolet::ColorProfile::TrueColor
               @profile = Ultraviolet::ColorProfile::TrueColor
-              send(ColorProfileMsg.new(@profile))
+              send(ColorProfileMsg.new(@profile.not_nil!))
             end
           when ColorProfileMsg
             @profile = msg.profile
@@ -668,62 +668,16 @@ module Tea
 
     # Convert ultraviolet Key to Tea Key
     private def convert_uv_key(uv_key : Ultraviolet::Key) : Key
-      # Map ultraviolet key to our Key struct
-      key_type = map_uv_key_type(uv_key)
-      rune = nil
-      if !uv_key.text.empty? && uv_key.text.size == 1
-        rune = uv_key.text[0]
-      end
+      # Create Tea::Key directly from Ultraviolet::Key fields
+      # This matches Go's conversion: KeyPressMsg(e) where e is uv.KeyPressEvent (alias for uv.Key)
       Key.new(
-        type: key_type,
-        rune: rune,
-        modifiers: convert_uv_modifiers(uv_key.mod),
-        is_repeat: uv_key.is_repeat?,
-        alternate: nil
+        text: uv_key.text,
+        mod: convert_uv_modifiers(uv_key.mod),
+        code: uv_key.code,
+        shifted_code: uv_key.shifted_code,
+        base_code: uv_key.base_code,
+        is_repeat: uv_key.is_repeat?
       )
-    end
-
-    # Map ultraviolet key type to Tea KeyType
-    # ameba:disable Metrics/CyclomaticComplexity
-    private def map_uv_key_type(uv_key : Ultraviolet::Key) : KeyType
-      code = uv_key.code
-      # This is a simplified mapping - full implementation would map all UV keys
-      case code
-      when Ultraviolet::KeyUp
-        KeyType::Up
-      when Ultraviolet::KeyDown
-        KeyType::Down
-      when Ultraviolet::KeyLeft
-        KeyType::Left
-      when Ultraviolet::KeyRight
-        KeyType::Right
-      when Ultraviolet::KeyHome
-        KeyType::Home
-      when Ultraviolet::KeyEnd
-        KeyType::End
-      when Ultraviolet::KeyPgUp
-        KeyType::PageUp
-      when Ultraviolet::KeyPgDown
-        KeyType::PageDown
-      when Ultraviolet::KeyInsert
-        KeyType::Insert
-      when Ultraviolet::KeyDelete
-        KeyType::Delete
-      when Ultraviolet::KeyBackspace
-        KeyType::Backspace
-      when Ultraviolet::KeyTab
-        KeyType::Tab
-      when Ultraviolet::KeyEnter
-        KeyType::Enter
-      when Ultraviolet::KeyEscape
-        KeyType::Escape
-      when Ultraviolet::KeySpace
-        KeyType::Space
-      when Ultraviolet::KeyF1..Ultraviolet::KeyF35
-        KeyType.new(code - Ultraviolet::KeyF1 + KeyType::F1.value)
-      else
-        KeyType::Null
-      end
     end
 
     # Convert ultraviolet modifiers to Tea KeyMod
@@ -798,7 +752,6 @@ module Tea
 
     # Quit the program
     def quit
-      @quitting = true
       send(QuitMsg.new)
     end
 
@@ -937,7 +890,9 @@ module Tea
         output = @output || STDOUT
         @renderer = CursedRenderer.new(output, @env, width, height)
       end
-      @renderer.try &.set_color_profile(@profile)
+      if profile = @profile
+        @renderer.try &.set_color_profile(profile)
+      end
     end
 
     private def start_renderer

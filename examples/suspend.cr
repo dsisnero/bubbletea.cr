@@ -18,7 +18,7 @@ class SuspendModel
       @suspending = false
       {self, nil}
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "q", "esc"
         @quitting = true
         {self, Bubbletea.quit}

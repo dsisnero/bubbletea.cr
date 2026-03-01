@@ -22,7 +22,7 @@ class IsbnFormModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      key = msg.string_with_mods
+      key = msg.keystroke
       case key
       when "up", "down"
         @focused_input = @focused_input == 0 ? 1 : 0

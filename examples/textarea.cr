@@ -21,7 +21,7 @@ class TextareaModel
     when Tea::BackgroundColorMsg
       @is_dark = msg.is_dark?
     when Bubbletea::KeyPressMsg
-      key = msg.string_with_mods
+      key = msg.keystroke
       case key
       when "esc"
         @focused = false

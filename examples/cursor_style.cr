@@ -15,7 +15,7 @@ class CursorStyleModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "ctrl+c", "q"
         return {self, Bubbletea.quit}
       when "h", "left"

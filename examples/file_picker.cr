@@ -1,122 +1,97 @@
-require "../src/bubbletea"
+require "bubbles"
+require "lipgloss"
 
 struct ClearErrorMsg
   include Tea::Msg
 end
 
-private def clear_error_after(duration : Time::Span) : Bubbletea::Cmd
-  Bubbletea.tick(duration, ->(_t : Time) { ClearErrorMsg.new.as(Tea::Msg?) })
+private def clear_error_after(duration : Time::Span) : Tea::Cmd
+  Tea.tick(duration) { ClearErrorMsg.new }
 end
 
 class FilePickerModel
-  include Bubbletea::Model
+  include Tea::Model
 
-  ALLOWED = {".mod", ".sum", ".go", ".txt", ".md"}
-  @entries : Array(String)
-  getter selected_file : String
+  @filepicker : Bubbles::Filepicker::Model
+  @selected_file : String
+  @quitting : Bool
+  @error : String?
 
   def initialize
-    @current_directory = ENV["HOME"]? || Dir.current
-    @entries = load_entries
-    @index = 0
+    @filepicker = Bubbles::Filepicker.new
+    @filepicker.allowed_types = [".mod", ".sum", ".go", ".txt", ".md"]
+    @filepicker.current_directory = ENV["HOME"]? || Dir.current
+    @filepicker.show_permissions = false
+    @filepicker.show_size = false
     @selected_file = ""
     @quitting = false
-    @error = nil.as(String?)
+    @error = nil
   end
 
-  def init : Bubbletea::Cmd?
-    nil
+  def init : Tea::Cmd?
+    @filepicker.init
   end
 
   def update(msg : Tea::Msg)
     case msg
-    when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+    when Tea::KeyPressMsg
+      case msg.string
       when "ctrl+c", "q"
         @quitting = true
-        return {self, Bubbletea.quit}
-      when "up", "k"
-        @index -= 1
-        @index = 0 if @index < 0
-      when "down", "j"
-        @index += 1
-        @index = @entries.size - 1 if @index >= @entries.size
-      when "enter"
-        return {self, nil} if @entries.empty?
-
-        path = File.join(@current_directory, @entries[@index])
-        if File.directory?(path)
-          @current_directory = path
-          @entries = load_entries
-          @index = 0
-          @selected_file = ""
-        elsif allowed_file?(path)
-          @selected_file = path
-          @error = nil
-        else
-          @error = "#{path} is not valid."
-          @selected_file = ""
-          return {self, clear_error_after(2.seconds)}
-        end
+        return {self, Tea.quit}
       end
     when ClearErrorMsg
       @error = nil
     end
 
-    {self, nil}
+    # Update filepicker
+    updated_picker, cmd = @filepicker.update(msg)
+    @filepicker = updated_picker
+
+    # Check if user selected a file
+    did_select, path = @filepicker.did_select_file(msg)
+    if did_select
+      @selected_file = path
+      @error = nil
+    end
+
+    # Check if user selected a disabled file
+    did_select_disabled, disabled_path = @filepicker.did_select_disabled_file(msg)
+    if did_select_disabled
+      @error = "#{disabled_path} is not valid."
+      @selected_file = ""
+      return {self, Tea.batch(cmd, clear_error_after(2.seconds))}
+    end
+
+    {self, cmd}
   end
 
-  def view : Bubbletea::View
-    return Bubbletea::View.new("") if @quitting
+  def view : Tea::View
+    if @quitting
+      return Tea.new_view("")
+    end
 
     s = String.build do |io|
       io << "\n  "
       if err = @error
-        io << err
+        io << @filepicker.styles.disabled_file.render(err)
       elsif @selected_file.empty?
         io << "Pick a file:"
       else
-        io << "Selected file: #{@selected_file}"
+        io << "Selected file: " << @filepicker.styles.selected.render(@selected_file)
       end
-
       io << "\n\n"
-      io << "Directory: #{@current_directory}\n"
-
-      @entries.each_with_index do |entry, i|
-        pointer = i == @index ? "> " : "  "
-        io << pointer << entry << '\n'
-      end
-
-      io << "\nUse ↑/↓ (or j/k), Enter to open/select, q to quit."
+      io << @filepicker.view
     end
 
-    v = Bubbletea::View.new(s)
+    v = Tea.new_view(s)
     v.alt_screen = true
     v
-  end
-
-  private def load_entries : Array(String)
-    entries = Dir.children(@current_directory)
-      .select { |name| !name.starts_with?(".") }
-      .sort
-
-    if @current_directory != "/"
-      entries.unshift("..")
-    end
-
-    entries
-  rescue
-    [".."]
-  end
-
-  private def allowed_file?(path : String) : Bool
-    ext = File.extname(path)
-    ALLOWED.includes?(ext)
   end
 end
 
 model = FilePickerModel.new
-program = Bubbletea::Program.new(model)
+program = Tea::Program.new(model)
 final_model, err = program.run
 
 if err
@@ -125,5 +100,5 @@ if err
 end
 
 if fm = final_model.as?(FilePickerModel)
-  puts "\n  You selected: #{fm.selected_file}\n"
+  puts "\n  You selected: " + fm.@filepicker.styles.selected.render(fm.@selected_file) + "\n"
 end

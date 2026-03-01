@@ -55,7 +55,7 @@ class ListSimpleModel
       @width = msg.width
       {self, nil}
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "q", "ctrl+c"
         @quitting = true
         return {self, Bubbletea.quit}

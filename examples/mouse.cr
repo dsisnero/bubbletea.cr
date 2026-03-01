@@ -10,7 +10,7 @@ class MouseModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      if msg.string_with_mods.in?({"ctrl+c", "q", "esc"})
+      if msg.keystroke.in?({"ctrl+c", "q", "esc"})
         return {self, Bubbletea.quit}
       end
     when Bubbletea::MouseClickMsg, Bubbletea::MouseReleaseMsg, Bubbletea::MouseWheelMsg, Bubbletea::MouseMotionMsg

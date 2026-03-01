@@ -27,7 +27,7 @@ class DoomFireModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      if msg.string_with_mods.in?({"q", "ctrl+c"})
+      if msg.keystroke.in?({"q", "ctrl+c"})
         return {self, Bubbletea.quit}
       end
     when FireTickMsg

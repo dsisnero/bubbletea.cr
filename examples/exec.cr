@@ -17,7 +17,7 @@ end
 private def open_editor : Tea::Cmd
   editor = ENV["EDITOR"]? || "vim"
   process = Process.new(editor)
-  Tea.exec_process(process, ->( err : Exception?) {
+  Tea.exec_process(process, ->(err : Exception?) {
     EditorFinishedMsg.new(err).as(Tea::Msg?)
   })
 end

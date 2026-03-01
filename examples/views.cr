@@ -27,7 +27,7 @@ class ViewsModel
 
   def update(msg : Tea::Msg)
     if key = msg.as?(Bubbletea::KeyPressMsg)
-      case key.string_with_mods
+      case key.keystroke
       when "q", "esc", "ctrl+c"
         @quitting = true
         return {self, Bubbletea.quit}
@@ -48,7 +48,7 @@ class ViewsModel
   private def update_choices(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "j", "down"
         @choice = {@choice + 1, 3}.min
       when "k", "up"

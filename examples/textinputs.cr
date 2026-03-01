@@ -17,7 +17,7 @@ class TextinputsModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      key = msg.string_with_mods
+      key = msg.keystroke
       case key
       when "ctrl+c", "esc"
         @quitting = true

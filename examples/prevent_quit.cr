@@ -40,7 +40,7 @@ class PreventQuitModel
     case msg
     when Bubbletea::KeyPressMsg
       @save_text = ""
-      case msg.string_with_mods
+      case msg.keystroke
       when "ctrl+s"
         @save_text = "Changes saved!"
         @has_changes = false
@@ -66,7 +66,7 @@ class PreventQuitModel
   private def update_prompt_view(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      if msg.string_with_mods.in?({"esc", "ctrl+c", "y"})
+      if msg.keystroke.in?({"esc", "ctrl+c", "y"})
         @has_changes = false
         return {self, Bubbletea.quit}
       end
@@ -78,11 +78,11 @@ class PreventQuitModel
 end
 
 filter = ->(model : Tea::Model, msg : Tea::Msg) : Tea::Msg? {
-  unless msg.is_a?(Tea::QuitMsg)
-    msg
-  else
+  if msg.is_a?(Tea::QuitMsg)
     m = model.as(PreventQuitModel)
     m.has_changes? ? nil : msg
+  else
+    msg
   end
 }
 

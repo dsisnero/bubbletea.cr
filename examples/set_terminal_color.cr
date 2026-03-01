@@ -45,7 +45,7 @@ class SetTerminalColorModel
   def update(msg : Tea::Msg)
     return {self, nil} unless msg.is_a?(Bubbletea::KeyPressMsg)
 
-    key = msg.string_with_mods
+    key = msg.keystroke
     return {self, Bubbletea.quit} if key.in?({"ctrl+c", "q"})
 
     case @state

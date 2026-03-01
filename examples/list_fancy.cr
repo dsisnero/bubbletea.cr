@@ -55,7 +55,7 @@ class ListFancyModel
     when Bubbletea::WindowSizeMsg
       {self, nil}
     when Bubbletea::KeyPressMsg
-      key = msg.string_with_mods
+      key = msg.keystroke
       case key
       when "ctrl+c", "q", "esc"
         return {self, Bubbletea.quit}

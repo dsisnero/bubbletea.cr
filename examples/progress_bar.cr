@@ -18,7 +18,7 @@ class ProgressBarModel
     when Bubbletea::WindowSizeMsg
       @width = msg.width
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "q", "ctrl+c"
         return {self, Bubbletea.quit}
       when "up", "k"

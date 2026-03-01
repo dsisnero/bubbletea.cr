@@ -12,11 +12,11 @@ class PrintKeyModel
     when Bubbletea::KeyboardEnhancementsMsg
       {self, Bubbletea.printf("Keyboard enhancements: EventTypes: %s\n", msg.supports_event_types?.to_s)}
     when Bubbletea::KeyPressMsg
-      return {self, Bubbletea.quit} if msg.string_with_mods == "ctrl+c"
+      return {self, Bubbletea.quit} if msg.keystroke == "ctrl+c"
 
       format = "(%s) You pressed: %s"
-      value = msg.rune ? msg.rune.to_s : msg.string_with_mods
-      {self, Bubbletea.printf(format, msg.class.name, msg.string_with_mods + (msg.rune ? " (text: #{value})" : ""))}
+      value = msg.rune ? msg.rune.to_s : msg.keystroke
+      {self, Bubbletea.printf(format, msg.class.name, msg.keystroke + (msg.rune ? " (text: #{value})" : ""))}
     when Bubbletea::KeyReleaseMsg
       {self, Bubbletea.printf("(%s) You pressed: %s", msg.class.name, msg.to_s)}
     else

@@ -21,7 +21,7 @@ class Dialog
   property hovering_button : Bool = false
 
   WINDOW_WIDTH  = 36
-  WINDOW_HEIGHT = 8
+  WINDOW_HEIGHT =  8
 
   def button_label : String
     "Run Away"
@@ -90,7 +90,7 @@ class ClickableModel
       @width = msg.width
       @height = msg.height
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "q", "ctrl+c", "esc"
         return {self, Bubbletea.quit}
       end

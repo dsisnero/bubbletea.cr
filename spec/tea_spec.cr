@@ -58,7 +58,54 @@ class TestModel
   end
 end
 
+class InitialWindowSizeModel
+  include Tea::Model
+
+  getter window_size_msg : Tea::WindowSizeMsg? = nil
+
+  def init : Tea::Cmd?
+    nil
+  end
+
+  def update(msg : Tea::Msg) : Tuple(Tea::Model, Tea::Cmd?)
+    case msg
+    when Tea::WindowSizeMsg
+      @window_size_msg = msg
+      {self, Tea.quit}
+    else
+      {self, nil}
+    end
+  end
+
+  def view : Tea::View
+    Tea::View.new("size-check")
+  end
+end
+
 describe "Tea" do
+  describe "window size parity" do
+    it "delivers initial WindowSizeMsg from with_window_size without tty" do
+      model = InitialWindowSizeModel.new
+      output = IO::Memory.new
+      program = Tea.new_program(
+        model,
+        Tea.with_input(nil),
+        Tea.with_output(output),
+        Tea.with_window_size(80, 24),
+        Tea.without_signals,
+        Tea.without_renderer
+      )
+
+      _result, err = program.run
+      err.should be_nil
+
+      msg = model.window_size_msg
+      msg.should_not be_nil
+      msg.try &.width.should eq(80)
+      msg.try &.height.should eq(24)
+    end
+  end
+
   describe "Model" do
     pending "runs basic program" do
       buf = IO::Memory.new

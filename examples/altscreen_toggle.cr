@@ -16,7 +16,7 @@ class AltScreenToggleModel
       @suspending = false
       {self, nil}
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "q", "ctrl+c", "esc"
         @quitting = true
         {self, Bubbletea.quit}

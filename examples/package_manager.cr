@@ -34,7 +34,7 @@ class PackageManagerModel
     when Bubbletea::WindowSizeMsg
       @width = msg.width
     when Bubbletea::KeyPressMsg
-      if msg.string_with_mods.in?({"ctrl+c", "esc", "q"})
+      if msg.keystroke.in?({"ctrl+c", "esc", "q"})
         return {self, Bubbletea.quit}
       end
     when InstalledPkgMsg

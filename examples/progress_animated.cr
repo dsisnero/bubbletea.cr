@@ -1,6 +1,6 @@
 require "../src/bubbletea"
 
-PADDING = 2
+PADDING   =  2
 MAX_WIDTH = 80
 
 struct ProgressTickMsg

@@ -1,42 +1,66 @@
-require "../src/bubbletea"
+require "bubbles"
+require "lipgloss"
 
 class ChatModel
-  include Bubbletea::Model
+  include Tea::Model
+
+  @viewport : Bubbles::Viewport::Model
+  @input : String
+  @messages : Array(String)
+  @sender_style : Lipgloss::Style
 
   def initialize
-    @width = 30
-    @height = 8
-    @messages = [] of String
+    @viewport = Bubbles::Viewport.new(
+      Bubbles::Viewport.with_width(30),
+      Bubbles::Viewport.with_height(5)
+    )
+    @viewport.set_content("Welcome to the chat room!\nType a message and press Enter to send.")
+    @viewport.key_map.left.set_enabled(false)
+    @viewport.key_map.right.set_enabled(false)
+
     @input = ""
+    @messages = [] of String
+    @sender_style = Lipgloss::Style.new.foreground(Lipgloss.color("5"))
   end
 
-  def init : Bubbletea::Cmd?
-    Bubbletea.tick(500.milliseconds, ->(_time : Time) { Bubbletea["blink"].as(Tea::Msg?) })
+  def init : Tea::Cmd?
+    nil
   end
 
   def update(msg : Tea::Msg)
     case msg
-    when Bubbletea::WindowSizeMsg
-      @width = msg.width
-      @height = msg.height
+    when Tea::WindowSizeMsg
+      @viewport.set_width(msg.width)
+      @viewport.set_height(msg.height - 3)
+
+      if !@messages.empty?
+        # Wrap content before setting it
+        content = Lipgloss::Style.new.width(@viewport.width).render(@messages.join("\n"))
+        @viewport.set_content(content)
+      end
+      @viewport.goto_bottom
       {self, nil}
-    when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+    when Tea::KeyPressMsg
+      case msg.string
       when "ctrl+c", "esc"
-        {self, Bubbletea.quit}
+        puts @input
+        return {self, Tea.quit}
       when "enter"
-        @messages << "You: #{@input}"
+        @messages << @sender_style.render("You: ") + @input
+        content = Lipgloss::Style.new.width(@viewport.width).render(@messages.join("\n"))
+        @viewport.set_content(content)
         @input = ""
-        {self, nil}
+        @viewport.goto_bottom
+        return {self, nil}
       when "backspace"
         @input = @input[0...-1] unless @input.empty?
         {self, nil}
-      when "space"
-        @input += " "
-        {self, nil}
       else
+        # Handle printable characters
         if rune = msg.rune
           @input += rune.to_s
+        elsif msg.type == Tea::KeyType::Space
+          @input += " "
         end
         {self, nil}
       end
@@ -45,35 +69,32 @@ class ChatModel
     end
   end
 
-  def view : Bubbletea::View
-    header = "Welcome to the chat room!\nType a message and press Enter to send."
+  def view : Tea::View
+    viewport_view = @viewport.view
+    prompt = @input.empty? ? "Send a message..." : @input
+    textarea_view = "┃ #{prompt}\n┃  \n┃  "
 
-    text_body = if @messages.empty?
-                  header
-                else
-                  @messages.join("\n")
-                end
+    v = Tea.new_view(viewport_view + "\n" + textarea_view)
 
-    viewport_height = {@height - 3, 3}.max
-    lines = text_body.split('\n')
-    visible = lines.last(viewport_height).join("\n")
+    # Set cursor position
+    v.cursor = Tea::Cursor.new(
+      x: 2 + @input.size,
+      y: Lipgloss.height(viewport_view),
+      visible: true,
+      style: Tea::CursorStyle::BlockBlinking,
+      color: Colorful::Color.hex("#c0c0c0")
+    )
 
-    content = String.build do |io|
-      io << visible
-      io << "\n"
-      io << "┃ "
-      io << @input
-    end
-
-    v = Bubbletea::View.new(content)
     v.alt_screen = true
     v
   end
 end
 
-program = Bubbletea::Program.new(ChatModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Oof: #{err.message}"
-  exit 1
+if PROGRAM_NAME == __FILE__
+  program = Tea::Program.new(ChatModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Oof: #{err.message}"
+    exit 1
+  end
 end

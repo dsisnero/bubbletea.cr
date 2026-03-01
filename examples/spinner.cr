@@ -17,7 +17,7 @@ class SpinnerModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "q", "esc", "ctrl+c"
         @quitting = true
         return {self, Bubbletea.quit}

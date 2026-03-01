@@ -1,6 +1,6 @@
 require "../src/bubbletea"
 
-PADDING_STATIC = 2
+PADDING_STATIC   =  2
 MAX_WIDTH_STATIC = 80
 
 struct ProgressStaticTickMsg

@@ -19,11 +19,11 @@ class KeyboardEnhancementsModel
       @supports_event_types = msg.supports_event_types?
       {self, nil}
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "ctrl+c"
         {self, Bubbletea.quit}
       else
-        {self, Bubbletea.println("  press: #{msg.string_with_mods}")}
+        {self, Bubbletea.println("  press: #{msg.keystroke}")}
       end
     when Bubbletea::KeyReleaseMsg
       {self, Bubbletea.printf("release: %s", msg.to_s)}

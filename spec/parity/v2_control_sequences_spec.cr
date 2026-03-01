@@ -58,7 +58,7 @@ describe "v2 control sequence parity" do
     spawn do
       sleep 1.2.seconds
       program.send(Tea.wrap("ignored msg"))
-      program.send(Tea.key(Tea::KeyType::Enter))
+      program.send(Tea.key(Tea::KeyEnter))
     end
 
     _model, err = program.run

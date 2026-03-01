@@ -1,9 +1,9 @@
 require "../src/bubbletea"
 
-EYE_WIDTH    = 15
-EYE_HEIGHT   = 12
-EYE_SPACING  = 40
-BLINK_FRAMES = 20
+EYE_WIDTH        =   15
+EYE_HEIGHT       =   12
+EYE_SPACING      =   40
+BLINK_FRAMES     =   20
 OPEN_TIME_MIN_MS = 1000
 OPEN_TIME_MAX_MS = 4000
 
@@ -37,7 +37,7 @@ class EyesModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      if msg.string_with_mods.in?({"ctrl+c", "esc"})
+      if msg.keystroke.in?({"ctrl+c", "esc"})
         return {self, Bubbletea.quit}
       end
     when Bubbletea::WindowSizeMsg

@@ -3,15 +3,15 @@ require "lipgloss"
 
 # Pokemon types.
 NONE_TYPE = ""
-BUG = "Bug"
-ELECTRIC = "Electric"
-FIRE = "Fire"
-FLYING = "Flying"
-GRASS = "Grass"
-GROUND = "Ground"
-NORMAL = "Normal"
-POISON = "Poison"
-WATER = "Water"
+BUG       = "Bug"
+ELECTRIC  = "Electric"
+FIRE      = "Fire"
+FLYING    = "Flying"
+GRASS     = "Grass"
+GROUND    = "Ground"
+NORMAL    = "Normal"
+POISON    = "Poison"
+WATER     = "Water"
 
 class TableResizeModel
   include Bubbletea::Model
@@ -41,7 +41,7 @@ class TableResizeModel
     when Bubbletea::WindowSizeMsg
       @table = @table.width(msg.width).height(msg.height)
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "q", "ctrl+c"
         return {self, Bubbletea.quit}
       end

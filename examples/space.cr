@@ -27,7 +27,7 @@ class SpaceModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      return {self, Bubbletea.quit} if msg.string_with_mods.in?({"q", "ctrl+c"})
+      return {self, Bubbletea.quit} if msg.keystroke.in?({"q", "ctrl+c"})
     when Bubbletea::WindowSizeMsg
       @width = msg.width
       @height = msg.height

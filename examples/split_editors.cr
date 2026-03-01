@@ -1,8 +1,8 @@
 require "../src/bubbletea"
 
 INITIAL_INPUTS = 2
-MAX_INPUTS = 6
-MIN_INPUTS = 1
+MAX_INPUTS     = 6
+MIN_INPUTS     = 1
 
 class SplitEditorsModel
   include Bubbletea::Model
@@ -23,7 +23,7 @@ class SplitEditorsModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      key = msg.string_with_mods
+      key = msg.keystroke
       case key
       when "esc", "ctrl+c"
         return {self, Bubbletea.quit}

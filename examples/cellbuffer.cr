@@ -1,7 +1,7 @@
 require "../src/bubbletea"
 
-FPS       = 60
-FREQUENCY = 7.5
+FPS       =   60
+FREQUENCY =  7.5
 DAMPING   = 0.15
 ASTERISK  = "*"
 
@@ -111,32 +111,23 @@ private def animate : Bubbletea::Cmd
   Bubbletea.tick((1.0 / FPS).seconds, ->(_time : Time) { FrameMsg.new.as(Tea::Msg?) })
 end
 
-class Spring
-  def initialize(@fps : Int32, @frequency : Float64, @damping : Float64)
-    @angular = 2.0 * Math::PI * @frequency
-  end
-
-  def update(x : Float64, v : Float64, target : Float64) : {Float64, Float64}
-    dt = 1.0 / @fps
-    force = -2.0 * @damping * @angular * v - (@angular * @angular) * (x - target)
-    new_v = v + force * dt
-    new_x = x + new_v * dt
-    {new_x, new_v}
-  end
-end
-
 class CellBufferModel
   include Bubbletea::Model
+  @spring_fps : Float64
+  @spring_frequency : Float64
+  @spring_damping : Float64
 
   def initialize
     @cells = CellBuffer.new
-    @spring = Spring.new(FPS, FREQUENCY, DAMPING)
     @target_x = 0.0
     @target_y = 0.0
     @x = 0.0
     @y = 0.0
     @x_velocity = 0.0
     @y_velocity = 0.0
+    @spring_fps = FPS.to_f
+    @spring_frequency = FREQUENCY.to_f
+    @spring_damping = DAMPING.to_f
   end
 
   def init : Bubbletea::Cmd?
@@ -164,8 +155,8 @@ class CellBufferModel
       return {self, nil} unless @cells.ready?
 
       @cells.wipe
-      @x, @x_velocity = @spring.update(@x, @x_velocity, @target_x)
-      @y, @y_velocity = @spring.update(@y, @y_velocity, @target_y)
+      @x, @x_velocity = update_spring(@x, @x_velocity, @target_x)
+      @y, @y_velocity = update_spring(@y, @y_velocity, @target_y)
       draw_ellipse(@cells, @x, @y, 16.0, 8.0)
       {self, animate}
     else
@@ -179,11 +170,29 @@ class CellBufferModel
     v.mouse_mode = Bubbletea::MouseMode::CellMotion
     v
   end
+
+  private def update_spring(position : Float64, velocity : Float64, target : Float64) : {Float64, Float64}
+    dt = 1.0 / @spring_fps
+    omega = 2.0 * Math::PI * @spring_frequency
+    zeta = @spring_damping
+    f = 1.0 + 2.0 * dt * zeta * omega
+    oo = omega * omega
+    hoo = dt * oo
+    hhoo = dt * hoo
+    det_inv = 1.0 / (f + hhoo)
+    det_x = f * position + dt * velocity + hhoo * target
+    det_v = velocity + hoo * (target - position)
+    new_pos = det_x * det_inv
+    new_vel = det_v * det_inv
+    {new_pos, new_vel}
+  end
 end
 
-program = Bubbletea::Program.new(CellBufferModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Uh oh: #{err.message}"
-  exit 1
+if PROGRAM_NAME == __FILE__
+  program = Bubbletea::Program.new(CellBufferModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Uh oh: #{err.message}"
+    exit 1
+  end
 end

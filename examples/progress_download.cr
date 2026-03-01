@@ -40,7 +40,7 @@ end
 class ProgressDownloadModel
   include Bubbletea::Model
 
-  PADDING = 2
+  PADDING   =  2
   MAX_WIDTH = 80
 
   def initialize

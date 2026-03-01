@@ -4,11 +4,11 @@ class CanvasModel
   include Bubbletea::Model
 
   CARD_BODY_WIDTH = 20
-  CARD_HEIGHT = 10
-  CARD_X_OFFSET = 10
-  CARD_Y_OFFSET = 2
-  FOOTER_HEIGHT = 13
-  FOOTER_TEXT = "Press any key to swap the cards, or q to quit."
+  CARD_HEIGHT     = 10
+  CARD_X_OFFSET   = 10
+  CARD_Y_OFFSET   =  2
+  FOOTER_HEIGHT   = 13
+  FOOTER_TEXT     = "Press any key to swap the cards, or q to quit."
 
   def initialize(@width = 0, @flip = false, @quitting = false)
   end
@@ -23,7 +23,7 @@ class CanvasModel
       @width = msg.width
       {self, nil}
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "q", "ctrl+c", "esc"
         @quitting = true
         {self, Bubbletea.quit}

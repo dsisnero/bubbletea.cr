@@ -32,7 +32,7 @@ class TableModel
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "esc"
         @focused = !@focused
       when "up", "k"

@@ -26,7 +26,7 @@ class CapabilityModel
     when Bubbletea::CapabilityMsg
       {self, Bubbletea.println("Got capability: #{msg}")}
     when Bubbletea::KeyPressMsg
-      case msg.string_with_mods
+      case msg.keystroke
       when "ctrl+c", "esc"
         {self, Bubbletea.quit}
       when "enter"
