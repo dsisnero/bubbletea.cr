@@ -222,6 +222,11 @@ module Tea
       # Delegate to Ultraviolet for keystroke representation
       Ultraviolet::Key.new(@text, @mod, @code, @shifted_code, @base_code, @is_repeat).keystroke
     end
+
+    # Go parity helper for Key.Rune().
+    def rune : Char?
+      @text[0]?
+    end
   end
 
   # KeyPressMsg is sent when a key is pressed

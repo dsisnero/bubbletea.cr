@@ -1,49 +1,64 @@
-require "../src/bubbletea"
+require "../lib/bubbles/src/bubbles"
+require "lipgloss"
 
 class PipeModel
-  include Bubbletea::Model
+  include Tea::Model
 
-  def initialize(initial_value : String)
-    @user_input = initial_value
+  @user_input : Bubbles::TextInput::Model
+
+  def initialize(@user_input : Bubbles::TextInput::Model)
   end
 
-  def init : Bubbletea::Cmd?
-    Bubbletea.tick(500.milliseconds, ->(_t : Time) { Bubbletea["blink"].as(Tea::Msg?) })
+  def self.new_model(initial_value : String) : self
+    i = Bubbles::TextInput.new
+    i.prompt = ""
+
+    styles = i.styles
+    styles.cursor.color = Lipgloss.color("63")
+    i.set_styles(styles)
+
+    i.set_width(48)
+    i.set_value(initial_value)
+    i.cursor_end
+    i.focus
+
+    new(i)
+  end
+
+  def init : Tea::Cmd?
+    -> { Bubbles::TextInput.blink.as(Tea::Msg?) }
   end
 
   def update(msg : Tea::Msg)
-    if msg.is_a?(Bubbletea::KeyPressMsg)
-      case msg.keystroke
+    if key = msg.as?(Tea::KeyPressMsg)
+      case key.string
       when "ctrl+c", "esc", "enter"
-        return {self, Bubbletea.quit}
-      when "backspace"
-        @user_input = @user_input[0...-1] unless @user_input.empty?
-      when "space"
-        @user_input += " "
-      else
-        if rune = msg.rune
-          @user_input += rune.to_s
-        end
+        return {self, Tea.quit}
       end
     end
 
-    {self, nil}
+    @user_input, cmd = @user_input.update(msg)
+    {self, cmd}
   end
 
-  def view : Bubbletea::View
-    Bubbletea::View.new("\nYou piped in: #{@user_input}\n\nPress ^C to exit")
+  def view : Tea::View
+    Tea.new_view("\nYou piped in: #{@user_input.view}\n\nPress ^C to exit")
   end
 end
 
-input = STDIN.gets_to_end.strip
-if input.empty?
-  puts "Try piping in some text."
-  exit 1
-end
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  stdin_info = STDIN.info
+  if stdin_info.type != File::Type::Pipe && stdin_info.size == 0
+    puts "Try piping in some text."
+    exit 1
+  end
 
-program = Bubbletea::Program.new(PipeModel.new(input))
-_model, err = program.run
-if err
-  STDERR.puts "Couldn't start program: #{err.message}"
-  exit 1
+  input = STDIN.gets_to_end
+  model = PipeModel.new_model(input.strip)
+
+  _model, err = Tea::Program.new(model).run
+  if err
+    STDERR.puts "Couldn't start program: #{err.message}"
+    exit 1
+  end
 end

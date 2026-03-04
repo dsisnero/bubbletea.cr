@@ -1,109 +1,150 @@
-require "../src/bubbletea"
+require "../lib/bubbles/src/bubbles"
 
 enum SessionState
   TimerView
   SpinnerView
 end
 
-DEFAULT_SECONDS = 60
+DEFAULT_TIME = 1.minute
 
-struct TimerTickMsg
-  include Tea::Msg
-end
+SPINNERS = [
+  Bubbles::Spinner::Line,
+  Bubbles::Spinner::Dot,
+  Bubbles::Spinner::MiniDot,
+  Bubbles::Spinner::Jump,
+  Bubbles::Spinner::Pulse,
+  Bubbles::Spinner::Points,
+  Bubbles::Spinner::Globe,
+  Bubbles::Spinner::Moon,
+  Bubbles::Spinner::Monkey,
+]
 
-struct SpinnerTickMsg
-  include Tea::Msg
-end
+MODEL_STYLE = Lipgloss::Style.new
+  .width(15)
+  .height(5)
+  .align(Lipgloss::Position::Center, Lipgloss::Position::Center)
+  .border_style(Lipgloss::Border.hidden)
 
-private def timer_tick : Bubbletea::Cmd
-  Bubbletea.tick(1.second, ->(_t : Time) { TimerTickMsg.new.as(Tea::Msg?) })
-end
+FOCUSED_MODEL_STYLE = Lipgloss::Style.new
+  .width(15)
+  .height(5)
+  .align(Lipgloss::Position::Center, Lipgloss::Position::Center)
+  .border_style(Lipgloss::Border.normal)
+  .border_foreground(Lipgloss.color("69"))
 
-private def spinner_tick : Bubbletea::Cmd
-  Bubbletea.tick(100.milliseconds, ->(_t : Time) { SpinnerTickMsg.new.as(Tea::Msg?) })
-end
+SPINNER_STYLE = Lipgloss::Style.new.foreground(Lipgloss.color("69"))
+HELP_STYLE    = Lipgloss::Style.new.foreground(Lipgloss.color("241"))
 
 class MainModel
   include Bubbletea::Model
 
-  SPINNERS = ["-", "\\", "|", "/"]
+  @state : SessionState
+  @timer : Bubbles::Timer::Model
+  @spinner : Bubbles::Spinner::Model
+  @index : Int32
 
-  def initialize
+  def initialize(timeout : Time::Span)
     @state = SessionState::TimerView
-    @seconds_left = DEFAULT_SECONDS
-    @spinner_index = 0
-    @spinner_style_index = 0
+    @timer = Bubbles::Timer.new(timeout)
+    @spinner = Bubbles::Spinner.new
+    @index = 0
   end
 
   def init : Bubbletea::Cmd?
-    Bubbletea.batch(timer_tick, spinner_tick)
+    Bubbletea.batch(@timer.init, -> { @spinner.tick.as(Tea::Msg?) })
   end
 
   def update(msg : Tea::Msg)
-    cmd = nil.as(Bubbletea::Cmd?)
+    cmds = [] of Tea::Cmd?
 
     case msg
-    when Bubbletea::KeyPressMsg
+    when Tea::KeyPressMsg
       case msg.keystroke
       when "ctrl+c", "q"
-        return {self, Bubbletea.quit}
+        return {self, Tea.quit}
       when "tab"
         @state = @state.timer_view? ? SessionState::SpinnerView : SessionState::TimerView
       when "n"
         if @state.timer_view?
-          @seconds_left = DEFAULT_SECONDS
-          cmd = timer_tick
+          @timer = Bubbles::Timer.new(DEFAULT_TIME)
+          cmds << @timer.init
         else
           next_spinner
-          @spinner_index = 0
-          cmd = spinner_tick
+          reset_spinner
+          cmds << -> { @spinner.tick.as(Tea::Msg?) }
         end
       end
-    when TimerTickMsg
-      @seconds_left -= 1 if @seconds_left > 0
-      cmd = timer_tick
-    when SpinnerTickMsg
-      @spinner_index = (@spinner_index + 1) % SPINNERS.size
-      cmd = spinner_tick
+
+      case @state
+      when .spinner_view?
+        @spinner, cmd = @spinner.update(msg)
+        cmds << cmd
+      else
+        @timer, cmd = @timer.update(msg)
+        cmds << cmd
+      end
+    when Bubbles::Spinner::TickMsg
+      @spinner, cmd = @spinner.update(msg)
+      cmds << cmd
+    when Bubbles::Timer::TickMsg
+      @timer, cmd = @timer.update(msg)
+      cmds << cmd
     end
 
-    {self, cmd}
+    {self, Tea.batch(cmds)}
   end
 
   def view : Bubbletea::View
-    timer_label = format_time(@seconds_left)
-    spinner_label = SPINNERS[@spinner_index]
+    timer_view = "%4s" % @timer.view
+    spinner_view = @spinner.view
 
-    timer_box = box(timer_label, @state.timer_view?)
-    spinner_box = box(spinner_label, @state.spinner_view?)
+    content = if @state.timer_view?
+                Lipgloss.join_horizontal(
+                  Lipgloss::Position::Top,
+                  FOCUSED_MODEL_STYLE.render(timer_view),
+                  MODEL_STYLE.render(spinner_view)
+                )
+              else
+                Lipgloss.join_horizontal(
+                  Lipgloss::Position::Top,
+                  MODEL_STYLE.render(timer_view),
+                  FOCUSED_MODEL_STYLE.render(spinner_view)
+                )
+              end
 
-    focused = @state.timer_view? ? "timer" : "spinner"
-    help = "tab: focus next • n: new #{focused} • q: exit"
+    help = HELP_STYLE.render("\ntab: focus next • n: new #{current_focused_model} • q: exit\n")
+    Bubbletea::View.new(content + help)
+  end
 
-    Bubbletea::View.new("#{timer_box}    #{spinner_box}\n#{help}")
+  def current_focused_model : String
+    @state.timer_view? ? "timer" : "spinner"
   end
 
   def next_spinner
-    @spinner_style_index = (@spinner_style_index + 1) % 9
+    if @index == SPINNERS.size - 1
+      @index = 0
+    else
+      @index += 1
+    end
   end
 
-  private def format_time(seconds : Int32) : String
-    m = seconds // 60
-    s = seconds % 60
-    "%02d:%02d" % {m, s}
-  end
-
-  private def box(content : String, focused : Bool) : String
-    border = focused ? "#" : "-"
-    top = border * 11
-    mid = "#{border} #{content.center(7)} #{border}"
-    [top, mid, top].join("\n")
+  def reset_spinner
+    @spinner = Bubbles::Spinner.new
+    @spinner.style = SPINNER_STYLE
+    @spinner.spinner = SPINNERS[@index]
   end
 end
 
-program = Bubbletea::Program.new(MainModel.new)
-_model, err = program.run
-if err
-  STDERR.puts err.message
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error running program: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
+
+  program = Bubbletea::Program.new(MainModel.new(DEFAULT_TIME))
+  _model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+    exit 1
+  end
 end

@@ -1,9 +1,18 @@
 .PHONY: install update format lint test clean build-examples check-go-port-inventory check-go-source-parity check-go-test-parity
 
+CACHE_ROOT := $(abspath ./temp/cache)
+export CRYSTAL_CACHE_DIR := $(CACHE_ROOT)/crystal
+export SHARDS_CACHE_PATH := $(CACHE_ROOT)/shards
+export GOCACHE := $(CACHE_ROOT)/go-build
+export GOMODCACHE := $(CACHE_ROOT)/go-mod
+export GOFLAGS := -modcacherw
+
 install:
+	mkdir -p "$(CACHE_ROOT)"
 	BEADS_DIR=$$(pwd)/.beads shards install
 
 update:
+	mkdir -p "$(CACHE_ROOT)"
 	BEADS_DIR=$$(pwd)/.beads shards update
 
 format:

@@ -1,0 +1,7 @@
+[?2026$p[?2027$p[?25l[?2004h[>4;2m[=1;1u[?u]9;4;3[J
+  This demo requires a terminal emulator that supports an indeterminate
+  progress bar, such a Windows Terminal or Ghostty. In other terminals
+  (including tmux in a supporting terminal) nothing will happen.
+
+  Press up/down to change value, left/right to change state, q to quit.
+[>4m[=0;1u[J[?25h[?2004l]9;4;0

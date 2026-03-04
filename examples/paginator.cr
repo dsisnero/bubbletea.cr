@@ -1,5 +1,5 @@
-require "../src/bubbletea"
-require "bubbles"
+require "bubbletea"
+require "../lib/bubbles/src/bubbles"
 require "lipgloss"
 
 class PaginatorModel
@@ -23,11 +23,32 @@ class PaginatorModel
     active_color = light_dark.call(Lipgloss.color("235"), Lipgloss.color("252"))
     inactive_color = light_dark.call(Lipgloss.color("250"), Lipgloss.color("238"))
 
-    active_style = Lipgloss::Style.new.foreground(active_color)
-    inactive_style = Lipgloss::Style.new.foreground(inactive_color)
+    active_fg = case active_color
+                when Lipgloss::Color
+                  active_color
+                when Lipgloss::NoColor
+                  active_color
+                when Lipgloss::RGBAColor
+                  active_color.to_color
+                else
+                  Lipgloss.color("252")
+                end
+    inactive_fg = case inactive_color
+                  when Lipgloss::Color
+                    inactive_color
+                  when Lipgloss::NoColor
+                    inactive_color
+                  when Lipgloss::RGBAColor
+                    inactive_color.to_color
+                  else
+                    Lipgloss.color("238")
+                  end
 
-    @paginator.active_dot = active_style.apply("•")
-    @paginator.inactive_dot = inactive_style.apply("•")
+    active_style = Lipgloss::Style.new.foreground(active_fg)
+    inactive_style = Lipgloss::Style.new.foreground(inactive_fg)
+
+    @paginator.active_dot = active_style.render("•")
+    @paginator.inactive_dot = inactive_style.render("•")
   end
 
   def init : Bubbletea::Cmd?

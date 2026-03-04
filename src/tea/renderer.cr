@@ -55,19 +55,28 @@ module Tea
 
   # Note: Println and Printf are defined in exec.cr
 
-  # EncodeCursorStyle returns the ANSI escape sequence value for the given cursor style and blink state
-  # Maps CursorShape to ANSI values:
-  #   Block = 1, BlockBlinking = 2
-  #   Underline = 3, UnderlineBlinking = 4
-  #   Bar = 5, BarBlinking = 6
+  # Encode cursor style into DECSCUSR numeric value.
+  # 1: blinking block, 2: steady block, 3: blinking underline,
+  # 4: steady underline, 5: blinking bar, 6: steady bar.
   def self.encode_cursor_style(style : CursorStyle, blink : Bool) : Int32
-    # Calculate base value: (style * 2) + 1
-    # This gives: Block=1, Underline=3, Bar=5
-    base = (style.value * 2) + 1
-
-    # If not blinking (steady), increment by 1
-    # This gives: Block=2, Underline=4, Bar=6
-    blink ? base : base + 1
+    case style
+    when CursorStyle::BlockBlinking
+      1
+    when CursorStyle::Block
+      2
+    when CursorStyle::UnderlineBlinking
+      3
+    when CursorStyle::Underline
+      4
+    when CursorStyle::BarBlinking
+      5
+    when CursorStyle::Bar
+      6
+    else
+      # Fallback for future enum values that may still use blink flag semantics.
+      base = 1
+      blink ? base : base + 1
+    end
   end
 
   # FPS constants for reference

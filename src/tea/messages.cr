@@ -101,6 +101,7 @@ module Tea
     def supports_key_disambiguation : Bool
       supports_key_disambiguation?
     end
+
     # ameba:enable Naming/PredicateName
 
     # Returns whether the terminal supports reporting different types

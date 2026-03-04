@@ -69,7 +69,7 @@ module Tea
       @width = width
       @height = height
       @mutex = Mutex.new
-      @profile = Ultraviolet::ColorProfile::TrueColor
+      @profile = Ultraviolet::ColorProfile.detect(w, env.items)
       @view = View.new
 
       # Initialize with a valid renderer; reset will fully configure it.
@@ -590,7 +590,6 @@ module Tea
         @width = width
         @height = height
         @scr.resize(width, height)
-        @cellbuf = Ultraviolet::ScreenBuffer.new(width, height)
       end
     end
 

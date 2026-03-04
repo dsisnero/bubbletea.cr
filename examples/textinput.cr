@@ -1,40 +1,68 @@
-require "../src/bubbletea"
+require "../lib/bubbles/src/bubbles"
+require "lipgloss"
 
 class TextinputModel
   include Bubbletea::Model
 
+  property text_input : Bubbles::TextInput::Model
+  property err : Exception?
+  property? quitting : Bool
+
   def initialize
-    @input = ""
+    ti = Bubbles::TextInput.new
+    ti.placeholder = "Pikachu"
+    ti.set_virtual_cursor(false)
+    ti.focus
+    ti.char_limit = 156
+    ti.set_width(20)
+    
+    @text_input = ti
+    @err = nil
     @quitting = false
   end
 
   def init : Bubbletea::Cmd?
-    Bubbletea.tick(500.milliseconds, ->(_t : Time) { Bubbletea["blink"].as(Tea::Msg?) })
+    -> { Bubbles::TextInput.blink.as(Tea::Msg?) }
   end
 
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      case msg.keystroke
+      case msg.string
       when "enter", "ctrl+c", "esc"
         @quitting = true
         return {self, Bubbletea.quit}
-      when "backspace"
-        @input = @input[0...-1] unless @input.empty?
-      else
-        if rune = msg.rune
-          @input += rune.to_s
-        end
       end
     end
 
-    {self, nil}
+    @text_input, cmd = @text_input.update(msg)
+    {self, cmd}
   end
 
   def view : Bubbletea::View
-    str = "What's your favorite Pokemon?\n\n#{@input.empty? ? "Pikachu" : @input}\n\n(esc to quit)"
+    c = nil
+    unless @text_input.virtual_cursor?
+      c = @text_input.cursor
+      if c
+        c = c.dup
+        c.y += Lipgloss.height(header_view)
+      end
+    end
+
+    str = Lipgloss.join_vertical(Lipgloss::Position::Top, header_view, @text_input.view, footer_view)
     str += "\n" if @quitting
-    Bubbletea::View.new(str)
+
+    v = Bubbletea::View.new(str)
+    v.cursor = c
+    v
+  end
+
+  private def header_view : String
+    "What's your favorite Pokémon?\n"
+  end
+
+  private def footer_view : String
+    "\n(esc to quit)"
   end
 end
 

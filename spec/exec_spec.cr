@@ -86,9 +86,8 @@ describe "Exec" do
   end
 
   describe "ExecProcess" do
-    it "creates a command from a Process" do
-      process = Process.new("echo", ["hello"])
-      cmd = Tea.exec_process(process)
+    it "creates a command from a command string" do
+      cmd = Tea.exec_process("echo", ["hello"])
       cmd.should be_a(Tea::Cmd)
     end
 
@@ -146,8 +145,7 @@ describe "Exec" do
   describe "ExecCallback" do
     it "accepts a callback function" do
       callback = ->(err : Exception?) { nil.as(Tea::Msg?) }
-      process = Process.new("echo", ["test"])
-      cmd = Tea.exec_process(process, callback)
+      cmd = Tea.exec_process("echo", ["test"], callback)
       cmd.should be_a(Tea::Cmd)
     end
   end

@@ -115,7 +115,11 @@ class CanvasModel
   end
 end
 
-if PROGRAM_NAME == __FILE__
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error running program: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
   program = Bubbletea::Program.new(CanvasModel.new)
   _model, err = program.run
   if err

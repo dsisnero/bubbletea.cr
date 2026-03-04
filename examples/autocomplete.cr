@@ -1,4 +1,4 @@
-require "bubbles"
+require "../lib/bubbles/src/bubbles"
 require "lipgloss"
 require "http/client"
 require "json"
@@ -186,9 +186,15 @@ class AutoCompleteModel
   end
 end
 
-program = Tea::Program.new(AutoCompleteModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error running program: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
+  program = Tea::Program.new(AutoCompleteModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+    exit 1
+  end
 end

@@ -1,11 +1,30 @@
 require "../src/bubbletea"
+require "lipgloss"
+
+struct KeyboardEnhancementStyles
+  property ui : Lipgloss::Style
+
+  def initialize
+    @ui = Lipgloss::Style.new
+  end
+end
 
 class KeyboardEnhancementsModel
   include Bubbletea::Model
 
+  @supports_disambiguation : Bool
+  @supports_event_types : Bool
+  @styles : KeyboardEnhancementStyles
+
   def initialize
     @supports_disambiguation = false
     @supports_event_types = false
+    @styles = KeyboardEnhancementStyles.new
+    update_styles(true)
+  end
+
+  def self.initial_model : self
+    new
   end
 
   def init : Bubbletea::Cmd?
@@ -14,42 +33,55 @@ class KeyboardEnhancementsModel
 
   def update(msg : Tea::Msg)
     case msg
-    when Bubbletea::KeyboardEnhancementsMsg
+    when Tea::KeyboardEnhancementsMsg
       @supports_disambiguation = true
       @supports_event_types = msg.supports_event_types?
-      {self, nil}
-    when Bubbletea::KeyPressMsg
+    when Tea::KeyPressMsg
       case msg.keystroke
       when "ctrl+c"
-        {self, Bubbletea.quit}
+        return {self, Tea.quit}
       else
-        {self, Bubbletea.println("  press: #{msg.keystroke}")}
+        return {self, Tea.println("  press: " + msg.string)}
       end
-    when Bubbletea::KeyReleaseMsg
-      {self, Bubbletea.printf("release: %s", msg.to_s)}
+    when Tea::KeyReleaseMsg
+      return {self, Tea.printf("release: %s", msg.string)}
     when Tea::BackgroundColorMsg
-      {self, nil}
-    else
-      {self, nil}
+      update_styles(msg.is_dark?)
     end
+    {self, nil}
   end
 
   def view : Bubbletea::View
-    text = String.build do |io|
-      io << "Terminal supports key releases: #{@supports_event_types}\n"
-      io << "Terminal supports key disambiguation: #{@supports_disambiguation}\n"
-      io << "This demo logs key events. Press ctrl+c to quit.\n"
+    content = String.build do |b|
+      b << "Terminal supports key releases: " << @supports_event_types << '\n'
+      b << "Terminal supports key disambiguation: " << @supports_disambiguation << '\n'
+      b << "This demo logs key events. Press ctrl+c to quit."
     end
 
-    v = Bubbletea::View.new(text)
+    v = Tea.new_view(content + "\n")
     v.keyboard_enhancements.report_event_types = true
     v
   end
+
+  private def update_styles(is_dark : Bool)
+    light = is_dark ? Lipgloss.color("239") : Lipgloss.color("245")
+    dark = is_dark ? Lipgloss.color("245") : Lipgloss.color("239")
+    @styles.ui = Lipgloss::Style.new
+      .foreground(light)
+      .border(Lipgloss::Border.normal, true, false, false, false)
+      .border_foreground(dark)
+  end
 end
 
-program = Bubbletea::Program.new(KeyboardEnhancementsModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Urgh: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error running program: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
+  p = Tea::Program.new(KeyboardEnhancementsModel.initial_model)
+  _m, err = p.run
+  if err
+    STDERR.puts "Urgh: #{err.message}"
+    exit 1
+  end
 end

@@ -7,10 +7,11 @@ require "time"
 require "json"
 require "base64"
 require "colorful"
+require "lipgloss"
 
 module Tea
   # Version
-  VERSION = "0.2.0-exp"
+  VERSION = "2.0.0"
 
   # Errors
   class ProgramPanicError < Exception; end
@@ -348,7 +349,16 @@ module Tea
       run_context = context || @external_context || ExecutionContext.default
 
       @output ||= STDOUT
-      @input ||= STDIN
+      if @disable_input
+        @input = nil
+      elsif @input.nil?
+        begin
+          tty_in, _tty_out = TTY.open
+          @input = tty_in
+        rescue ex
+          return {model, Exception.new("bubbletea: error opening TTY: #{ex.message}")}
+        end
+      end
       if @env.items.empty?
         @env = Ultraviolet::Environ.new(ENV.map { |k, v| "#{k}=#{v}" })
       end
@@ -369,6 +379,8 @@ module Tea
       init_renderer
       start_renderer
 
+      # Match Go behavior: query synchronized output support by default.
+      # Allow explicit opt-out for problematic terminals.
       if !@disable_renderer && should_query_synchronized_output(@env)
         execute(Ansi::RequestModeSynchronizedOutput + Ansi::RequestModeUnicodeCore)
       end
@@ -378,9 +390,10 @@ module Tea
         while @running
           select
           when cmd = @cmds.receive
+            command = cmd
             spawn do
               begin
-                msg = cmd.call
+                msg = command.call
                 send(msg) if msg
               rescue ex
                 handle_runtime_exception(ex)
@@ -394,7 +407,17 @@ module Tea
 
       # Initialize
       cmd = model.init
-      send(cmd) if cmd
+      if cmd
+        init_cmd = cmd
+        spawn do
+          begin
+            msg = init_cmd.call
+            send(msg) if msg
+          rescue ex
+            handle_runtime_exception(ex)
+          end
+        end
+      end
 
       # Render initial view after startup side effects and init command dispatch.
       render(model)
@@ -498,7 +521,9 @@ module Tea
           send(cmd) if cmd
           render(model)
         when timeout(1.millisecond)
-          # Timeout to allow checking @quitting
+          # On single-worker runtimes, explicitly yield so command/input/render
+          # fibers get CPU time and the UI doesn't appear frozen.
+          Fiber.yield
         end
 
         break if @quitting
@@ -890,8 +915,14 @@ module Tea
         output = @output || STDOUT
         @renderer = CursedRenderer.new(output, @env, width, height)
       end
+      if @profile.nil?
+        output = @output || STDOUT
+        @profile = Ultraviolet::ColorProfile.detect(output, @env.items)
+      end
+
       if profile = @profile
         @renderer.try &.set_color_profile(profile)
+        send(ColorProfileMsg.new(profile))
       end
     end
 

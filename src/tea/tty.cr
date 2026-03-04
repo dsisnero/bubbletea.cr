@@ -185,27 +185,39 @@ module Tea
 
     # Check and report terminal resize
     def check_resize
-      if console = @console
-        width, height = console.size
-        @width = width
-        @height = height
+      if tty_output = @tty_output
+        ws = uninitialized LibC::Winsize
+        if LibC.ioctl(tty_output.fd, Ultraviolet::TIOCGWINSZ, pointerof(ws).as(Void*)) == 0
+          width = ws.ws_col.to_i
+          height = ws.ws_row.to_i
+          if width > 0 && height > 0
+            @width, @height = width, height
+            send(WindowSizeMsg.new(@width, @height))
+            return
+          end
+        end
+      elsif @width > 0 && @height > 0
+        # Non-TTY outputs (e.g. IO::Memory parity harnesses) still need an
+        # initial size event when WithWindowSize has been configured.
         send(WindowSizeMsg.new(@width, @height))
-      end
-    rescue ex
-      # Bubble Tea treats size probing as best-effort; don't terminate the
-      # program when a terminal reports ioctl errors.
-      if ex.is_a?(IO::Error) && ex.message.to_s.includes?("ioctl")
         return
       end
-      @errs.send(ex) rescue nil
+
+      # Ensure models still get one initial size message.
+      send_fallback_window_size
+    end
+
+    private def send_fallback_window_size
+      if @width <= 0 || @height <= 0
+        @width = 80
+        @height = 24
+      end
+      send(WindowSizeMsg.new(@width, @height))
     end
 
     # Initialize TTY input (set raw mode, etc.)
     # Platform-specific implementation
     def init_input : Exception?
-      @input ||= STDIN
-      @output ||= STDOUT
-
       if input = @input
         @tty_input = input.as?(IO::FileDescriptor)
       end
@@ -215,6 +227,7 @@ module Tea
 
       input_is_tty = @tty_input.try(&.tty?) || false
       output_is_tty = @tty_output.try(&.tty?) || false
+
       return nil unless input_is_tty && output_is_tty
 
       begin

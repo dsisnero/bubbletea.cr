@@ -16,8 +16,7 @@ end
 # Open the system editor
 private def open_editor : Tea::Cmd
   editor = ENV["EDITOR"]? || "vim"
-  process = Process.new(editor)
-  Tea.exec_process(process, ->(err : Exception?) {
+  Tea.exec_process(editor, callback: ->(err : Exception?) {
     EditorFinishedMsg.new(err).as(Tea::Msg?)
   })
 end
@@ -39,7 +38,7 @@ struct Model
   def update(msg : Tea::Msg) : Tuple(Tea::Model, Tea::Cmd?)
     case msg
     when Tea::KeyPressMsg
-      case msg.to_s
+      case msg.keystroke
       when "a"
         @altscreen_active = !@altscreen_active
         return {self, nil}
@@ -67,23 +66,25 @@ struct Model
       return view
     end
 
-    lines = [] of String
-    lines << "Press 'e' to open your EDITOR."
-    lines << "Press 'a' to toggle the altscreen"
-    lines << "Press 'q' to quit."
-
-    view.content = lines.join("\n")
+    view.content = "Press 'e' to open your EDITOR.\nPress 'a' to toggle the altscreen\nPress 'q' to quit.\n"
     view
   end
 end
 
-# Main
-model = Model.new
-program = Tea::Program.new(model)
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error running program: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
 
-_, err = program.run
+  # Main
+  model = Model.new
+  program = Tea::Program.new(model)
 
-if err
-  puts "Error running program: #{err}"
-  exit 1
+  _, err = program.run
+
+  if err
+    puts "Error running program: #{err}"
+    exit 1
+  end
 end

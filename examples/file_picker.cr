@@ -1,4 +1,4 @@
-require "bubbles"
+require "../lib/bubbles/src/bubbles"
 require "lipgloss"
 
 struct ClearErrorMsg
@@ -21,11 +21,18 @@ class FilePickerModel
     @filepicker = Bubbles::Filepicker.new
     @filepicker.allowed_types = [".mod", ".sum", ".go", ".txt", ".md"]
     @filepicker.current_directory = ENV["HOME"]? || Dir.current
-    @filepicker.show_permissions = false
-    @filepicker.show_size = false
+    @filepicker.height = 20
     @selected_file = ""
     @quitting = false
     @error = nil
+  end
+
+  def filepicker : Bubbles::Filepicker::Model
+    @filepicker
+  end
+
+  def selected_file : String
+    @selected_file
   end
 
   def init : Tea::Cmd?
@@ -52,7 +59,6 @@ class FilePickerModel
     did_select, path = @filepicker.did_select_file(msg)
     if did_select
       @selected_file = path
-      @error = nil
     end
 
     # Check if user selected a disabled file
@@ -82,6 +88,7 @@ class FilePickerModel
       end
       io << "\n\n"
       io << @filepicker.view
+      io << '\n'
     end
 
     v = Tea.new_view(s)
@@ -91,14 +98,20 @@ class FilePickerModel
 end
 
 model = FilePickerModel.new
-program = Tea::Program.new(model)
-final_model, err = program.run
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
+  program = Tea::Program.new(model)
+  final_model, err = program.run
 
-if err
-  STDERR.puts "Error: #{err.message}"
-  exit 1
-end
+  if err
+    STDERR.puts "Error: #{err.message}"
+    exit 1
+  end
 
-if fm = final_model.as?(FilePickerModel)
-  puts "\n  You selected: " + fm.@filepicker.styles.selected.render(fm.@selected_file) + "\n"
+  if fm = final_model.as?(FilePickerModel)
+    puts "\n  You selected: " + fm.filepicker.styles.selected.render(fm.selected_file) + "\n"
+  end
 end

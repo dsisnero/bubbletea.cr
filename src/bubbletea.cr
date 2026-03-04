@@ -99,12 +99,85 @@ module Bubbletea
     Tea.batch(*commands)
   end
 
+  def batch(commands : Enumerable(Bubbletea::Cmd?))
+    cmds = [] of Bubbletea::Cmd
+    commands.each do |cmd|
+      cmds << cmd if cmd
+    end
+    case cmds.size
+    when 0
+      nil
+    when 1
+      cmds[0]
+    else
+      -> : Tea::Msg? { Tea::BatchMsg.new(cmds) }
+    end
+  end
+
+  def sequence(commands : Enumerable(Bubbletea::Cmd?))
+    cmds = [] of Bubbletea::Cmd
+    commands.each do |cmd|
+      cmds << cmd if cmd
+    end
+    case cmds.size
+    when 0
+      nil
+    when 1
+      cmds[0]
+    else
+      -> : Tea::Msg? { Tea::SequenceMsg.new(cmds) }
+    end
+  end
+
+  def sequentially(commands : Enumerable(Bubbletea::Cmd?))
+    cmds = commands.to_a
+    -> : Tea::Msg? {
+      cmds.each do |cmd|
+        next unless cmd
+        if msg = cmd.call
+          return msg
+        end
+      end
+      nil
+    }
+  end
+
   def sequence(*commands)
     Tea.sequence(*commands)
   end
 
+  def sequence(commands : Enumerable)
+    cmds = [] of Bubbletea::Cmd
+    commands.each do |cmd|
+      casted = cmd.as?(Bubbletea::Cmd?)
+      cmds << casted if casted
+    end
+    case cmds.size
+    when 0
+      nil
+    when 1
+      cmds[0]
+    else
+      -> : Tea::Msg? { Tea::SequenceMsg.new(cmds) }
+    end
+  end
+
   def sequentially(*commands)
     Tea.sequentially(*commands)
+  end
+
+  def sequentially(commands : Enumerable)
+    cmds = commands.to_a
+    -> : Tea::Msg? {
+      cmds.each do |cmd|
+        casted = cmd.as?(Bubbletea::Cmd?)
+        next unless casted
+        if msg = casted.call
+          return msg
+        end
+      end
+      nil
+    }
   end
 
   def every(duration, fn : Time -> Tea::Msg?)

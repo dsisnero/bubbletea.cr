@@ -1,4 +1,4 @@
-require "bubbles"
+require "../lib/bubbles/src/bubbles"
 require "lipgloss"
 
 struct KeyMap

@@ -1,4 +1,5 @@
 require "../src/bubbletea"
+require "lipgloss"
 
 EYE_WIDTH        =   15
 EYE_HEIGHT       =   12
@@ -6,6 +7,8 @@ EYE_SPACING      =   40
 BLINK_FRAMES     =   20
 OPEN_TIME_MIN_MS = 1000
 OPEN_TIME_MAX_MS = 4000
+EYE_CHAR         = "●"
+BG_CHAR          = " "
 
 struct EyesTickMsg
   include Tea::Msg
@@ -68,7 +71,7 @@ class EyesModel
   end
 
   def view : Bubbletea::View
-    canvas = Array.new(@height) { Array.new(@width, ' ') }
+    canvas = Array.new(@height) { Array.new(@width, BG_CHAR) }
 
     current_height = EYE_HEIGHT
     if @is_blinking
@@ -83,12 +86,19 @@ class EyesModel
       end
     end
 
-    draw_ellipse(canvas, @eye_positions[0], @eye_y, EYE_WIDTH, current_height)
-    draw_ellipse(canvas, @eye_positions[1], @eye_y, EYE_WIDTH, current_height)
+    2.times do |i|
+      draw_ellipse(canvas, @eye_positions[i], @eye_y, EYE_WIDTH, current_height)
+    end
 
-    content = canvas.map { |row| String.build { |io| row.each { |c| io << c } } }.join("\n")
+    content = String.build do |io|
+      canvas.each do |row|
+        row.each { |cell| io << cell }
+        io << '\n'
+      end
+    end
 
-    v = Bubbletea::View.new(content)
+    style = Lipgloss::Style.new.foreground("#F0F0F0")
+    v = Bubbletea::View.new(style.render(content))
     v.alt_screen = true
     v
   end
@@ -103,7 +113,7 @@ class EyesModel
     @eye_positions = {start_x, start_x + EYE_SPACING}
   end
 
-  private def draw_ellipse(canvas : Array(Array(Char)), x0 : Int32, y0 : Int32, rx : Int32, ry : Int32)
+  private def draw_ellipse(canvas : Array(Array(String)), x0 : Int32, y0 : Int32, rx : Int32, ry : Int32)
     return if ry <= 0
 
     (-ry..ry).each do |y|
@@ -115,15 +125,22 @@ class EyesModel
         cy = y0 + y
         next if cy < 0 || cy >= canvas.size
         next if cx < 0 || cx >= canvas[cy].size
-        canvas[cy][cx] = '●'
+        canvas[cy][cx] = EYE_CHAR
       end
     end
   end
 end
 
-program = Bubbletea::Program.new(EyesModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error running program: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
+
+  program = Bubbletea::Program.new(EyesModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+    exit 1
+  end
 end

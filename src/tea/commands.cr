@@ -29,6 +29,22 @@ module Tea
     nil
   end
 
+  def self.batch(commands : Enumerable(Cmd?)) : Cmd?
+    cmds = [] of Cmd
+    commands.each do |cmd|
+      cmds << cmd if cmd
+    end
+
+    case cmds.size
+    when 0
+      nil
+    when 1
+      cmds[0]
+    else
+      -> : Msg? { BatchMsg.new(cmds) }
+    end
+  end
+
   def self.batch(*commands : Cmd?) : Cmd?
     cmds = [] of Cmd
     commands.each do |cmd|
@@ -50,6 +66,22 @@ module Tea
     nil
   end
 
+  def self.sequence(commands : Enumerable(Cmd?)) : Cmd?
+    cmds = [] of Cmd
+    commands.each do |cmd|
+      cmds << cmd if cmd
+    end
+
+    case cmds.size
+    when 0
+      nil
+    when 1
+      cmds[0]
+    else
+      -> : Msg? { SequenceMsg.new(cmds) }
+    end
+  end
+
   def self.sequence(*commands : Cmd?) : Cmd?
     cmds = [] of Cmd
     commands.each do |cmd|
@@ -69,6 +101,19 @@ module Tea
   # Sequentially runs commands in order, returns first non-nil result
   # Deprecated: use sequence instead
   def self.sequentially(*commands : Cmd?)
+    cmds = commands.to_a
+    -> : Msg? {
+      cmds.each do |cmd|
+        next unless cmd
+        if msg = cmd.call
+          return msg
+        end
+      end
+      nil
+    }
+  end
+
+  def self.sequentially(commands : Enumerable(Cmd?))
     cmds = commands.to_a
     -> : Msg? {
       cmds.each do |cmd|
@@ -167,12 +212,12 @@ module Tea
     end
 
     def receive : Time
-      @channel.receive
+      @channel.receive? || Time.utc
     end
 
     def stop
       @closed = true
-      @channel.close
+      @channel.close rescue Channel::ClosedError
     end
 
     def drain

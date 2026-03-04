@@ -66,20 +66,27 @@ struct Model
   end
 end
 
-# Main entry point
-model = Model.new
-program = Tea::Program.new(model)
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error running program: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
 
-# Run returns the final model
-final_model, err = program.run
+  # Main entry point
+  model = Model.new
+  program = Tea::Program.new(model)
 
-if err
-  puts "Oh no: #{err}"
-  exit 1
-end
+  # Run returns the final model
+  final_model, err = program.run
 
-# Access the choice from the final model
-if final_model.is_a?(Model) && !final_model.choice.empty?
-  puts "\n---"
-  puts "You chose #{final_model.choice}!"
+  if err
+    puts "Oh no: #{err}"
+    exit 1
+  end
+
+  # Access the choice from the final model
+  if final_model.is_a?(Model) && !final_model.choice.empty?
+    puts "\n---"
+    puts "You chose #{final_model.choice}!"
+  end
 end

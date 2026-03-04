@@ -61,13 +61,20 @@ struct Model
   end
 end
 
-# Main
-model = Model.new(focused: true, reporting: true)
-program = Tea::Program.new(model)
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  unless STDIN.tty? && STDOUT.tty?
+    STDERR.puts "Error running program: bubbletea: error opening TTY: stdin/stdout are not TTY"
+    exit 1
+  end
 
-_, err = program.run
+  # Main
+  model = Model.new(focused: true, reporting: true)
+  program = Tea::Program.new(model)
 
-if err
-  puts "Error: #{err}"
-  exit 1
+  _, err = program.run
+
+  if err
+    puts "Error: #{err}"
+    exit 1
+  end
 end

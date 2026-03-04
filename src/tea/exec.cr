@@ -38,61 +38,101 @@ module Tea
     -> : Msg? { ExecMsg.new(cmd, callback) }
   end
 
-  # ExecProcess runs the given Process in a blocking fashion
-  # Useful for spawning interactive applications like editors and shells
-  #
-  # Example:
-  #   cmd = Tea.exec_process(
-  #     Process.new("vim", ["file.txt"]),
-  #     ->(err : Exception?) {
-  #       err ? Tea::Value.new(err) : nil
-  #     }
-  #   )
-  def self.exec_process(process : Process, callback : ExecCallback? = nil) : Cmd
-    exec(ProcessWrapper.new(process), callback)
+  # ExecProcess runs the given executable in a blocking fashion.
+  # This mirrors Go's exec.Command + tea.ExecProcess behavior: the command
+  # is configured first, then started during program exec with stdio attached.
+  def self.exec_process(command : String, args : Array(String) = [] of String, callback : ExecCallback? = nil) : Cmd
+    exec(OSExecCommand.new(command, args), callback)
   end
 
   # Convenience method to exec a shell command
   def self.exec_shell(command : String, callback : ExecCallback? = nil) : Cmd
-    exec_process(Process.new(command, shell: true), callback)
+    exec(ShellCommand.new(command), callback)
   end
 
-  # ProcessWrapper wraps Crystal's Process to satisfy ExecCommand interface
-  # Matches Go's osExecCommand behavior
-  private class ProcessWrapper
+  # OSExecCommand mirrors Go's *exec.Cmd: configure first, then run.
+  class OSExecCommand
     include ExecCommand
 
-    @process : Process
+    @command : String
+    @args : Array(String)
+    @stdin : IO? = nil
+    @stdout : IO? = nil
+    @stderr : IO? = nil
 
-    def initialize(@process : Process)
+    def initialize(@command : String, @args : Array(String) = [] of String)
     end
 
-    # SetStdin sets stdin only if not already set (matches Go logic)
     # ameba:disable Naming/AccessorMethodName
     def set_stdin(reader : IO)
-      # In Go: if c.Stdin == nil { c.Stdin = r }
-      # Crystal Process input is set at creation time, so we track separately
+      @stdin ||= reader
     end
 
-    # SetStdout sets stdout only if not already set (matches Go logic)
     # ameba:disable Naming/AccessorMethodName
     def set_stdout(writer : IO)
-      # In Go: if c.Stdout == nil { c.Stdout = w }
+      @stdout ||= writer
     end
 
-    # SetStderr sets stderr only if not already set (matches Go logic)
     # ameba:disable Naming/AccessorMethodName
     def set_stderr(writer : IO)
-      # In Go: if c.Stderr == nil { c.Stderr = w }
+      @stderr ||= writer
     end
 
     # ameba:enable Naming/AccessorMethodName
 
     def run : Nil
-      # Execute system command and wait
-      @process.wait
+      input = @stdin ? @stdin.not_nil! : Process::Redirect::Inherit
+      output = @stdout ? @stdout.not_nil! : Process::Redirect::Inherit
+      error = @stderr ? @stderr.not_nil! : Process::Redirect::Inherit
+      process = Process.new(@command, @args, input: input, output: output, error: error)
+      status = process.wait
+      unless status.success?
+        raise Exception.new("command failed with status #{status.exit_code}: #{@command}")
+      end
     rescue ex
-      # Process error - re-raise to be handled by caller
+      raise ex
+    end
+  end
+
+  # ShellCommand runs a command via the system shell.
+  class ShellCommand
+    include ExecCommand
+
+    @command : String
+    @stdin : IO? = nil
+    @stdout : IO? = nil
+    @stderr : IO? = nil
+
+    def initialize(@command : String)
+    end
+
+    # ameba:disable Naming/AccessorMethodName
+    def set_stdin(reader : IO)
+      @stdin ||= reader
+    end
+
+    # ameba:disable Naming/AccessorMethodName
+    def set_stdout(writer : IO)
+      @stdout ||= writer
+    end
+
+    # ameba:disable Naming/AccessorMethodName
+    def set_stderr(writer : IO)
+      @stderr ||= writer
+    end
+
+    # ameba:enable Naming/AccessorMethodName
+
+    def run : Nil
+      input = @stdin ? @stdin.not_nil! : Process::Redirect::Inherit
+      output = @stdout ? @stdout.not_nil! : Process::Redirect::Inherit
+      error = @stderr ? @stderr.not_nil! : Process::Redirect::Inherit
+      process = Process.new(@command, shell: true, input: input, output: output, error: error)
+      status = process.wait
+      unless status.success?
+        raise Exception.new("command failed with status #{status.exit_code}: #{@command}")
+      end
+    rescue ex
       raise ex
     end
   end
