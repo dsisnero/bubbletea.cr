@@ -8,6 +8,9 @@ require "json"
 require "base64"
 require "colorful"
 require "lipgloss"
+{% if flag?(:perf_tools) %}
+  require "perf_tools/fiber_trace"
+{% end %}
 
 module Tea
   # Version
@@ -368,16 +371,43 @@ module Tea
       @interrupted = false
       @killed = false
 
+      {% if flag?(:perf_tools) %}
+        if ENV["TEA_PERF_SCHED"]? == "1"
+          spawn do
+            while @running
+              sleep 2.seconds
+              STDERR.puts("tea: perf fiber snapshot")
+              PerfTools::FiberTrace.pretty_log_fibers(STDERR)
+            end
+          rescue ex
+            STDERR.puts("tea: perf snapshot error #{ex.class}: #{ex.message}")
+          end
+
+          {% if flag?(:unix) %}
+            Signal::USR1.trap do
+              spawn do
+                STDERR.puts("tea: perf fiber snapshot (SIGUSR1)")
+                PerfTools::FiberTrace.pretty_log_fibers(STDERR)
+              rescue ex
+                STDERR.puts("tea: perf snapshot error #{ex.class}: #{ex.message}")
+              end
+            end
+          {% end %}
+        end
+      {% end %}
+
       if err = init_terminal
-        return {model, err}
-      end
-      if err = init_input_reader
         return {model, err}
       end
       check_resize
       start_signal_handler
       init_renderer
       start_renderer
+      if @input
+        if err = init_input_reader
+          return {model, err}
+        end
+      end
 
       # Match Go behavior: query synchronized output support by default.
       # Allow explicit opt-out for problematic terminals.
@@ -483,7 +513,7 @@ module Tea
           when TerminalVersionRequestMsg
             execute("\e[>q")
           when RequestCapabilityMsg
-            execute("\eP+q#{msg.capability}\e\\")
+            execute("\eP+q#{msg.capability.to_slice.hexstring.upcase}\e\\")
           when CapabilityMsg
             if (msg.content == "RGB" || msg.content == "Tc") && @profile != Ultraviolet::ColorProfile::TrueColor
               @profile = Ultraviolet::ColorProfile::TrueColor
@@ -977,11 +1007,13 @@ module Tea
 
       {% if flag?(:unix) %}
         Signal::INT.trap do
-          send(InterruptMsg.new) unless @ignore_signals
+          # Match Go's async signal delivery model: don't send directly from
+          # the trap callback, which can race Crystal's scheduler internals.
+          spawn { send(InterruptMsg.new) unless @ignore_signals }
         end
 
         Signal::TERM.trap do
-          send(QuitMsg.new) unless @ignore_signals
+          spawn { send(QuitMsg.new) unless @ignore_signals }
         end
 
         spawn do

@@ -127,6 +127,7 @@ module Tea
       if cancel_reader = @cancel_reader
         @input_scanner = Ultraviolet::TerminalReader.new(cancel_reader, term_type)
         @input_scanner.try(&.logger = @logger)
+        STDERR.puts("tea: input scanner initialized term=#{term_type.inspect}") if ENV["TEA_DEBUG_IO"]?
       end
 
       @read_loop_done = Channel(Nil).new(1)
@@ -147,13 +148,16 @@ module Tea
         if scanner = @input_scanner
           eventc = Channel(Ultraviolet::Event).new
           stop = @reader_stop
+          STDERR.puts("tea: read_loop start") if ENV["TEA_DEBUG_IO"]?
 
           spawn do
             begin
               scanner.stream_events(eventc, stop)
             rescue ex
+              STDERR.puts("tea: stream_events error #{ex.class}: #{ex.message}") if ENV["TEA_DEBUG_IO"]?
               @errs.send(ex) rescue nil
             ensure
+              STDERR.puts("tea: stream_events finished") if ENV["TEA_DEBUG_IO"]?
               eventc.close
             end
           end
@@ -161,12 +165,15 @@ module Tea
           while @running
             event = eventc.receive?
             break unless event
+            STDERR.puts("tea: event #{event.class}") if ENV["TEA_DEBUG_IO"]?
             send(translate_input_event(event))
           end
         end
       rescue ex
+        STDERR.puts("tea: read_loop error #{ex.class}: #{ex.message}") if ENV["TEA_DEBUG_IO"]?
         @errs.send(ex) rescue nil
       ensure
+        STDERR.puts("tea: read_loop end") if ENV["TEA_DEBUG_IO"]?
         done.send(nil) rescue nil
       end
     end
@@ -226,15 +233,20 @@ module Tea
       end
 
       input_is_tty = @tty_input.try(&.tty?) || false
-      output_is_tty = @tty_output.try(&.tty?) || false
+      _output_is_tty = @tty_output.try(&.tty?) || false
+      if ENV["TEA_DEBUG_IO"]?
+        STDERR.puts("tea: init_input input_tty=#{input_is_tty} output_tty=#{_output_is_tty} input=#{@input.class} output=#{@output.try(&.class)}")
+      end
 
-      return nil unless input_is_tty && output_is_tty
-
-      begin
-        @console = Ultraviolet::Console.new(@input, @output, @env.items)
-        @console.try(&.make_raw)
-      rescue ex
-        return ex
+      # Go parity: raw mode is initialized based on input terminal capability.
+      # Output TTY status is tracked independently for resize handling/queries.
+      if input_is_tty
+        begin
+          @console = Ultraviolet::Console.new(@input, @output, @env.items)
+          @console.try(&.make_raw)
+        rescue ex
+          return ex
+        end
       end
 
       nil

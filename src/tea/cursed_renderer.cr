@@ -554,16 +554,34 @@ module Tea
       @mutex.synchronize do
         return if content.empty?
 
-        # Move to bottom of screen and write content
-        @buf << "\r"
-        @buf << Ansi.cursor_down(@cellbuf.height - 1)
+        w = @cellbuf.width
+        h = @cellbuf.height
+        _x, y = @scr.position
 
-        lines = content.split("\n")
+        @buf << "\r"
+        down = h - y - 1
+        @buf << Ansi.cursor_down(down) if down > 0
+
+        lines = content.split('\n', remove_empty: false)
+        offset = lines.size
         lines.each do |line|
-          @buf << "\r\n#{line}"
+          line_width = Ansi.string_width(Ansi::Method::GraphemeWidth, line)
+          if w > 0 && line_width > w
+            offset += (line_width // w)
+          end
         end
 
-        # Write to output immediately
+        @buf << ("\n" * offset)
+        up = offset + h - 1
+        @buf << Ansi.cursor_up(up)
+        @buf << Ansi.insert_line(offset)
+        lines.each do |line|
+          @buf << line
+          @buf << Ansi::EraseLineRight
+          @buf << "\r\n"
+        end
+
+        @scr.set_position(0, 0)
         @w.write(@buf.to_slice)
         @w.flush
         @buf.clear

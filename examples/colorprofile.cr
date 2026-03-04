@@ -1,7 +1,14 @@
 require "../src/bubbletea"
+require "lipgloss"
 
 class ColorProfileModel
   include Bubbletea::Model
+
+  @fancy_style : Lipgloss::Style
+
+  def initialize
+    @fancy_style = Lipgloss::Style.new.foreground("#6b50ff")
+  end
 
   def init : Bubbletea::Cmd?
     Bubbletea.batch(
@@ -24,15 +31,20 @@ class ColorProfileModel
   def view : Bubbletea::View
     Bubbletea::View.new(
       "This will produce the wrong colors on Apple Terminal :)\n\n" +
-      "Howdy!\n\n" +
+      @fancy_style.render("Howdy!") + "\n\n" +
       "Press any key to exit."
     )
   end
 end
 
-program = Bubbletea::Program.new(ColorProfileModel.new)
-_model, err = program.run
-if err
-  STDERR.puts err.message
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea.new_program(
+    ColorProfileModel.new,
+    Tea.with_color_profile(Ultraviolet::ColorProfile::TrueColor)
+  )
+  _model, err = program.run
+  if err
+    STDERR.puts "Oof: #{err.message}"
+    exit 1
+  end
 end
