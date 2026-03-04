@@ -323,6 +323,8 @@ module Tea
     @errs = Channel(Exception).new(10)
     @finished = Channel(Nil).new(1)
     @mutex = Mutex.new
+    @shutdown_mutex = Mutex.new
+    @shutdown_done = false
     @signal_stop : Channel(Nil)? = nil
 
     # Output handling
@@ -350,6 +352,8 @@ module Tea
       model = @initial_model
       return {nil, Exception.new("No initial model provided")} unless model
       run_context = context || @external_context || ExecutionContext.default
+      @finished = Channel(Nil).new(1)
+      @shutdown_done = false
 
       @output ||= STDOUT
       if @disable_input
@@ -397,6 +401,7 @@ module Tea
       {% end %}
 
       if err = init_terminal
+        restore_terminal_state rescue nil
         return {model, err}
       end
       check_resize
@@ -405,6 +410,7 @@ module Tea
       start_renderer
       if @input
         if err = init_input_reader
+          shutdown(true)
           return {model, err}
         end
       end
@@ -849,6 +855,15 @@ module Tea
 
     # Shutdown performs cleanup and restores terminal state
     def shutdown(kill : Bool)
+      should_shutdown = false
+      @shutdown_mutex.synchronize do
+        unless @shutdown_done
+          @shutdown_done = true
+          should_shutdown = true
+        end
+      end
+      return unless should_shutdown
+
       @running = false
       stop_signal_handler
       @cancel_reader.try(&.cancel)

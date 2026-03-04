@@ -87,7 +87,32 @@ module Tea
       flush rescue nil
 
       # Restore input
-      restore_input
+      if err = restore_input
+        return err
+      end
+
+      # Hard-reset terminal modes on real TTYs to avoid mode leakage when
+      # shutdown ordering races with renderer/input teardown.
+      if (tty_out = @tty_output) && tty_out.tty?
+        begin
+          tty_out << Ansi::ResetModifyOtherKeys
+          tty_out << Ansi.kitty_keyboard(0, 1)
+          tty_out << Ansi::ResetModeBracketedPaste
+          tty_out << Ansi::ResetModeFocusEvent
+          tty_out << Ansi::ResetModeMouseButtonEvent
+          tty_out << Ansi::ResetModeMouseAnyEvent
+          tty_out << Ansi::ResetModeMouseExtSgr
+          tty_out << Ansi::ResetModeAltScreenSaveCursor
+          tty_out << Ansi::SetModeTextCursorEnable
+          tty_out << Ansi::ResetModeSynchronizedOutput
+          tty_out << Ansi::ResetModeUnicodeCore
+          tty_out.flush
+        rescue ex
+          return ex
+        end
+      end
+
+      nil
     end
 
     # Restore TTY input to original state
@@ -99,6 +124,14 @@ module Tea
 
       @cancel_reader.try(&.cancel)
       wait_for_read_loop
+      begin
+        @cancel_reader.try(&.close)
+      rescue ex
+        return ex
+      ensure
+        @cancel_reader = nil
+        @input_scanner = nil
+      end
 
       begin
         @console.try(&.restore)
@@ -114,6 +147,13 @@ module Tea
       if cancel && (reader = @cancel_reader)
         reader.cancel
         wait_for_read_loop
+        begin
+          reader.close
+        rescue ex
+          return ex
+        ensure
+          @cancel_reader = nil
+        end
       end
 
       term_type = @env.getenv("TERM")
@@ -155,7 +195,9 @@ module Tea
               scanner.stream_events(eventc, stop)
             rescue ex
               STDERR.puts("tea: stream_events error #{ex.class}: #{ex.message}") if ENV["TEA_DEBUG_IO"]?
-              @errs.send(ex) rescue nil
+              if @running && !@shutdown_done
+                @errs.send(ex) rescue nil
+              end
             ensure
               STDERR.puts("tea: stream_events finished") if ENV["TEA_DEBUG_IO"]?
               eventc.close
@@ -171,7 +213,9 @@ module Tea
         end
       rescue ex
         STDERR.puts("tea: read_loop error #{ex.class}: #{ex.message}") if ENV["TEA_DEBUG_IO"]?
-        @errs.send(ex) rescue nil
+        if @running && !@shutdown_done
+          @errs.send(ex) rescue nil
+        end
       ensure
         STDERR.puts("tea: read_loop end") if ENV["TEA_DEBUG_IO"]?
         done.send(nil) rescue nil
