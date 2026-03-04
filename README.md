@@ -42,6 +42,21 @@ make clean     # Clean temporary files
 
 Run `bd ready` to find available work (issue tracking via beads).
 
+### Parity Cache Setup
+
+Use repo-local caches so Go/Crystal parity runs don't touch global caches:
+
+```bash
+source ./scripts/parity_env.sh
+./scripts/parity_env.sh --print
+```
+
+Run all example parity specs with the same local caches:
+
+```bash
+make parity-specs
+```
+
 ## Contributing
 
 1. Fork it (<https://github.com/dsisnero/bubbletea/fork>)

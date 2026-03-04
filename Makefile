@@ -1,4 +1,4 @@
-.PHONY: install update format lint test clean build-examples check-go-port-inventory check-go-source-parity check-go-test-parity
+.PHONY: install update format lint test clean build-examples check-go-port-inventory check-go-source-parity check-go-test-parity parity-specs parity-shell
 
 CACHE_ROOT := $(abspath ./temp/cache)
 export CRYSTAL_CACHE_DIR := $(CACHE_ROOT)/crystal
@@ -54,3 +54,9 @@ check-go-source-parity:
 
 check-go-test-parity:
 	./bin/check_go_test_parity.sh . docs/go_test_parity.tsv vendor/bubbletea
+
+parity-specs:
+	./scripts/parity_env.sh crystal spec spec/examples/*_parity_spec.cr
+
+parity-shell:
+	@echo "Run: source ./scripts/parity_env.sh"
