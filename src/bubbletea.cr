@@ -100,33 +100,11 @@ module Bubbletea
   end
 
   def batch(commands : Enumerable(Bubbletea::Cmd?))
-    cmds = [] of Bubbletea::Cmd
-    commands.each do |cmd|
-      cmds << cmd if cmd
-    end
-    case cmds.size
-    when 0
-      nil
-    when 1
-      cmds[0]
-    else
-      -> : Tea::Msg? { Tea::BatchMsg.new(cmds) }
-    end
+    Tea.batch(commands)
   end
 
   def sequence(commands : Enumerable(Bubbletea::Cmd?))
-    cmds = [] of Bubbletea::Cmd
-    commands.each do |cmd|
-      cmds << cmd if cmd
-    end
-    case cmds.size
-    when 0
-      nil
-    when 1
-      cmds[0]
-    else
-      -> : Tea::Msg? { Tea::SequenceMsg.new(cmds) }
-    end
+    Tea.sequence(commands)
   end
 
   def sequentially(commands : Enumerable(Bubbletea::Cmd?))
@@ -147,19 +125,11 @@ module Bubbletea
   end
 
   def sequence(commands : Enumerable)
-    cmds = [] of Bubbletea::Cmd
+    cmds = [] of Bubbletea::Cmd?
     commands.each do |cmd|
-      casted = cmd.as?(Bubbletea::Cmd?)
-      cmds << casted if casted
+      cmds << cmd.as?(Bubbletea::Cmd?)
     end
-    case cmds.size
-    when 0
-      nil
-    when 1
-      cmds[0]
-    else
-      -> : Tea::Msg? { Tea::SequenceMsg.new(cmds) }
-    end
+    Tea.sequence(cmds)
   end
 
   def sequentially(*commands)

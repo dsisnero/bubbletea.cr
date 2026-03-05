@@ -15,7 +15,7 @@ class TextinputModel
     ti.focus
     ti.char_limit = 156
     ti.set_width(20)
-    
+
     @text_input = ti
     @err = nil
     @quitting = false
@@ -58,7 +58,7 @@ class TextinputModel
   end
 
   private def header_view : String
-    "What's your favorite Pokémon?\n"
+    "What’s your favorite Pokémon?\n"
   end
 
   private def footer_view : String
@@ -66,9 +66,11 @@ class TextinputModel
   end
 end
 
-program = Bubbletea::Program.new(TextinputModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(TextinputModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+    exit 1
+  end
 end

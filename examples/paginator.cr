@@ -1,4 +1,4 @@
-require "bubbletea"
+require "../src/bubbletea"
 require "../lib/bubbles/src/bubbles"
 require "lipgloss"
 
@@ -10,11 +10,9 @@ class PaginatorModel
 
   def initialize
     @items = (1..100).map { |i| "Item #{i}" }
-    @paginator = Bubbles::Paginator.new(
-      Bubbles::Paginator.with_total_pages(@items.size),
-      Bubbles::Paginator.with_per_page(10)
-    )
+    @paginator = Bubbles::Paginator.new(Bubbles::Paginator.with_per_page(10))
     @paginator.type = Bubbles::Paginator::Type::Dots
+    @paginator.set_total_pages(@items.size)
     update_styles(true) # default to dark
   end
 
@@ -89,9 +87,11 @@ class PaginatorModel
   end
 end
 
-program = Bubbletea::Program.new(PaginatorModel.new)
-_model, err = program.run
-if err
-  STDERR.puts err.message
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(PaginatorModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts err.message
+    exit 1
+  end
 end

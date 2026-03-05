@@ -1,7 +1,11 @@
 require "../src/bubbletea"
+require "lipgloss"
 
 class AltScreenToggleModel
   include Bubbletea::Model
+
+  KEYWORD_STYLE = Lipgloss::Style.new.foreground("204").background("235")
+  HELP_STYLE    = Lipgloss::Style.new.foreground("241")
 
   def initialize(@altscreen = false, @quitting = false, @suspending = false)
   end
@@ -50,9 +54,9 @@ class AltScreenToggleModel
     mode = @altscreen ? " altscreen mode " : " inline mode "
     content = String.build do |io|
       io << "\n\n  You're in "
-      io << mode
+      io << KEYWORD_STYLE.render(mode)
       io << "\n\n\n"
-      io << "  space: switch modes • ctrl-z: suspend • q: exit\n"
+      io << HELP_STYLE.render("  space: switch modes • ctrl-z: suspend • q: exit\n")
     end
     view = Bubbletea::View.new(content)
     view.alt_screen = @altscreen
@@ -60,10 +64,12 @@ class AltScreenToggleModel
   end
 end
 
-program = Bubbletea::Program.new(AltScreenToggleModel.new)
-model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(AltScreenToggleModel.new)
+  model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+    exit 1
+  end
+  model
 end
-model

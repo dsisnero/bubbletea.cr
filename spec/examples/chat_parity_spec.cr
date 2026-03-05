@@ -10,18 +10,16 @@ private def capture_chat_output : Bytes
     Tea.with_input(IO::Memory.new("")),
     Tea.with_output(output),
     Tea.without_signals,
-    Tea.with_window_size(80, 24),
+    Tea.with_window_size(30, 8),
   )
 
   spawn do
     sleep 120.milliseconds
     program.send(Tea.key('h'))
-    sleep 30.milliseconds
     program.send(Tea.key('i'))
-    sleep 30.milliseconds
     program.send(Tea.key(Tea::KeyEnter))
-    sleep 60.milliseconds
-    program.send(Tea.key(Tea::KeyEsc))
+    sleep 50.milliseconds
+    program.send(Tea::QuitMsg.new)
   end
 
   _model, err = program.run

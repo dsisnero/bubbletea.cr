@@ -1,17 +1,29 @@
 require "../src/bubbletea"
+require "bubbles"
+require "lipgloss"
+
+class SpinnerErrMsg
+  include Tea::Msg
+
+  getter err : String
+
+  def initialize(@err : String)
+  end
+end
 
 class SpinnerModel
   include Bubbletea::Model
 
   def initialize
-    @frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
-    @index = 0
+    @spinner = Bubbles::Spinner.new
+    @spinner.spinner = Bubbles::Spinner::Dot
+    @spinner.style = Lipgloss.new_style.foreground(Lipgloss.color("205"))
     @quitting = false
     @err = nil.as(String?)
   end
 
   def init : Bubbletea::Cmd?
-    tick
+    -> { @spinner.tick.as(Tea::Msg?) }
   end
 
   def update(msg : Tea::Msg)
@@ -24,32 +36,32 @@ class SpinnerModel
       else
         return {self, nil}
       end
-    when Bubbletea::Value
-      if msg.value == "tick"
-        @index = (@index + 1) % @frames.size
-        return {self, tick}
-      end
+    when SpinnerErrMsg
+      @err = msg.err
+      return {self, nil}
+    else
+      @spinner, cmd = @spinner.update(msg)
+      return {self, cmd}
     end
-
-    {self, nil}
   end
 
   def view : Bubbletea::View
     return Bubbletea::View.new(@err.not_nil!) if @err
 
-    str = "\n\n   #{@frames[@index]} Loading forever...press q to quit\n\n"
-    str += "\n" if @quitting
-    Bubbletea::View.new(str)
-  end
-
-  private def tick : Bubbletea::Cmd
-    Bubbletea.tick(100.milliseconds, ->(_t : Time) { Bubbletea["tick"].as(Tea::Msg?) })
+    str = "\n\n   #{@spinner.view} Loading forever...press q to quit\n\n"
+    if @quitting
+      Bubbletea::View.new("#{str}\n")
+    else
+      Bubbletea::View.new(str)
+    end
   end
 end
 
-program = Bubbletea::Program.new(SpinnerModel.new)
-_model, err = program.run
-if err
-  STDERR.puts err.message
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(SpinnerModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts err.message
+    exit 1
+  end
 end

@@ -140,14 +140,14 @@ module Tea
   # Println prints above the Program
   # Output persists across renders
   def self.println(*args) : Cmd
-    msg = args.join(" ")
-    -> : Msg? { PrintLineMsg.new(msg) }
+    content = args.join(" ")
+    (->(captured : String) : Cmd { -> : Msg? { PrintLineMsg.new(captured) } }).call(content)
   end
 
   # Printf prints above the Program with format string
   def self.printf(template : String, *args) : Cmd
-    msg = template % args
-    -> : Msg? { PrintLineMsg.new(msg) }
+    content = template % args
+    (->(captured : String) : Cmd { -> : Msg? { PrintLineMsg.new(captured) } }).call(content)
   end
 
   # PrintLineMsg is used internally for Println/Printf

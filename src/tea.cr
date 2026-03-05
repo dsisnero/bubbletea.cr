@@ -14,7 +14,9 @@ require "lipgloss"
 
 module Tea
   # Version
-  VERSION = "2.0.0"
+  {% unless @type.has_constant?("VERSION") %}
+    VERSION = "2.0.0"
+  {% end %}
 
   # Errors
   class ProgramPanicError < Exception; end
@@ -318,9 +320,9 @@ module Tea
     @quitting : Bool = false
     @killed : Bool = false
     @interrupted : Bool = false
-    @msgs = Channel(Msg).new(100)
-    @cmds = Channel(Cmd).new(100)
-    @errs = Channel(Exception).new(10)
+    @msgs = Channel(Msg).new
+    @cmds = Channel(Cmd).new
+    @errs = Channel(Exception).new(1)
     @finished = Channel(Nil).new(1)
     @mutex = Mutex.new
     @shutdown_mutex = Mutex.new
@@ -400,20 +402,39 @@ module Tea
         end
       {% end %}
 
+      start_signal_handler
       if err = init_terminal
         restore_terminal_state rescue nil
         return {model, err}
       end
-      check_resize
-      start_signal_handler
+
+      # Match Go startup ordering: initialize dimensions before renderer setup.
+      width = @width
+      height = @height
+      if (tty_output = @tty_output)
+        ws = uninitialized LibC::Winsize
+        if LibC.ioctl(tty_output.fd, Ultraviolet::TIOCGWINSZ, pointerof(ws).as(Void*)) == 0
+          width = ws.ws_col.to_i
+          height = ws.ws_row.to_i
+        end
+      end
+      width = 80 if width <= 0
+      height = 24 if height <= 0
+      @width = width
+      @height = height
+
       init_renderer
-      start_renderer
+      resize_msg = WindowSizeMsg.new(@width, @height)
+      spawn { send(resize_msg) }
+      @renderer.try &.resize(@width, @height)
+      spawn { send(EnvMsg.new(@env)) }
       if @input
         if err = init_input_reader
           shutdown(true)
           return {model, err}
         end
       end
+      start_renderer
 
       # Match Go behavior: query synchronized output support by default.
       # Allow explicit opt-out for problematic terminals.
@@ -426,17 +447,13 @@ module Tea
         while @running
           select
           when cmd = @cmds.receive
-            command = cmd
-            spawn do
-              begin
-                msg = command.call
-                send(msg) if msg
-              rescue ex
-                handle_runtime_exception(ex)
-              end
-            end
-          when timeout(100.milliseconds)
-            # Check @running again
+            next unless cmd
+            # Match Go: execute each command in its own fiber so long-running
+            # commands don't block command intake and message delivery order.
+            dispatch_cmd_async(cmd)
+          when timeout(1.millisecond)
+            # Periodically re-check @running without introducing large intake
+            # latency for startup/init commands.
           end
         end
       end
@@ -444,15 +461,8 @@ module Tea
       # Initialize
       cmd = model.init
       if cmd
-        init_cmd = cmd
-        spawn do
-          begin
-            msg = init_cmd.call
-            send(msg) if msg
-          rescue ex
-            handle_runtime_exception(ex)
-          end
-        end
+        # Go parity: route init commands through the command processor.
+        send(cmd)
       end
 
       # Render initial view after startup side effects and init command dispatch.
@@ -510,11 +520,11 @@ module Tea
             execute("\e]52;p;?\a")
           when SetPrimaryClipboardMsg
             execute("\e]52;p;#{Base64.strict_encode(msg.content)}\a")
-          when BackgroundColorMsg
+          when RequestBackgroundColorMsg
             execute("\e]11;?\a")
-          when ForegroundColorMsg
+          when RequestForegroundColorMsg
             execute("\e]10;?\a")
-          when CursorColorMsg
+          when RequestCursorColorMsg
             execute("\e]12;?\a")
           when TerminalVersionRequestMsg
             execute("\e[>q")
@@ -556,16 +566,14 @@ module Tea
           model, cmd = normalize_update_result(model.update(msg))
           send(cmd) if cmd
           render(model)
-        when timeout(1.millisecond)
-          # On single-worker runtimes, explicitly yield so command/input/render
-          # fibers get CPU time and the UI doesn't appear frozen.
-          Fiber.yield
         end
 
         break if @quitting
       end
 
       @running = false
+      # Go parity: perform one final render on graceful shutdown.
+      render(model) unless @interrupted || @killed
       shutdown(false)
       if @interrupted
         {model, InterruptedError.new("program was interrupted")}
@@ -616,7 +624,7 @@ module Tea
       when Cmd
         action
       when Msg
-        -> : Msg? { action }
+        (->(captured : Msg) : Cmd { -> : Msg? { captured } }).call(action)
       else
         raise Exception.new("Second element of Model#update tuple must be Cmd, Msg, or nil")
       end
@@ -635,22 +643,7 @@ module Tea
       done = Channel(Nil).new(commands.size)
       commands.each do |cmd|
         next unless cmd
-        spawn do
-          begin
-            result = cmd.call
-            case result
-            when BatchMsg
-              exec_batch_msg(result)
-            when SequenceMsg
-              exec_sequence_msg(result)
-            else
-              send(result) if result
-            end
-          rescue ex
-            handle_runtime_exception(ex)
-          end
-          done.send(nil)
-        end
+        exec_batch_command_async(cmd, done)
       end
       # Wait for all commands to complete
       commands.size.times { done.receive }
@@ -672,6 +665,37 @@ module Tea
           end
         rescue ex
           handle_runtime_exception(ex)
+        end
+      end
+    end
+
+    private def dispatch_cmd_async(cmd : Cmd)
+      spawn do
+        begin
+          msg = cmd.call
+          send(msg) if msg
+        rescue ex
+          handle_runtime_exception(ex)
+        end
+      end
+    end
+
+    private def exec_batch_command_async(cmd : Cmd, done : Channel(Nil))
+      spawn do
+        begin
+          result = cmd.call
+          case result
+          when BatchMsg
+            exec_batch_msg(result)
+          when SequenceMsg
+            exec_sequence_msg(result)
+          else
+            send(result) if result
+          end
+        rescue ex
+          handle_runtime_exception(ex)
+        ensure
+          done.send(nil)
         end
       end
     end
@@ -967,7 +991,7 @@ module Tea
 
       if profile = @profile
         @renderer.try &.set_color_profile(profile)
-        send(ColorProfileMsg.new(profile))
+        spawn { send(ColorProfileMsg.new(profile)) }
       end
     end
 

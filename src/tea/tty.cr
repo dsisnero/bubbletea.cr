@@ -243,14 +243,14 @@ module Tea
           height = ws.ws_row.to_i
           if width > 0 && height > 0
             @width, @height = width, height
-            send(WindowSizeMsg.new(@width, @height))
+            spawn { send(WindowSizeMsg.new(@width, @height)) }
             return
           end
         end
       elsif @width > 0 && @height > 0
         # Non-TTY outputs (e.g. IO::Memory parity harnesses) still need an
         # initial size event when WithWindowSize has been configured.
-        send(WindowSizeMsg.new(@width, @height))
+        spawn { send(WindowSizeMsg.new(@width, @height)) }
         return
       end
 
@@ -263,17 +263,24 @@ module Tea
         @width = 80
         @height = 24
       end
-      send(WindowSizeMsg.new(@width, @height))
+      spawn { send(WindowSizeMsg.new(@width, @height)) }
     end
 
     # Initialize TTY input (set raw mode, etc.)
     # Platform-specific implementation
     def init_input : Exception?
+      @tty_input = nil
+      @tty_output = nil
+
       if input = @input
-        @tty_input = input.as?(IO::FileDescriptor)
+        if fd = input.as?(IO::FileDescriptor)
+          @tty_input = fd if fd.tty?
+        end
       end
       if output = @output
-        @tty_output = output.as?(IO::FileDescriptor)
+        if fd = output.as?(IO::FileDescriptor)
+          @tty_output = fd if fd.tty?
+        end
       end
 
       input_is_tty = @tty_input.try(&.tty?) || false

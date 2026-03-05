@@ -42,9 +42,11 @@ class SuspendModel
   end
 end
 
-program = Bubbletea::Program.new(SuspendModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(SuspendModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+    exit 1
+  end
 end

@@ -29,9 +29,11 @@ class VanishModel
   end
 end
 
-program = Bubbletea::Program.new(VanishModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Oh no: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(VanishModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Oh no: #{err.message}"
+    exit 1
+  end
 end

@@ -1,6 +1,10 @@
 # Commands for Tea v2-exp
 
 module Tea
+  private def self.bind_msg(msg : Msg) : Cmd
+    (->(captured : Msg) : Cmd { -> : Msg? { captured } }).call(msg)
+  end
+
   # BatchMsg is a container for multiple commands
   struct BatchMsg
     include Msg
@@ -41,7 +45,7 @@ module Tea
     when 1
       cmds[0]
     else
-      -> : Msg? { BatchMsg.new(cmds) }
+      bind_msg(BatchMsg.new(cmds.dup))
     end
   end
 
@@ -57,7 +61,7 @@ module Tea
     when 1
       cmds[0]
     else
-      -> : Msg? { BatchMsg.new(cmds) }
+      bind_msg(BatchMsg.new(cmds.dup))
     end
   end
 
@@ -78,7 +82,7 @@ module Tea
     when 1
       cmds[0]
     else
-      -> : Msg? { SequenceMsg.new(cmds) }
+      bind_msg(SequenceMsg.new(cmds.dup))
     end
   end
 
@@ -94,7 +98,7 @@ module Tea
     when 1
       cmds[0]
     else
-      -> : Msg? { SequenceMsg.new(cmds) }
+      bind_msg(SequenceMsg.new(cmds.dup))
     end
   end
 

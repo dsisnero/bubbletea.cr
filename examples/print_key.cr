@@ -31,8 +31,10 @@ class PrintKeyModel
   end
 end
 
-program = Bubbletea::Program.new(PrintKeyModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(PrintKeyModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+  end
 end

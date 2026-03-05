@@ -351,18 +351,30 @@ module Tea
   end
 
   # RequestBackgroundColor returns a command that requests the terminal background color
+  struct RequestBackgroundColorMsg
+    include Msg
+  end
+
   def self.request_background_color : Cmd
-    -> : Msg? { BackgroundColorMsg.new(Colorful::Color.new(0.0, 0.0, 0.0)) }
+    -> : Msg? { RequestBackgroundColorMsg.new }
   end
 
   # RequestForegroundColor returns a command that requests the terminal foreground color
+  struct RequestForegroundColorMsg
+    include Msg
+  end
+
   def self.request_foreground_color : Cmd
-    -> : Msg? { ForegroundColorMsg.new(Colorful::Color.new(1.0, 1.0, 1.0)) }
+    -> : Msg? { RequestForegroundColorMsg.new }
   end
 
   # RequestCursorColor returns a command that requests the terminal cursor color
+  struct RequestCursorColorMsg
+    include Msg
+  end
+
   def self.request_cursor_color : Cmd
-    -> : Msg? { CursorColorMsg.new(Colorful::Color.new(1.0, 1.0, 1.0)) }
+    -> : Msg? { RequestCursorColorMsg.new }
   end
 
   # Raw prints the given string to the terminal without any formatting.

@@ -11,33 +11,33 @@ license: MIT
 dependencies:
   # Terminal styling and colors
   lipgloss:
-    path: lib/lipgloss  
+    path: /Users/dominic/repos/github.com/dsisnero/lipgloss
   # ANSI sequences and terminal handling
   ansi:
     github: dsisnero/ansi
-  
+
   # Cell wrapping and buffer management
   cellwrap:
     github: dsisnero/cellwrap
-  
+
   cancel_reader:
     github: dsisnero/cancel_reader
-  
+
   colorprofile:
     github: dsisnero/colorprofile
 
   colorful:
     github: dsisnero/colorful
-  
+
   harmonica:
-    path: lib/harmonica
+    path: ../harmonica
 
   # Terminal utilities
   # term:
   #   github: dsisnero/term
-  
+
   ultraviolet:
-    path: /Users/dominic/repos/github.com/dsisnero/ultraviolet
+    path: ../ultraviolet
 
 targets:
   bubbletea:
@@ -47,3 +47,5 @@ development_dependencies:
   ameba:
     github: crystal-ameba/ameba
     version: ~> 1.0
+  perf_tools:
+    github: crystal-lang/perf-tools
