@@ -11,7 +11,7 @@ license: MIT
 dependencies:
   # Terminal styling and colors
   lipgloss:
-    path: /Users/dominic/repos/github.com/dsisnero/lipgloss
+    github: dsisnero/lipgloss
   # ANSI sequences and terminal handling
   ansi:
     github: dsisnero/ansi
@@ -30,14 +30,14 @@ dependencies:
     github: dsisnero/colorful
 
   harmonica:
-    path: ../harmonica
+    github: dsisnero/harmonica
 
   # Terminal utilities
   # term:
   #   github: dsisnero/term
 
   ultraviolet:
-    path: ../ultraviolet
+    github: dsisnero/ultraviolet
 
 targets:
   bubbletea:
@@ -49,3 +49,5 @@ development_dependencies:
     version: ~> 1.0
   perf_tools:
     github: crystal-lang/perf-tools
+  bubbles:
+    github: dsisnero/bubbles
