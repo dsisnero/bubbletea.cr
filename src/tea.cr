@@ -316,6 +316,8 @@ module Tea
 
     # Internal state
     property? ignore_signals : Bool = false
+    @use_hard_tabs : Bool = false
+    @use_backspace : Bool = false
     @running : Bool = false
     @quitting : Bool = false
     @killed : Bool = false
@@ -356,6 +358,9 @@ module Tea
       run_context = context || @external_context || ExecutionContext.default
       @finished = Channel(Nil).new(1)
       @shutdown_done = false
+      @msgs = Channel(Msg).new
+      @cmds = Channel(Cmd).new
+      @errs = Channel(Exception).new(1)
 
       @output ||= STDOUT
       if @disable_input
@@ -444,17 +449,10 @@ module Tea
 
       # Start command processor
       _command_processor = spawn do
-        while @running
-          select
-          when cmd = @cmds.receive
-            next unless cmd
-            # Match Go: execute each command in its own fiber so long-running
-            # commands don't block command intake and message delivery order.
-            dispatch_cmd_async(cmd)
-          when timeout(1.millisecond)
-            # Periodically re-check @running without introducing large intake
-            # latency for startup/init commands.
-          end
+        while cmd = @cmds.receive?
+          # Match Go: execute each command in its own fiber so long-running
+          # commands don't block command intake and message delivery order.
+          dispatch_cmd_async(cmd)
         end
       end
 
@@ -891,6 +889,7 @@ module Tea
       @running = false
       stop_signal_handler
       @cancel_reader.try(&.cancel)
+      @cmds.close rescue nil
       wait_for_read_loop unless kill
       stop_renderer(kill)
       restore_terminal_state rescue nil
@@ -982,7 +981,10 @@ module Tea
         width = @width > 0 ? @width : 80
         height = @height > 0 ? @height : 24
         output = @output || STDOUT
-        @renderer = CursedRenderer.new(output, @env, width, height)
+        cursed = CursedRenderer.new(output, @env, width, height)
+        # Go parity: set cursor movement optimizations from termios support.
+        cursed.set_optimizations(@use_hard_tabs, @use_backspace, false)
+        @renderer = cursed
       end
       if @profile.nil?
         output = @output || STDOUT

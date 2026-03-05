@@ -1,4 +1,4 @@
-require "../src/bubbletea"
+require "../lib/bubbles/src/bubbles"
 
 struct ResponseMsg
   include Tea::Msg
@@ -8,14 +8,18 @@ class RealtimeModel
   include Bubbletea::Model
 
   def initialize
+    @sub = Channel(Nil).new
     @responses = 0
     @quitting = false
-    @spinner = ["-", "\\", "|", "/"]
-    @spin_index = 0
+    @spinner = Bubbles::Spinner.new
   end
 
   def init : Bubbletea::Cmd?
-    Bubbletea.batch(spinner_tick, wait_for_activity)
+    Bubbletea.batch(
+      -> { @spinner.tick.as(Tea::Msg?) },
+      listen_for_activity(@sub),
+      wait_for_activity(@sub),
+    )
   end
 
   def update(msg : Tea::Msg)
@@ -25,36 +29,43 @@ class RealtimeModel
       {self, Bubbletea.quit}
     when ResponseMsg
       @responses += 1
-      {self, wait_for_activity}
-    when Bubbletea::Value
-      if msg.value == "spin"
-        @spin_index = (@spin_index + 1) % @spinner.size
-        return {self, spinner_tick}
-      end
-      {self, nil}
+      {self, wait_for_activity(@sub)}
+    when Bubbles::Spinner::TickMsg
+      @spinner, cmd = @spinner.update(msg)
+      {self, cmd}
     else
       {self, nil}
     end
   end
 
   def view : Bubbletea::View
-    s = "\n #{@spinner[@spin_index]} Events received: #{@responses}\n\n Press any key to exit\n"
+    s = "\n #{@spinner.view} Events received: #{@responses}\n\n Press any key to exit\n"
     s += "\n" if @quitting
     Bubbletea::View.new(s)
   end
 
-  private def wait_for_activity : Bubbletea::Cmd
-    Bubbletea.tick((Random.rand(900) + 100).milliseconds, ->(_t : Time) { ResponseMsg.new.as(Tea::Msg?) })
+  private def listen_for_activity(sub : Channel(Nil)) : Bubbletea::Cmd
+    -> : Tea::Msg? do
+      loop do
+        sleep (Random.rand(900) + 100).milliseconds
+        sub.send(nil)
+      end
+    end
   end
 
-  private def spinner_tick : Bubbletea::Cmd
-    Bubbletea.tick(100.milliseconds, ->(_t : Time) { Bubbletea["spin"].as(Tea::Msg?) })
+  private def wait_for_activity(sub : Channel(Nil)) : Bubbletea::Cmd
+    -> : Tea::Msg? do
+      sub.receive
+      ResponseMsg.new
+    end
   end
 end
 
-program = Bubbletea::Program.new(RealtimeModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "could not start program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(RealtimeModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "could not start program: #{err.message}"
+    exit 1
+  end
 end

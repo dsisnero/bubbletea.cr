@@ -294,13 +294,29 @@ module Tea
       if input_is_tty
         begin
           @console = Ultraviolet::Console.new(@input, @output, @env.items)
-          @console.try(&.make_raw)
+          state = @console.try(&.make_raw)
+          check_optimized_movements(state)
         rescue ex
           return ex
         end
       end
 
       nil
+    end
+
+    private def check_optimized_movements(state : Ultraviolet::TtyState?) : Nil
+      return unless state
+
+      {% if flag?(:win32) %}
+        @use_hard_tabs = true
+        @use_backspace = true
+      {% elsif flag?(:darwin) || flag?(:linux) || flag?(:solaris) || flag?(:aix) %}
+        @use_hard_tabs = Ultraviolet.supports_hard_tabs(state.c_oflag.to_u64)
+        @use_backspace = Ultraviolet.supports_backspace(state.c_lflag.to_u64)
+      {% elsif flag?(:dragonfly) || flag?(:freebsd) %}
+        @use_hard_tabs = Ultraviolet.supports_hard_tabs(state.c_oflag.to_u64)
+      {% else %}
+      {% end %}
     end
 
     # Suspend the process (Unix-specific)

@@ -1,4 +1,5 @@
 require "../src/bubbletea"
+require "lipgloss"
 
 struct SpaceTickMsg
   include Tea::Msg
@@ -11,17 +12,21 @@ end
 class SpaceModel
   include Bubbletea::Model
 
-  def initialize
+  property width : Int32
+  property height : Int32
+  property frame_count : Int32
+
+  def initialize(@rng : Random = Random.new)
+    @colors = [] of Array(String)
     @last_width = 0
     @last_height = 0
     @frame_count = 0
     @width = 0
     @height = 0
-    @shade = [] of Array(Int32)
   end
 
   def init : Bubbletea::Cmd?
-    space_tick_cmd
+    Bubbletea.batch(space_tick_cmd)
   end
 
   def update(msg : Tea::Msg)
@@ -32,7 +37,7 @@ class SpaceModel
       @width = msg.width
       @height = msg.height
       if @width != @last_width || @height != @last_height
-        setup_shade
+        setup_colors
         @last_width = @width
         @last_height = @height
       end
@@ -45,47 +50,53 @@ class SpaceModel
   end
 
   def view : Bubbletea::View
-    title = "Space"
-    rows = [] of String
-    visible_h = {@height - 1, 0}.max
+    title = Lipgloss::Style.new.bold(true).render("Space")
 
-    (0...visible_h).each do |y|
-      row = String.build do |io|
-        (0...@width).each do |x|
-          xi = @width > 0 ? (x + @frame_count) % @width : 0
-          shade = @shade.dig?(y, xi) || 0
-          io << shade_char(shade)
-        end
+    io = String::Builder.new
+    visible_height = @height - 1
+    visible_height = 0 if visible_height < 0
+
+    (0...visible_height).each do |y|
+      (0...@width).each do |x|
+        xi = (x + @frame_count) % @width
+        fg = @colors[y * 2][xi]
+        bg = @colors[y * 2 + 1][xi]
+        io << Lipgloss::Style.new.foreground(fg).background(bg).render("▀")
       end
-      rows << row
+      io << '\n' if y < visible_height - 1
     end
 
-    content = ([title] + rows).join("\n")
-    v = Bubbletea::View.new(content)
-    v.alt_screen = true
-    v
+    Bubbletea::View.new([title, io.to_s].join("\n")).tap { |v| v.alt_screen = true }
   end
 
-  private def setup_shade
-    h = @height
-    @shade = Array.new(h) do |y|
-      Array.new(@width) do
-        base = (h > 0 ? (h - y).to_f / h : 0.0)
-        value = (base + (Random.rand * 0.2) - 0.1).clamp(0.0, 1.0)
-        (value * 9).to_i
+  private def setup_colors
+    h = @height * 2
+    @colors = Array.new(h) { Array.new(@width, "#000000") }
+
+    (0...h).each do |y|
+      randomness_factor = h > 0 ? (h - y).to_f / h.to_f : 0.0
+      (0...@width).each do |x|
+        base_value = randomness_factor * (h > 0 ? (h - y).to_f / h.to_f : 0.0)
+        random_offset = (@rng.rand * 0.2) - 0.1
+        value = clamp(base_value + random_offset, 0.0, 1.0)
+        gray = (value * 255.0).to_i
+        @colors[y][x] = "#%02x%02x%02x" % {gray, gray, gray}
       end
     end
   end
 
-  private def shade_char(level : Int32) : Char
-    chars = " .:-=+*#%@"
-    chars[level.clamp(0, chars.size - 1)]
+  private def clamp(value : Float64, min : Float64, max : Float64) : Float64
+    return min if value < min
+    return max if value > max
+    value
   end
 end
 
-program = Bubbletea.new_program(SpaceModel.new, Bubbletea.with_fps(120))
-_model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea.new_program(SpaceModel.new, Bubbletea.with_fps(120))
+  _model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+    exit 1
+  end
 end

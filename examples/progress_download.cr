@@ -1,7 +1,14 @@
-require "../src/bubbletea"
+require "../lib/bubbles/src/bubbles"
 require "http/client"
+require "option_parser"
+require "uri"
 
-struct DownloadProgressMsg
+PADDING = 2
+MAX_WIDTH = 80
+
+PROGRESS_DOWNLOAD_HELP_STYLE = Lipgloss::Style.new.foreground("#626262")
+
+class ProgressMsg
   include Tea::Msg
   getter ratio : Float64
 
@@ -9,7 +16,7 @@ struct DownloadProgressMsg
   end
 end
 
-struct DownloadErrMsg
+class ProgressErrMsg
   include Tea::Msg
   getter err : Exception
 
@@ -18,89 +25,151 @@ struct DownloadErrMsg
 end
 
 class ProgressWriter
-  property total : Int32
-  property downloaded : Int32
-  property on_progress : Proc(Float64, Nil)?
+  getter total : Int32
+  getter downloaded : Int32
 
-  def initialize(@total : Int32, @downloaded : Int32 = 0, @on_progress = nil)
+  def initialize(@total : Int32, @file : File, @reader : IO, @on_progress : Proc(Float64, Nil)?)
+    @downloaded = 0
   end
 
-  # Go parity for progressWriter.Write
-  def write(bytes : Bytes) : {Int32, Nil}
-    @downloaded += bytes.size
-    if @total > 0
-      if cb = @on_progress
-        cb.call(@downloaded.to_f / @total.to_f)
+  def start
+    buffer = Bytes.new(8192)
+    loop do
+      read = @reader.read(buffer)
+      break if read == 0
+
+      @file.write(buffer[0, read])
+      @downloaded += read
+
+      if @total > 0
+        @on_progress.try &.call(@downloaded.to_f / @total.to_f)
       end
     end
-    {bytes.size, nil}
+  rescue ex
+    ProgressDownloadModel.program.try &.send(ProgressErrMsg.new(ex))
   end
 end
 
 class ProgressDownloadModel
   include Bubbletea::Model
 
-  PADDING   =  2
-  MAX_WIDTH = 80
+  @@program : Bubbletea::Program? = nil
 
-  def initialize
-    @percent = 0.0
-    @width = 40
-    @err = nil.as(Exception?)
-    @writer = ProgressWriter.new(100)
+  property pw : ProgressWriter?
+  property progress : Bubbles::Progress::Model
+  property err : Exception?
+
+  def self.program : Bubbletea::Program?
+    @@program
+  end
+
+  def self.program=(program : Bubbletea::Program?)
+    @@program = program
+  end
+
+  def initialize(@pw : ProgressWriter? = nil, @progress = Bubbles::Progress.new(Bubbles::Progress.with_default_blend))
+    @err = nil
   end
 
   def init : Bubbletea::Cmd?
-    tick
+    nil
   end
 
   def update(msg : Tea::Msg)
     case msg
     when Bubbletea::KeyPressMsg
-      {self, Bubbletea.quit}
+      return {self, Bubbletea.quit}
     when Bubbletea::WindowSizeMsg
-      @width = msg.width - PADDING * 2 - 4
-      @width = MAX_WIDTH if @width > MAX_WIDTH
-      @width = 10 if @width < 10
-      {self, nil}
-    when DownloadErrMsg
-      @err = msg.err
-      {self, Bubbletea.quit}
-    when DownloadProgressMsg
-      @percent = msg.ratio
-      if @percent >= 1.0
-        {self, Bubbletea.sequence(final_pause, Bubbletea.quit)}
-      else
-        {self, tick}
+      @progress.set_width(msg.width - PADDING * 2 - 4)
+      if @progress.width > MAX_WIDTH
+        @progress.set_width(MAX_WIDTH)
       end
-    else
-      {self, nil}
+      return {self, nil}
+    when ProgressErrMsg
+      @err = msg.err
+      return {self, Bubbletea.quit}
+    when ProgressMsg
+      cmds = [] of Tea::Cmd?
+      if msg.ratio >= 1.0
+        cmds << Bubbletea.sequence(final_pause, Bubbletea.quit)
+      end
+      cmds << @progress.set_percent(msg.ratio)
+      return {self, Bubbletea.batch(cmds)}
+    when Bubbles::Progress::FrameMsg
+      @progress, cmd = @progress.update(msg)
+      return {self, cmd}
     end
+
+    {self, nil}
   end
 
   def view : Bubbletea::View
-    return Bubbletea::View.new("Error downloading: #{@err}\n") if @err
+    if err = @err
+      return Bubbletea::View.new("Error downloading: #{err.message}\n")
+    end
 
-    filled = (@width * @percent).to_i
-    bar = "[" + "=" * filled + " " * (@width - filled) + "]"
-    Bubbletea::View.new("\n  #{bar}\n\n  Press any key to quit")
-  end
-
-  private def tick : Bubbletea::Cmd
-    Bubbletea.tick(250.milliseconds, ->(_t : Time) {
-      next_ratio = {@percent + 0.1, 1.0}.min
-      DownloadProgressMsg.new(next_ratio).as(Tea::Msg?)
-    })
+    pad = " " * PADDING
+    Bubbletea::View.new("\n" +
+      pad + @progress.view + "\n\n" +
+      pad + PROGRESS_DOWNLOAD_HELP_STYLE.render("Press any key to quit"))
   end
 
   private def final_pause : Bubbletea::Cmd
-    Bubbletea.tick(750.milliseconds, ->(_t : Time) { nil })
+    Bubbletea.tick(750.milliseconds, ->(_t : Time) { nil.as(Tea::Msg?) })
   end
 end
 
-program = Bubbletea::Program.new(ProgressDownloadModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  url = ""
+  OptionParser.parse do |parser|
+    parser.banner = "Usage: progress_download --url URL"
+    parser.on("--url URL", "url for the file to download") { |value| url = value }
+  end
+
+  if url.empty?
+    STDERR.puts "Usage: progress_download --url URL"
+    exit 1
+  end
+
+  uri = URI.parse(url)
+  response = HTTP::Client.get(uri)
+  unless response.status.ok?
+    STDERR.puts "could not get response receiving status of #{response.status.code} for url: #{url}"
+    exit 1
+  end
+
+  body = response.body
+  content_length = body.bytesize
+  if content_length <= 0
+    STDERR.puts "can't parse content length, aborting download"
+    exit 1
+  end
+
+  filename = File.basename(uri.path)
+  file = File.new(filename, "w")
+
+  model = ProgressDownloadModel.new
+  program = Bubbletea::Program.new(model)
+  ProgressDownloadModel.program = program
+
+  writer = ProgressWriter.new(
+    content_length,
+    file,
+    IO::Memory.new(body),
+    ->(ratio : Float64) { program.send(ProgressMsg.new(ratio)) }
+  )
+
+  spawn do
+    begin
+      writer.start
+    ensure
+      file.close
+    end
+  end
+
+  _model, err = program.run
+  if err
+    STDERR.puts "error running program: #{err.message}"
+    exit 1
+  end
 end

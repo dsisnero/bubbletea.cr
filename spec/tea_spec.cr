@@ -18,6 +18,10 @@ struct PanicMsg
   include Tea::Msg
 end
 
+struct ImmediateLoopMsg
+  include Tea::Msg
+end
+
 # Test model for tea tests
 class TestModel
   include Tea::Model
@@ -55,6 +59,34 @@ class TestModel
   def view : Tea::View
     @executed = true
     Tea::View.new("success")
+  end
+end
+
+class ImmediateLoopModel
+  include Tea::Model
+
+  def init : Tea::Cmd?
+    immediate_cmd
+  end
+
+  def update(msg : Tea::Msg) : Tuple(Tea::Model, Tea::Cmd?)
+    case msg
+    when ImmediateLoopMsg
+      {self, immediate_cmd}
+    when Tea::KeyPressMsg
+      return {self, Tea.quit} if msg.keystroke == "q"
+      {self, nil}
+    else
+      {self, nil}
+    end
+  end
+
+  def view : Tea::View
+    Tea::View.new("looping")
+  end
+
+  private def immediate_cmd : Tea::Cmd
+    -> { ImmediateLoopMsg.new.as(Tea::Msg?) }
   end
 end
 
@@ -103,6 +135,39 @@ describe "Tea" do
       msg.should_not be_nil
       msg.try &.width.should eq(80)
       msg.try &.height.should eq(24)
+    end
+  end
+
+  describe "scheduler fairness" do
+    it "processes quit input while immediate commands are looping" do
+      model = ImmediateLoopModel.new
+      output = IO::Memory.new
+      program = Tea.new_program(
+        model,
+        Tea.with_input(IO::Memory.new("")),
+        Tea.with_output(output),
+        Tea.with_window_size(80, 24),
+        Tea.without_signals,
+      )
+
+      done = Channel(Exception?).new(1)
+      spawn do
+        _result, err = program.run
+        done.send(err)
+      end
+
+      spawn do
+        sleep 25.milliseconds
+        program.send(Tea.key('q'))
+      end
+
+      select
+      when err = done.receive
+        err.should be_nil
+      when timeout(2.seconds)
+        program.quit
+        fail("program did not process quit under immediate command load")
+      end
     end
   end
 

@@ -1,6 +1,37 @@
 require "../spec_helper"
+ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"] = "1"
+require "../../examples/cellbuffer"
+
+private class CellBufferParityModel < CellBufferModel
+  def init : Bubbletea::Cmd?
+    nil
+  end
+end
+
+private def capture_cellbuffer_output : Bytes
+  output = IO::Memory.new
+  program = Bubbletea.new_program(
+    CellBufferParityModel.new,
+    Tea.with_input(IO::Memory.new("")),
+    Tea.with_output(output),
+    Tea.without_signals,
+    Tea.with_window_size(80, 24),
+  )
+
+  spawn do
+    sleep 60.milliseconds
+    program.send(Tea.key('q'))
+  end
+
+  _model, err = program.run
+  raise err.not_nil! if err
+  output.to_slice
+end
 
 describe "examples/cellbuffer parity" do
-  pending "matches the saved Go golden output exactly (capture harness not implemented yet for cellbuffer)" do
+  it "matches the saved Go golden output exactly" do
+    actual = capture_cellbuffer_output
+    expected = File.read("#{__DIR__}/golden/cellbuffer.go.golden").to_slice
+    actual.should eq(expected)
   end
 end

@@ -102,8 +102,11 @@ class HttpModel
 end
 
 program = Bubbletea::Program.new(HttpModel.new)
-_model, err = program.run
-if err
-  STDERR.puts err.message
-  exit 1
+
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  _model, err = program.run
+  if err
+    STDERR.puts err.message
+    exit 1
+  end
 end

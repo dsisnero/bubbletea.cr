@@ -1,26 +1,28 @@
 require "../src/bubbletea"
+require "bubbles"
+require "lipgloss"
 
-PADDING   =  2
-MAX_WIDTH = 80
+PROGRESS_ANIM_PADDING   = 2
+PROGRESS_ANIM_MAX_WIDTH = 80
+PROGRESS_ANIM_HELP_STYLE = Lipgloss::Style.new.foreground(Lipgloss.color("#626262"))
 
-struct ProgressTickMsg
+struct ProgressAnimatedTickMsg
   include Tea::Msg
 end
 
-private def progress_tick_cmd : Bubbletea::Cmd
-  Bubbletea.tick(1.second, ->(_t : Time) { ProgressTickMsg.new.as(Tea::Msg?) })
+private def progress_animated_tick_cmd : Bubbletea::Cmd
+  Bubbletea.tick(1.second, ->(_t : Time) { ProgressAnimatedTickMsg.new.as(Tea::Msg?) })
 end
 
 class ProgressAnimatedModel
   include Bubbletea::Model
 
   def initialize
-    @percent = 0.0
-    @width = 40
+    @progress = Bubbles::Progress.new(Bubbles::Progress.with_default_blend)
   end
 
   def init : Bubbletea::Cmd?
-    progress_tick_cmd
+    progress_animated_tick_cmd
   end
 
   def update(msg : Tea::Msg)
@@ -28,30 +30,39 @@ class ProgressAnimatedModel
     when Bubbletea::KeyPressMsg
       {self, Bubbletea.quit}
     when Bubbletea::WindowSizeMsg
-      @width = msg.width - PADDING * 2 - 4
-      @width = MAX_WIDTH if @width > MAX_WIDTH
-      @width = 10 if @width < 10
+      @progress.set_width(msg.width - PROGRESS_ANIM_PADDING * 2 - 4)
+      if @progress.width > PROGRESS_ANIM_MAX_WIDTH
+        @progress.set_width(PROGRESS_ANIM_MAX_WIDTH)
+      end
       {self, nil}
-    when ProgressTickMsg
-      return {self, Bubbletea.quit} if @percent >= 1.0
-      @percent = {@percent + 0.25, 1.0}.min
-      {self, progress_tick_cmd}
+    when ProgressAnimatedTickMsg
+      return {self, Bubbletea.quit} if @progress.percent == 1.0
+
+      cmd = @progress.incr_percent(0.25)
+      {self, Bubbletea.batch(progress_animated_tick_cmd, cmd)}
+    when Bubbles::Progress::FrameMsg
+      @progress, cmd = @progress.update(msg)
+      {self, cmd}
     else
       {self, nil}
     end
   end
 
   def view : Bubbletea::View
-    filled = (@width * @percent).to_i
-    bar = "[" + "=" * filled + " " * (@width - filled) + "]"
-    pad = " " * PADDING
-    Bubbletea::View.new("\n" + pad + bar + "\n\n" + pad + "Press any key to quit")
+    pad = " " * PROGRESS_ANIM_PADDING
+    Bubbletea::View.new(
+      "\n" +
+      pad + @progress.view + "\n\n" +
+      pad + PROGRESS_ANIM_HELP_STYLE.render("Press any key to quit")
+    )
   end
 end
 
-program = Bubbletea::Program.new(ProgressAnimatedModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Oh no! #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(ProgressAnimatedModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Oh no! #{err.message}"
+    exit 1
+  end
 end

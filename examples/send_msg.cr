@@ -1,7 +1,20 @@
 require "../src/bubbletea"
+require "bubbles"
+require "lipgloss"
 
-struct ResultMsg
+SEND_MSG_SPINNER_STYLE = Lipgloss::Style.new.foreground(Lipgloss.color("63"))
+SEND_MSG_HELP_STYLE = Lipgloss::Style.new.foreground(Lipgloss.color("241")).margin(1, 0)
+SEND_MSG_DOT_STYLE = begin
+  s = SEND_MSG_HELP_STYLE.dup
+  s.unset_margins
+  s
+end
+SEND_MSG_DURATION_STYLE = SEND_MSG_DOT_STYLE
+SEND_MSG_APP_STYLE = Lipgloss::Style.new.margin(1, 2, 0, 2)
+
+class SendMsgResult
   include Tea::Msg
+
   getter duration : Time::Span
   getter food : String
 
@@ -9,24 +22,34 @@ struct ResultMsg
   end
 
   def to_s : String
-    return "." * 30 if @duration.zero?
-    "Ate #{@food} #{@duration}"
+    if @duration.zero?
+      return SEND_MSG_DOT_STYLE.render("." * 30)
+    end
+
+    "🍔 Ate #{@food} #{SEND_MSG_DURATION_STYLE.render(duration_string(@duration))}"
+  end
+
+  private def duration_string(duration : Time::Span) : String
+    "#{duration.total_milliseconds.round.to_i}ms"
   end
 end
 
 class SendMsgModel
   include Bubbletea::Model
-  @results : Array(ResultMsg)
+
+  @spinner : Bubbles::Spinner::Model
+  @results : Array(SendMsgResult)
+  @quitting : Bool
 
   def initialize
-    @spinner = ["-", "\\", "|", "/"]
-    @spin_index = 0
-    @results = Array.new(5) { ResultMsg.new(0.milliseconds, "") }
+    @spinner = Bubbles::Spinner.new
+    @spinner.style = SEND_MSG_SPINNER_STYLE
+    @results = Array.new(5) { SendMsgResult.new(0.milliseconds, "") }
     @quitting = false
   end
 
   def init : Bubbletea::Cmd?
-    spinner_tick
+    -> { @spinner.tick.as(Tea::Msg?) }
   end
 
   def update(msg : Tea::Msg)
@@ -34,16 +57,12 @@ class SendMsgModel
     when Bubbletea::KeyPressMsg
       @quitting = true
       {self, Bubbletea.quit}
-    when ResultMsg
-      @results.shift
-      @results << msg
+    when SendMsgResult
+      @results = @results[1..] + [msg]
       {self, nil}
-    when Bubbletea::Value
-      if msg.value == "spin"
-        @spin_index = (@spin_index + 1) % @spinner.size
-        return {self, spinner_tick}
-      end
-      {self, nil}
+    when Bubbles::Spinner::TickMsg
+      @spinner, cmd = @spinner.update(msg)
+      {self, cmd}
     else
       {self, nil}
     end
@@ -54,38 +73,48 @@ class SendMsgModel
       if @quitting
         io << "That's all for today!"
       else
-        io << @spinner[@spin_index] << " Eating food..."
+        io << @spinner.view
+        io << " Eating food..."
+      end
+      io << "\n\n"
+
+      @results.each do |result|
+        io << result.to_s
+        io << '\n'
       end
 
-      io << "\n\n"
-      @results.each do |res|
-        io << res.to_s << "\n"
-      end
-      io << "\nPress any key to exit" unless @quitting
-      io << "\n" if @quitting
+      io << SEND_MSG_HELP_STYLE.render("Press any key to exit") unless @quitting
+      io << '\n' if @quitting
     end
 
-    Bubbletea::View.new(b)
-  end
-
-  private def spinner_tick : Bubbletea::Cmd
-    Bubbletea.tick(100.milliseconds, ->(_t : Time) { Bubbletea["spin"].as(Tea::Msg?) })
+    Bubbletea::View.new(SEND_MSG_APP_STYLE.render(b))
   end
 end
 
-program = Bubbletea::Program.new(SendMsgModel.new)
-
-spawn do
-  foods = ["an apple", "a pear", "some ramen", "tacos", "a sandwich"]
-  loop do
-    pause = (Random.rand(899) + 100).milliseconds
-    sleep pause
-    program.send(ResultMsg.new(pause, foods.sample || "food"))
-  end
+private def random_food : String
+  foods = [
+    "an apple", "a pear", "a gherkin", "a party gherkin",
+    "a kohlrabi", "some spaghetti", "tacos", "a currywurst", "some curry",
+    "a sandwich", "some peanut butter", "some cashews", "some ramen",
+  ]
+  foods.sample || "food"
 end
 
-_model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(SendMsgModel.new)
+
+  # Simulate activity.
+  spawn do
+    loop do
+      pause = (Random.rand(899) + 100).milliseconds
+      sleep pause
+      program.send(SendMsgResult.new(pause, random_food))
+    end
+  end
+
+  _model, err = program.run
+  if err
+    STDERR.puts "Error running program: #{err.message}"
+    exit 1
+  end
 end

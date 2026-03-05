@@ -1,45 +1,75 @@
-require "../src/bubbletea"
+require "../lib/bubbles/src/bubbles"
 
-struct TimerTickMsg
-  include Tea::Msg
+class TimerKeyMap
+  property start : Bubbles::Key::Binding
+  property stop : Bubbles::Key::Binding
+  property reset : Bubbles::Key::Binding
+  property quit : Bubbles::Key::Binding
+
+  def initialize
+    @start = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("s"),
+      Bubbles::Key.with_help("s", "start"),
+    )
+    @stop = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("s"),
+      Bubbles::Key.with_help("s", "stop"),
+    )
+    @reset = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("r"),
+      Bubbles::Key.with_help("r", "reset"),
+    )
+    @quit = Bubbles::Key.new_binding(
+      Bubbles::Key.with_keys("q", "ctrl+c"),
+      Bubbles::Key.with_help("q", "quit"),
+    )
+  end
 end
 
 class TimerModel
   include Bubbletea::Model
 
-  TIMEOUT_MS = 5000
+  TIMEOUT = 5.seconds
+
+  property timer : Bubbles::Timer::Model
+  property keymap : TimerKeyMap
+  property help : Bubbles::Help::Model
+  property? quitting : Bool
 
   def initialize
-    @remaining_ms = TIMEOUT_MS
-    @running = true
+    @timer = Bubbles::Timer.new(TIMEOUT, Bubbles::Timer.with_interval(1.millisecond))
+    @keymap = TimerKeyMap.new
+    @help = Bubbles::Help.new
     @quitting = false
+    @keymap.start.set_enabled(false)
   end
 
   def init : Bubbletea::Cmd?
-    timer_tick
+    @timer.init
   end
 
   def update(msg : Tea::Msg)
     case msg
-    when TimerTickMsg
-      if @running
-        @remaining_ms -= 1
-        if @remaining_ms <= 0
-          @quitting = true
-          return {self, Bubbletea.quit}
-        end
-        return {self, timer_tick}
-      end
+    when Bubbles::Timer::TickMsg
+      @timer, cmd = @timer.update(msg)
+      return {self, cmd}
+    when Bubbles::Timer::StartStopMsg
+      @timer, cmd = @timer.update(msg)
+      @keymap.stop.set_enabled(@timer.running?)
+      @keymap.start.set_enabled(!@timer.running?)
+      return {self, cmd}
+    when Bubbles::Timer::TimeoutMsg
+      @quitting = true
+      return {self, Bubbletea.quit}
     when Bubbletea::KeyPressMsg
-      case msg.keystroke
-      when "q", "ctrl+c"
+      case
+      when Bubbles::Key.matches?(msg, @keymap.quit)
         @quitting = true
         return {self, Bubbletea.quit}
-      when "r"
-        @remaining_ms = TIMEOUT_MS
-      when "s"
-        @running = !@running
-        return {self, @running ? timer_tick : nil}
+      when Bubbles::Key.matches?(msg, @keymap.reset)
+        @timer.timeout = TIMEOUT
+      when Bubbles::Key.matches?(msg, @keymap.start, @keymap.stop)
+        return {self, @timer.toggle}
       end
     end
 
@@ -47,28 +77,26 @@ class TimerModel
   end
 
   def view : Bubbletea::View
-    if @remaining_ms <= 0
-      return Bubbletea::View.new("All done!\n")
-    end
-
-    sec = @remaining_ms / 1000.0
-    status = @running ? "running" : "stopped"
-    text_output = "Exiting in %.3fs (#{status})\n" % sec
+    s = @timer.view
+    s = "All done!" if @timer.timedout?
+    s += "\n"
     unless @quitting
-      text_output += "\n"
-      text_output += "s: start/stop • r: reset • q: quit\n"
+      s = "Exiting in " + s
+      s += help_view
     end
-    Bubbletea::View.new(text_output)
+    Bubbletea::View.new(s)
   end
 
-  private def timer_tick : Bubbletea::Cmd
-    Bubbletea.tick(1.millisecond, ->(_t : Time) { TimerTickMsg.new.as(Tea::Msg?) })
+  private def help_view : String
+    "\n" + @help.short_help_view([@keymap.start, @keymap.stop, @keymap.reset, @keymap.quit])
   end
 end
 
-program = Bubbletea::Program.new(TimerModel.new)
-_model, err = program.run
-if err
-  STDERR.puts "Error running program: #{err.message}"
-  exit 1
+unless ENV["BUBBLETEA_EXAMPLE_DISABLE_MAIN"]? == "1"
+  program = Bubbletea::Program.new(TimerModel.new)
+  _model, err = program.run
+  if err
+    STDERR.puts "Uh oh, we encountered an error: #{err.message}"
+    exit 1
+  end
 end

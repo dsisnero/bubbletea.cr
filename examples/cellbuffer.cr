@@ -123,7 +123,7 @@ class CellBufferModel
     @y = 0.0
     @x_velocity = 0.0
     @y_velocity = 0.0
-    @spring = Harmonica.new_spring(Harmonica.fps(FPS), FREQUENCY.to_f, DAMPING.to_f)
+    @spring = Harmonica::Spring.new(Harmonica.fps(FPS), FREQUENCY.to_f, DAMPING.to_f)
   end
 
   def init : Bubbletea::Cmd?

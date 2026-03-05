@@ -7,14 +7,14 @@ private def capture_chat_output : Bytes
   output = IO::Memory.new
   program = Bubbletea.new_program(
     ChatModel.new,
-    Tea.with_input(IO::Memory.new("")),
+    Tea.with_input(nil),
     Tea.with_output(output),
     Tea.without_signals,
     Tea.with_window_size(30, 8),
   )
 
   spawn do
-    sleep 120.milliseconds
+    sleep 150.milliseconds
     program.send(Tea.key('h'))
     program.send(Tea.key('i'))
     program.send(Tea.key(Tea::KeyEnter))
