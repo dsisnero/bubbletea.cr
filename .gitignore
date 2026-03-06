@@ -1,10 +1,5 @@
 /docs/
-/lib/**
-!/lib/ultraviolet/
-/lib/ultraviolet/**
-!/lib/ultraviolet/src/
-!/lib/ultraviolet/src/ultraviolet/
-!/lib/ultraviolet/src/ultraviolet/styled.cr
+/lib/
 /bin/
 /.shards/
 /.crystal-cache/
