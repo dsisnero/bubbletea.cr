@@ -1,14 +1,29 @@
-# bubbletea
+<p align="center">
+  <strong>Crystal port of Go's bubbletea TUI framework</strong><br>
+  Terminal user interfaces based on The Elm Architecture
+</p>
 
-Crystal port of the [charmbracelet/bubbletea](https://github.com/charmbracelet/bubbletea) Go library, a framework for building terminal user interfaces based on The Elm Architecture.
+<p align="center">
+  <a href="docs/architecture.md">Architecture</a> &middot;
+  <a href="docs/development.md">Development</a> &middot;
+  <a href="docs/coding-guidelines.md">Guidelines</a> &middot;
+  <a href="docs/testing.md">Testing</a> &middot;
+  <a href="docs/pr-workflow.md">PR Workflow</a> &middot;
+  <a href="docs/porting-parity.md">Porting Parity</a>
+</p>
 
-This is a direct port of the Go implementation, maintaining exact logic and behavior, only differing in Crystal language idioms and standard library usage.
+---
 
-**Source**: The original Go source is available in the `vendor/` submodule at commit [13d882c](https://github.com/charmbracelet/bubbletea/tree/13d882c274bab620b178beac5cce81ed748900bb).
+Bubble Tea is a refreshing drink with layers of flavor; this framework layers
+terminal UI components into elegant applications. Just as bubble tea combines
+tea, milk, and tapioca pearls into a harmonious drink, this framework combines
+models, updates, and views into cohesive terminal interfaces.
 
-## Installation
+---
 
-1. Add the dependency to your `shard.yml`:
+## Quick Start
+
+1. Add to your `shard.yml`:
 
    ```yaml
    dependencies:
@@ -16,57 +31,55 @@ This is a direct port of the Go implementation, maintaining exact logic and beha
        github: dsisnero/bubbletea
    ```
 
-2. Run `shards install`
+2. Install:
 
-## Usage
+   ```bash
+   shards install
+   ```
 
-```crystal
-require "bubbletea"
+3. Use in your code:
 
-# See vendor/examples/ for ported examples
-```
+   ```crystal
+   require "bubbletea"
 
-The API mirrors the Go bubbletea package. Refer to the [original documentation](https://github.com/charmbracelet/bubbletea) for usage patterns.
+   # See bubbletea-examples/ for ported examples
+   ```
+
+## Features
+
+- **Elm Architecture**: Model-Update-View pattern for terminal UIs
+- **Exact Go parity**: Direct port maintaining identical behavior
+- **Command system**: Side effects wrapped in `Cmd` objects
+- **Event handling**: Keyboard, mouse, and custom events
+- **Terminal rendering**: Efficient screen updates and cursor management
 
 ## Development
 
-This project uses standard Crystal development tools:
-
 ```bash
 make install   # Install dependencies
-make format    # Check code formatting
-make lint      # Run ameba linter
 make test      # Run specs
-make clean     # Clean temporary files
+make format    # Format Crystal code
+make lint      # Run Crystal linter
+rumdl fmt docs/ *.md  # Format markdown documentation
 ```
 
-Run `bd ready` to find available work (issue tracking via beads).
+See [Development Guide](docs/development.md) for full setup instructions.
 
-### Parity Cache Setup
+## Documentation
 
-Use repo-local caches so Go/Crystal parity runs don't touch global caches:
-
-```bash
-source ./scripts/parity_env.sh
-./scripts/parity_env.sh --print
-```
-
-Run all example parity specs with the same local caches:
-
-```bash
-make parity-specs
-```
+| Document | Purpose |
+|----------|---------|
+| [Architecture](docs/architecture.md) | System design and data flow |
+| [Development](docs/development.md) | Setup and daily workflow |
+| [Coding Guidelines](docs/coding-guidelines.md) | Code style and conventions |
+| [Testing](docs/testing.md) | Test commands and patterns |
+| [PR Workflow](docs/pr-workflow.md) | Commits, PRs, and review process |
+| [Porting Parity](docs/porting-parity.md) | Upstream source tracking |
 
 ## Contributing
 
-1. Fork it (<https://github.com/dsisnero/bubbletea/fork>)
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
-
-**Porting Guidelines**: This is a direct port of Go code. All logic must match the Go implementation exactly. When adding new functionality, ensure it corresponds to upstream changes. Use the `vendor/` submodule as the source of truth.
-
-## Contributors
-
-- [Dominic Sisneros](https://github.com/dsisnero) - creator and maintainer
+1. Create an issue: `/forge-create-issue`
+2. Implement: `/forge-implement-issue <number>`
+3. Self-review: `/forge-reflect-pr`
+4. Address feedback: `/forge-address-pr-feedback`
+5. Update changelog: `/forge-update-changelog`

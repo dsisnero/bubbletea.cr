@@ -15,3 +15,4 @@
 .dolt/
 *.db
 /vendor/temp
+.claude/
