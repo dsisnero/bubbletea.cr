@@ -1,15 +1,12 @@
 require "./spec_helper"
 
 describe "Pager highlight parity" do
-  it "shows missing HighlightStyle and SelectedHighlightStyle in bubbles viewport" do
-    # Load captured outputs from parity test
-    go_output_path = File.join(__DIR__, "../temp/parity/pager.go.view.txt")
-    crystal_output_path = File.join(__DIR__, "../temp/parity/pager.crystal.view.txt")
+  # Load captured outputs from parity test
+  go_output_path = File.join(__DIR__, "../temp/parity/pager.go.view.txt")
+  crystal_output_path = File.join(__DIR__, "../temp/parity/pager.crystal.view.txt")
 
-    unless File.exists?(go_output_path) && File.exists?(crystal_output_path)
-      pending "Parity capture files not found. Run parity test first."
-      next
-    end
+  if File.exists?(go_output_path) && File.exists?(crystal_output_path)
+    it "shows missing HighlightStyle and SelectedHighlightStyle in bubbles viewport" do
 
     go_output = File.read(go_output_path)
     crystal_output = File.read(crystal_output_path)
@@ -58,10 +55,13 @@ describe "Pager highlight parity" do
     puts "  4. highlightLines method that applies both styles"
     puts "  5. highlightInfo struct with line/column ranges"
 
-    # This test doesn't fail - it documents the disparity
-    # The actual fix requires changes to lib/bubbles
-    # Assertion passes to show test completes
-    go_ansi_count.should be > 0
-    crystal_ansi_count.should be > 0
+      # This test doesn't fail - it documents the disparity
+      # The actual fix requires changes to lib/bubbles
+      # Assertion passes to show test completes
+      go_ansi_count.should be > 0
+      crystal_ansi_count.should be > 0
+    end
+  else
+    pending "Parity capture files not found. Run parity test first."
   end
 end
