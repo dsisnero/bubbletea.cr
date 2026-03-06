@@ -29,6 +29,7 @@ make parity-shell            # Print parity environment setup command
 | [Testing](docs/testing.md) | Test commands, conventions, patterns |
 | [PR Workflow](docs/pr-workflow.md) | Commits, PRs, branch naming, review process |
 | [Porting Parity](docs/porting-parity.md) | Upstream source tracking and parity verification |
+| [Upgrade Guide v2](docs/upgrade_guide_v2.md) | Migration from v1 to v2 (Crystal-specific) |
 
 ## Core Principles
 

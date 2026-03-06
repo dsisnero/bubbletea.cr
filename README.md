@@ -9,7 +9,8 @@
   <a href="docs/coding-guidelines.md">Guidelines</a> &middot;
   <a href="docs/testing.md">Testing</a> &middot;
   <a href="docs/pr-workflow.md">PR Workflow</a> &middot;
-  <a href="docs/porting-parity.md">Porting Parity</a>
+  <a href="docs/porting-parity.md">Porting Parity</a> &middot;
+  <a href="docs/upgrade_guide_v2.md">Upgrade Guide v2</a>
 </p>
 
 ---
@@ -75,6 +76,7 @@ See [Development Guide](docs/development.md) for full setup instructions.
 | [Testing](docs/testing.md) | Test commands and patterns |
 | [PR Workflow](docs/pr-workflow.md) | Commits, PRs, and review process |
 | [Porting Parity](docs/porting-parity.md) | Upstream source tracking |
+| [Upgrade Guide v2](docs/upgrade_guide_v2.md) | Migration from v1 to v2 |
 
 ## Contributing
 
