@@ -1,5 +1,5 @@
 name: bubbletea
-version: 0.1.0
+version: 2.0.0
 
 authors:
   - Dominic Sisneros <dsisnero@gmail.com>
@@ -49,5 +49,3 @@ development_dependencies:
     version: ~> 1.0
   perf_tools:
     github: crystal-lang/perf-tools
-  bubbles:
-    github: dsisnero/bubbles

@@ -30,8 +30,7 @@ module Tea
   end
 
   # In Go v2-exp: type Msg = uv.Event
-  # Event is an alias for Msg in our implementation
-  alias Event = Msg
+  # Note: Ultraviolet::Event is used for input events, Tea::Msg for program messages
 
   # Value wraps any value to make it act as a Msg.
   # This allows primitive types like String, Int32 to be used as messages.
@@ -322,8 +321,8 @@ module Tea
     @quitting : Bool = false
     @killed : Bool = false
     @interrupted : Bool = false
-    @msgs = Channel(Msg).new
-    @cmds = Channel(Cmd).new
+    @msgs = Channel(Msg).new(1000) # Large buffer for high message volume
+    @cmds = Channel(Cmd).new(1000) # Large buffer for high command volume
     @errs = Channel(Exception).new(1)
     @finished = Channel(Nil).new(1)
     @mutex = Mutex.new
@@ -416,7 +415,7 @@ module Tea
       # Match Go startup ordering: initialize dimensions before renderer setup.
       width = @width
       height = @height
-      if (tty_output = @tty_output)
+      if tty_output = @tty_output
         ws = uninitialized LibC::Winsize
         if LibC.ioctl(tty_output.fd, Ultraviolet::TIOCGWINSZ, pointerof(ws).as(Void*)) == 0
           width = ws.ws_col.to_i
