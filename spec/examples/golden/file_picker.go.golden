@@ -1,10 +1,0 @@
-[?2026$p[?2027$p[>4m[=0;1u[?1049h[?25l[?2004h[>4;2m[=1;1u[?u[H[2J
-  Pick a file:
-
-> drwxr-xr-x    96B a_dir
-  -rw-r--r--     7B b.txt
-  -rw-r--r--     7B picked.txt[4d  drwxr-xr-x    96B a_dir
-> -rw-r--r--     7B b.txtM> drwxr-xr-x    96B a_dir
-  -rw-r--r--     7B b.txtM[J> -rw-r--r--     7B inside.txt[3Gdrwxr-xr-x    96B a_dir[K
-  -rw-r--r--     7B b.txt
-  -rw-r--r--     7B picked.txt[>4m[=0;1u[?1049l[?25l[>4;2m[=1;1u[J[>4m[=0;1u[J[?25h[?2004l
