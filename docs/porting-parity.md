@@ -1,6 +1,6 @@
 ---
 upstream_repo: "github.com/charmbracelet/bubbletea"
-pinned_revision: "13d882c274bab620b178beac5cce81ed748900bb"
+pinned_revision: "07a69fbcf1e3649a797a929d724f94170d6affc3"
 import_mode: "submodule"
 upstream_submodule_path: "vendor/bubbletea"
 ---
@@ -10,7 +10,7 @@ upstream_submodule_path: "vendor/bubbletea"
 ## Upstream Source of Truth
 
 - **Repository**: `github.com/charmbracelet/bubbletea`
-- **Pinned revision**: `13d882c274bab620b178beac5cce81ed748900bb`
+- **Pinned revision**: `07a69fbcf1e3649a797a929d724f94170d6affc3`
 - **Import mode**: `submodule`
 - **Upstream path**: `vendor/bubbletea`
 
@@ -44,7 +44,9 @@ upstream_submodule_path: "vendor/bubbletea"
 
 ## Known Deviations
 
-<!-- TODO: List intentional deviations and why they are unavoidable. -->
+- `Bubbletea.exec_process` now mirrors `Tea.exec_process(command, args, callback)`.
+- Example parity captures remain optional because they depend on generated files
+  under `temp/parity/`.
 
 ## Verification Commands
 

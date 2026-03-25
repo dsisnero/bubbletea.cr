@@ -291,8 +291,8 @@ module Bubbletea
     Tea.exec(cmd, callback)
   end
 
-  def exec_process(process, callback = nil)
-    Tea.exec_process(process, callback)
+  def exec_process(command, args = [] of String, callback = nil)
+    Tea.exec_process(command, args, callback)
   end
 
   def exec_shell(command, callback = nil)

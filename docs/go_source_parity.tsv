@@ -1,0 +1,14 @@
+upstream_file	crystal_file	status	notes
+clipboard.go	src/tea/clipboard.cr	Complete	Clipboard commands and messages
+commands.go	src/tea/commands.cr	Complete	Command helpers
+cursed_renderer.go	src/tea/cursed_renderer.cr	Complete	Renderer implementation
+exec.go	src/tea/exec.cr	Complete	ExecProcess and shell wrappers
+key.go	src/tea/key.cr	Complete	Key API and formatting
+logging.go	src/tea/logging.cr	Complete	Log file support
+mouse.go	src/tea/mouse.cr	Complete	Mouse API and formatting
+nil_renderer.go	src/tea/nil_renderer.cr	Complete	Nil renderer
+options.go	src/tea/options.cr	Complete	Program options
+renderer.go	src/tea/renderer.cr	Complete	Renderer interface
+screen.go	src/tea/screen.cr	Complete	Screen commands
+tea.go	src/tea.cr	Complete	Program runtime
+tty.go	src/tea/tty.cr	Complete	TTY integration

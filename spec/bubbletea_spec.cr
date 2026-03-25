@@ -26,4 +26,12 @@ describe Bubbletea do
     Bubbletea::ModShift.should eq(Tea::ModShift)
     Bubbletea::ModCtrl.should eq(Tea::ModCtrl)
   end
+
+  it "forwards exec_process args to Tea" do
+    cmd = Bubbletea.exec_process("echo", ["hello"])
+    cmd.should be_a(Tea::Cmd)
+
+    msg = cmd.call
+    msg.should be_a(Tea::ExecMsg)
+  end
 end

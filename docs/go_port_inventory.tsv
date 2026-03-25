@@ -1,0 +1,33 @@
+upstream_path	crystal_path	status	notes
+clipboard.go	src/tea/clipboard.cr	Complete	Clipboard messages and commands
+commands.go	src/tea/commands.cr	Complete	Command helpers and timers
+cursed_renderer.go	src/tea/cursed_renderer.cr	Complete	Primary renderer implementation
+cursor.go	src/tea.cr	Complete	Cursor and view helpers live in tea.cr
+environ.go	src/tea.cr	Complete	Environment message wiring handled in tea.cr
+exec.go	src/tea/exec.cr	Complete	External command execution
+focus.go	src/tea/messages.cr	Complete	Focus and blur messages
+input.go	src/tea/tty.cr	Complete	Input loop and terminal reader integration
+key.go	src/tea/key.cr	Complete	Key types and formatting helpers
+keyboard.go	src/tea/messages.cr	Complete	Keyboard enhancement messages
+logging.go	src/tea/logging.cr	Complete	Logging support
+mod.go	src/tea.cr	Complete	Key modifier aliases live in tea.cr
+mouse.go	src/tea/mouse.cr	Complete	Mouse types and formatting helpers
+nil_renderer.go	src/tea/nil_renderer.cr	Complete	No-op renderer
+options.go	src/tea/options.cr	Complete	Runtime options
+paste.go	src/tea/messages.cr	Complete	Paste messages
+profile.go	src/tea.cr	Complete	Color profile handling wired in tea.cr
+raw.go	src/tea/messages.cr	Complete	RawMsg support
+renderer.go	src/tea/renderer.cr	Complete	Renderer interface
+screen.go	src/tea/screen.cr	Complete	Screen control commands
+signals_unix.go	src/tea.cr	Complete	Signal handling in Program
+signals_windows.go	src/tea.cr	Complete	Signal handling is conditional in Program
+tea.go	src/tea.cr	Complete	Core runtime loop and Program lifecycle
+termcap.go	src/tea/messages.cr	Complete	Capability request and response messages
+termios_bsd.go	src/tea/tty.cr	Complete	TTY behavior delegated to Ultraviolet/Crystal
+termios_other.go	src/tea/tty.cr	Complete	TTY behavior delegated to Ultraviolet/Crystal
+termios_unix.go	src/tea/tty.cr	Complete	TTY behavior delegated to Ultraviolet/Crystal
+termios_windows.go	src/tea/tty.cr	Complete	TTY behavior delegated to Ultraviolet/Crystal
+tty.go	src/tea/tty.cr	Complete	TTY setup and restore
+tty_unix.go	src/tea/tty.cr	Complete	Unix TTY handling
+tty_windows.go	src/tea/tty.cr	Complete	Windows TTY handling
+xterm.go	src/tea/messages.cr	Complete	XTerm queries and reports

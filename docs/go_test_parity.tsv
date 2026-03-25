@@ -1,0 +1,7 @@
+upstream_test	crystal_spec	status	notes
+commands_test.go	spec/commands_spec.cr	Complete	Command behavior coverage
+exec_test.go	spec/exec_spec.cr	Complete	ExecProcess parity coverage
+logging_test.go	spec/logging_spec.cr	Complete	Logging behavior coverage
+options_test.go	spec/options_spec.cr	Complete	Options parity coverage
+screen_test.go	spec/screen_spec.cr	Complete	Screen behavior coverage
+tea_test.go	spec/tea_spec.cr	Complete	Core runtime parity coverage
