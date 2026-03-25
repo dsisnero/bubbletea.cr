@@ -15,7 +15,7 @@ require "lipgloss"
 module Tea
   # Version
   {% unless @type.has_constant?("VERSION") %}
-    VERSION = "2.0.0"
+    VERSION = "2.0.1"
   {% end %}
 
   # Errors
