@@ -355,234 +355,249 @@ module Tea
       model = @initial_model
       return {nil, Exception.new("No initial model provided")} unless model
       run_context = context || @external_context || ExecutionContext.default
+      cancel_signal = Channel(Nil).new(1)
       @finished = Channel(Nil).new(1)
       @shutdown_done = false
       @msgs = Channel(Msg).new
       @cmds = Channel(Cmd).new
       @errs = Channel(Exception).new(1)
 
-      @output ||= STDOUT
-      if @disable_input
-        @input = nil
-      elsif @input.nil?
-        begin
-          tty_in, _tty_out = TTY.open
-          @input = tty_in
-        rescue ex
-          return {model, Exception.new("bubbletea: error opening TTY: #{ex.message}")}
+      run_context.on_cancel do
+        spawn do
+          cancel_signal.send(nil)
+        rescue Channel::ClosedError
         end
       end
-      if @env.items.empty?
-        @env = Ultraviolet::Environ.new(ENV.map { |k, v| "#{k}=#{v}" })
-      end
 
-      @running = true
-      @quitting = false
-      @interrupted = false
-      @killed = false
-
-      {% if flag?(:perf_tools) %}
-        if ENV["TEA_PERF_SCHED"]? == "1"
-          spawn do
-            while @running
-              sleep 2.seconds
-              STDERR.puts("tea: perf fiber snapshot")
-              PerfTools::FiberTrace.pretty_log_fibers(STDERR)
-            end
+      begin
+        @output ||= STDOUT
+        if @disable_input
+          @input = nil
+        elsif @input.nil?
+          begin
+            tty_in, _tty_out = TTY.open
+            @input = tty_in
           rescue ex
-            STDERR.puts("tea: perf snapshot error #{ex.class}: #{ex.message}")
+            return {model, Exception.new("bubbletea: error opening TTY: #{ex.message}")}
           end
+        end
+        if @env.items.empty?
+          @env = Ultraviolet::Environ.new(ENV.map { |k, v| "#{k}=#{v}" })
+        end
 
-          {% if flag?(:unix) %}
-            Signal::USR1.trap do
-              spawn do
-                STDERR.puts("tea: perf fiber snapshot (SIGUSR1)")
+        @running = true
+        @quitting = false
+        @interrupted = false
+        @killed = false
+
+        {% if flag?(:perf_tools) %}
+          if ENV["TEA_PERF_SCHED"]? == "1"
+            spawn do
+              while @running
+                sleep 2.seconds
+                STDERR.puts("tea: perf fiber snapshot")
                 PerfTools::FiberTrace.pretty_log_fibers(STDERR)
-              rescue ex
-                STDERR.puts("tea: perf snapshot error #{ex.class}: #{ex.message}")
               end
+            rescue ex
+              STDERR.puts("tea: perf snapshot error #{ex.class}: #{ex.message}")
             end
-          {% end %}
-        end
-      {% end %}
 
-      start_signal_handler
-      if err = init_terminal
-        restore_terminal_state rescue nil
-        return {model, err}
-      end
+            {% if flag?(:unix) %}
+              Signal::USR1.trap do
+                spawn do
+                  STDERR.puts("tea: perf fiber snapshot (SIGUSR1)")
+                  PerfTools::FiberTrace.pretty_log_fibers(STDERR)
+                rescue ex
+                  STDERR.puts("tea: perf snapshot error #{ex.class}: #{ex.message}")
+                end
+              end
+            {% end %}
+          end
+        {% end %}
 
-      # Match Go startup ordering: initialize dimensions before renderer setup.
-      width = @width
-      height = @height
-      if tty_output = @tty_output
-        ws = uninitialized LibC::Winsize
-        if LibC.ioctl(tty_output.fd, Ultraviolet::TIOCGWINSZ, pointerof(ws).as(Void*)) == 0
-          width = ws.ws_col.to_i
-          height = ws.ws_row.to_i
-        end
-      end
-      width = 80 if width <= 0
-      height = 24 if height <= 0
-      @width = width
-      @height = height
-
-      init_renderer
-      resize_msg = WindowSizeMsg.new(@width, @height)
-      spawn { send(resize_msg) }
-      @renderer.try &.resize(@width, @height)
-      spawn { send(EnvMsg.new(@env)) }
-      if @input
-        if err = init_input_reader
-          shutdown(true)
+        start_signal_handler
+        if err = init_terminal
+          restore_terminal_state rescue nil
           return {model, err}
         end
-      end
-      start_renderer
 
-      # Match Go behavior: query synchronized output support by default.
-      # Allow explicit opt-out for problematic terminals.
-      if !@disable_renderer && should_query_synchronized_output(@env)
-        execute(Ansi::RequestModeSynchronizedOutput + Ansi::RequestModeUnicodeCore)
-      end
-
-      # Start command processor
-      _command_processor = spawn do
-        while cmd = @cmds.receive?
-          # Match Go: execute each command in its own fiber so long-running
-          # commands don't block command intake and message delivery order.
-          dispatch_cmd_async(cmd)
+        # Match Go startup ordering: initialize dimensions before renderer setup.
+        width = @width
+        height = @height
+        if tty_output = @tty_output
+          ws = uninitialized LibC::Winsize
+          if LibC.ioctl(tty_output.fd, Ultraviolet::TIOCGWINSZ, pointerof(ws).as(Void*)) == 0
+            width = ws.ws_col.to_i
+            height = ws.ws_row.to_i
+          end
         end
-      end
+        width = 80 if width <= 0
+        height = 24 if height <= 0
+        @width = width
+        @height = height
 
-      # Initialize
-      cmd = model.init
-      if cmd
-        # Go parity: route init commands through the command processor.
-        send(cmd)
-      end
+        init_renderer
+        resize_msg = WindowSizeMsg.new(@width, @height)
+        spawn { send(resize_msg) }
+        @renderer.try &.resize(@width, @height)
+        spawn { send(EnvMsg.new(@env)) }
+        if @input
+          if err = init_input_reader
+            shutdown(true)
+            return {model, err}
+          end
+        end
+        start_renderer
 
-      # Render initial view after startup side effects and init command dispatch.
-      render(model)
-
-      # Main event loop
-      loop do
-        if run_context.cancelled?
-          @killed = true
-          break
+        # Match Go behavior: query synchronized output support by default.
+        # Allow explicit opt-out for problematic terminals.
+        if !@disable_renderer && should_query_synchronized_output(@env)
+          execute(Ansi::RequestModeSynchronizedOutput + Ansi::RequestModeUnicodeCore)
         end
 
-        select
-        when err = @errs.receive
-          @killed = true
-          shutdown(true)
-          return {model, err}
-        when msg = @msgs.receive
+        # Start command processor
+        _command_processor = spawn do
+          while cmd = @cmds.receive?
+            # Match Go: execute each command in its own fiber so long-running
+            # commands don't block command intake and message delivery order.
+            dispatch_cmd_async(cmd)
+          end
+        end
+
+        # Initialize
+        cmd = model.init
+        if cmd
+          # Go parity: route init commands through the command processor.
+          send(cmd)
+        end
+
+        # Render initial view after startup side effects and init command dispatch.
+        render(model)
+
+        # Main event loop
+        loop do
+          if run_context.cancelled?
+            @killed = true
+            break
+          end
+
+          select
+          when cancel_signal.receive
+            @killed = true
+            break
+          when err = @errs.receive
+            @killed = true
+            shutdown(true)
+            return {model, err}
+          when msg = @msgs.receive
+            break if @quitting
+
+            # Apply filter if set
+            if filter = @filter
+              msg = filter.call(model, msg)
+              next unless msg
+            end
+
+            # Handle special messages
+            case msg
+            when QuitMsg
+              @quitting = true
+              break
+            when InterruptMsg
+              @quitting = true
+              @interrupted = true
+              break
+            when SuspendMsg
+              suspend if SUSPEND_SUPPORTED
+            when BatchMsg
+              spawn { exec_batch_msg(msg) }
+              next
+            when SequenceMsg
+              spawn { exec_sequence_msg(msg) }
+              next
+            when MouseClickMsg, MouseReleaseMsg, MouseWheelMsg, MouseMotionMsg
+              if renderer = @renderer
+                if cmd = renderer.on_mouse(msg.as(MouseMsg))
+                  send(cmd)
+                end
+              end
+            when ReadClipboardMsg
+              execute("\e]52;c;?\a")
+            when SetClipboardMsg
+              execute("\e]52;c;#{Base64.strict_encode(msg.content)}\a")
+            when ReadPrimaryClipboardMsg
+              execute("\e]52;p;?\a")
+            when SetPrimaryClipboardMsg
+              execute("\e]52;p;#{Base64.strict_encode(msg.content)}\a")
+            when RequestBackgroundColorMsg
+              execute("\e]11;?\a")
+            when RequestForegroundColorMsg
+              execute("\e]10;?\a")
+            when RequestCursorColorMsg
+              execute("\e]12;?\a")
+            when TerminalVersionRequestMsg
+              execute("\e[>q")
+            when RequestCapabilityMsg
+              execute("\eP+q#{msg.capability.to_slice.hexstring.upcase}\e\\")
+            when CapabilityMsg
+              if (msg.content == "RGB" || msg.content == "Tc") && @profile != Ultraviolet::ColorProfile::TrueColor
+                @profile = Ultraviolet::ColorProfile::TrueColor
+                send(ColorProfileMsg.new(@profile.not_nil!))
+              end
+            when ColorProfileMsg
+              @profile = msg.profile
+              @renderer.try &.set_color_profile(msg.profile)
+            when ModeReportMsg
+              if msg.mode == 2026 && msg.value != 0
+                @renderer.try &.syncd_updates=(true)
+              elsif msg.mode == 2027
+                grapheme_width = ->(value : String) { Ansi.string_width(Ansi::Method::GraphemeWidth, value) }
+                @renderer.try &.set_width_method(grapheme_width)
+              end
+            when WindowSizeMsg
+              @renderer.try &.resize(msg.width, msg.height)
+              @width = msg.width
+              @height = msg.height
+            when WindowSizeRequestMsg
+              spawn { check_resize }
+            when PrintLineMsg
+              @renderer.try(&.insert_above(msg.content))
+            when ExecMsg
+              exec(msg.cmd, msg.callback)
+            when RawMsg
+              # Write raw message to output without formatting
+              execute(msg.msg)
+            when ClearScreenMsg
+              @renderer.try &.clear_screen
+            end
+
+            # Update model for all non-terminal control flow messages.
+            model, cmd = normalize_update_result(model.update(msg))
+            send(cmd) if cmd
+            render(model)
+          end
+
           break if @quitting
-
-          # Apply filter if set
-          if filter = @filter
-            msg = filter.call(model, msg)
-            next unless msg
-          end
-
-          # Handle special messages
-          case msg
-          when QuitMsg
-            @quitting = true
-            break
-          when InterruptMsg
-            @quitting = true
-            @interrupted = true
-            break
-          when SuspendMsg
-            suspend if SUSPEND_SUPPORTED
-          when BatchMsg
-            spawn { exec_batch_msg(msg) }
-            next
-          when SequenceMsg
-            spawn { exec_sequence_msg(msg) }
-            next
-          when MouseClickMsg, MouseReleaseMsg, MouseWheelMsg, MouseMotionMsg
-            if renderer = @renderer
-              if cmd = renderer.on_mouse(msg.as(MouseMsg))
-                send(cmd)
-              end
-            end
-          when ReadClipboardMsg
-            execute("\e]52;c;?\a")
-          when SetClipboardMsg
-            execute("\e]52;c;#{Base64.strict_encode(msg.content)}\a")
-          when ReadPrimaryClipboardMsg
-            execute("\e]52;p;?\a")
-          when SetPrimaryClipboardMsg
-            execute("\e]52;p;#{Base64.strict_encode(msg.content)}\a")
-          when RequestBackgroundColorMsg
-            execute("\e]11;?\a")
-          when RequestForegroundColorMsg
-            execute("\e]10;?\a")
-          when RequestCursorColorMsg
-            execute("\e]12;?\a")
-          when TerminalVersionRequestMsg
-            execute("\e[>q")
-          when RequestCapabilityMsg
-            execute("\eP+q#{msg.capability.to_slice.hexstring.upcase}\e\\")
-          when CapabilityMsg
-            if (msg.content == "RGB" || msg.content == "Tc") && @profile != Ultraviolet::ColorProfile::TrueColor
-              @profile = Ultraviolet::ColorProfile::TrueColor
-              send(ColorProfileMsg.new(@profile.not_nil!))
-            end
-          when ColorProfileMsg
-            @profile = msg.profile
-            @renderer.try &.set_color_profile(msg.profile)
-          when ModeReportMsg
-            if msg.mode == 2026 && msg.value != 0
-              @renderer.try &.syncd_updates=(true)
-            elsif msg.mode == 2027
-              grapheme_width = ->(value : String) { Ansi.string_width(Ansi::Method::GraphemeWidth, value) }
-              @renderer.try &.set_width_method(grapheme_width)
-            end
-          when WindowSizeMsg
-            @renderer.try &.resize(msg.width, msg.height)
-            @width = msg.width
-            @height = msg.height
-          when WindowSizeRequestMsg
-            spawn { check_resize }
-          when PrintLineMsg
-            @renderer.try(&.insert_above(msg.content))
-          when ExecMsg
-            exec(msg.cmd, msg.callback)
-          when RawMsg
-            # Write raw message to output without formatting
-            execute(msg.msg)
-          when ClearScreenMsg
-            @renderer.try &.clear_screen
-          end
-
-          # Update model for all non-terminal control flow messages.
-          model, cmd = normalize_update_result(model.update(msg))
-          send(cmd) if cmd
-          render(model)
         end
 
-        break if @quitting
+        @running = false
+        # Go parity: perform one final render on graceful shutdown.
+        render(model) unless @interrupted || @killed
+        shutdown(false)
+        if @interrupted
+          {model, InterruptedError.new("program was interrupted")}
+        elsif @killed
+          {model, ProgramKilledError.new("program was killed")}
+        else
+          {model, nil}
+        end
+      rescue ex
+        @running = false
+        shutdown(true)
+        {model, ex}
+      ensure
+        cancel_signal.close rescue nil
       end
-
-      @running = false
-      # Go parity: perform one final render on graceful shutdown.
-      render(model) unless @interrupted || @killed
-      shutdown(false)
-      if @interrupted
-        {model, InterruptedError.new("program was interrupted")}
-      elsif @killed
-        {model, ProgramKilledError.new("program was killed")}
-      else
-        {model, nil}
-      end
-    rescue ex
-      @running = false
-      shutdown(true)
-      {model, ex}
     end
 
     # Send a command to be executed
@@ -1100,6 +1115,7 @@ module Tea
     end
 
     def cancel
+      return if @cancelled
       @cancelled = true
       @cancel_proc.try &.call
     end
@@ -1109,7 +1125,11 @@ module Tea
     end
 
     def on_cancel(&block : -> Nil)
-      @cancel_proc = block
+      if @cancelled
+        block.call
+      else
+        @cancel_proc = block
+      end
     end
   end
 

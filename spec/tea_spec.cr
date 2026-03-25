@@ -119,6 +119,17 @@ class InitialWindowSizeModel
   end
 end
 
+private def new_noninteractive_program(model : Tea::Model, ctx : Tea::ExecutionContext) : Tea::Program
+  Tea.new_program(
+    model,
+    Tea.with_input(nil),
+    Tea.with_output(IO::Memory.new),
+    Tea.without_renderer,
+    Tea.without_signals,
+    Tea.with_context(ctx),
+  )
+end
+
 describe "Tea" do
   describe "window size parity" do
     it "delivers initial WindowSizeMsg from with_window_size without tty" do
@@ -205,7 +216,7 @@ describe "Tea" do
       # Start program in separate fiber
       spawn do
         # Wait for view to be executed
-        until model.executed
+        until model.executed?
           Fiber.yield
         end
         program.quit
@@ -235,7 +246,7 @@ describe "Tea" do
 
       # Wait for program to start
       spawn do
-        until model.executed
+        until model.executed?
           Fiber.yield
         end
         prog_started.send(nil)
@@ -282,7 +293,7 @@ describe "Tea" do
 
       # Wait for program to start then kill
       spawn do
-        until model.executed
+        until model.executed?
           Fiber.yield
         end
         prog_started.send(nil)
@@ -331,44 +342,40 @@ describe "Tea" do
       err.should be_nil
     end
 
-    pending "handles context cancellation" do
+    it "handles context cancellation" do
       ctx = Tea::ExecutionContext.new
-      buf = IO::Memory.new
-      input = IO::Memory.new
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = new_noninteractive_program(model, ctx)
 
       spawn do
-        until model.executed
+        until model.executed?
           Fiber.yield
         end
         ctx.cancel
       end
 
-      _, err = program.run(ctx)
+      _, err = program.run
 
-      # err.should be_a(Tea::ProgramKilledError)
+      err.should be_a(Tea::ProgramKilledError)
     end
 
-    pending "handles context implosion without deadlock" do
+    it "handles context implosion without deadlock" do
       ctx = Tea::ExecutionContext.new
-      buf = IO::Memory.new
-      input = IO::Memory.new
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = new_noninteractive_program(model, ctx)
 
       spawn do
-        until model.executed
+        until model.executed?
           Fiber.yield
         end
         program.send(CtxImplodeMsg.new(-> { ctx.cancel }))
       end
 
-      _, err = program.run(ctx)
+      _, err = program.run
 
-      # err.should be_a(Tea::ProgramKilledError)
+      err.should be_a(Tea::ProgramKilledError)
     end
 
     pending "handles batch message without deadlock" do
@@ -385,7 +392,7 @@ describe "Tea" do
       program = Tea::Program.new(model)
 
       spawn do
-        until model.executed
+        until model.executed?
           Fiber.yield
         end
         batch = Tea::BatchMsg.new(Array(Tea::Cmd).new(100) { inc_cmd })
@@ -526,7 +533,7 @@ describe "Tea" do
       program = Tea::Program.new(model)
 
       spawn do
-        until model.executed
+        until model.executed?
           Fiber.yield
         end
         program.send(PanicMsg.new)
