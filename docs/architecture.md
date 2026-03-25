@@ -1,10 +1,11 @@
 # Architecture
 
-Crystal port of Go's bubbletea TUI framework, implementing The Elm Architecture for terminal user interfaces.
+Crystal port of Go's bubbletea TUI framework, implementing The Elm Architecture
+for terminal user interfaces.
 
 ## Project Structure
 
-```
+```text
 bubbletea.cr/
 ├── src/                    # Crystal source code
 │   ├── bubbletea.cr       # Main library entry point
@@ -20,12 +21,13 @@ bubbletea.cr/
 ## Data Flow
 
 1. **Model**: Application state defined by user
-2. **Update**: Pure function `(Model, Msg) -> (Model, Cmd)` 
+2. **Update**: Pure function `(Model, Msg) -> (Model, Cmd)`
 3. **View**: Pure function `Model -> String` (terminal output)
 4. **Commands**: Side effects wrapped in `Cmd` objects
 5. **Messages**: Events from user input, timers, or external sources
 
-The runtime (`Tea`) manages the event loop, executing commands, collecting messages, and calling update/view functions.
+The runtime (`Tea`) manages the event loop, executing commands, collecting
+messages, and calling update/view functions.
 
 ## Package/Module Responsibilities
 
