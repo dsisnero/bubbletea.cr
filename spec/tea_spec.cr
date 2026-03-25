@@ -155,7 +155,7 @@ describe "Tea" do
   end
 
   describe "scheduler fairness" do
-    pending "processes quit input while immediate commands are looping" do
+    it "processes quit input while immediate commands are looping" do
       model = ImmediateLoopModel.new
       output = IO::Memory.new
       program = Tea.new_program(
@@ -188,30 +188,38 @@ describe "Tea" do
   end
 
   describe "Model" do
-    pending "runs basic program" do
+    it "runs basic program" do
       buf = IO::Memory.new
       input = IO::Memory.new("q")
 
       ctx = Tea::ExecutionContext.new
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_context(ctx),
+        Tea.with_input(input),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
 
-      # Set up input/output
-      # Note: Full implementation would need proper input/output handling
+      _result, err = program.run
 
-      result, err = program.run(ctx)
-
-      # Verify output was produced
-      # buf.size.should be > 0
+      err.should be_nil
+      buf.size.should be > 0
     end
 
-    pending "quits on command" do
+    it "quits on command" do
       buf = IO::Memory.new
-      input = IO::Memory.new
+      input = IO::Memory.new("")
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(input),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
 
       # Start program in separate fiber
       spawn do
@@ -222,21 +230,27 @@ describe "Tea" do
         program.quit
       end
 
-      result, err = program.run
+      _result, err = program.run
 
       err.should be_nil
     end
 
-    pending "waits for quit" do
+    it "waits for quit" do
       buf = IO::Memory.new
-      input = IO::Memory.new
+      input = IO::Memory.new("")
 
       prog_started = Channel(Nil).new
       wait_started = Channel(Nil).new
-      err_chan = Channel(Exception?).new
+      err_chan = Channel(Exception?).new(1)
+      waiter_done = Channel(Nil).new(5)
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(input),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
 
       # Start program
       spawn do
@@ -259,31 +273,36 @@ describe "Tea" do
       prog_started.receive
 
       # Multiple waiters
-      done_count = 0
       5.times do
         spawn do
-          # Wait implementation would go here
-          done_count += 1
+          program.wait
+          waiter_done.send(nil)
         end
       end
 
       wait_started.send(nil)
-      sleep 100.milliseconds
+      5.times { waiter_done.receive }
 
       err = err_chan.receive
       err.should be_nil
     end
 
-    pending "waits for kill" do
+    it "waits for kill" do
       buf = IO::Memory.new
-      input = IO::Memory.new
+      input = IO::Memory.new("")
 
       prog_started = Channel(Nil).new
       wait_started = Channel(Nil).new
-      err_chan = Channel(Exception?).new
+      err_chan = Channel(Exception?).new(1)
+      waiter_done = Channel(Nil).new(5)
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(input),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
 
       # Start program
       spawn do
@@ -300,7 +319,7 @@ describe "Tea" do
 
         wait_started.receive
         sleep 50.milliseconds
-        # Kill would be implemented here
+        program.kill
       end
 
       prog_started.receive
@@ -308,38 +327,52 @@ describe "Tea" do
       # Multiple waiters
       5.times do
         spawn do
-          # Wait implementation would go here
+          program.wait
+          waiter_done.send(nil)
         end
       end
 
       wait_started.send(nil)
-      sleep 100.milliseconds
+      5.times { waiter_done.receive }
 
       err = err_chan.receive
-      # err.should be_a(Tea::ProgramKilledError)
+      err.should be_a(Tea::ProgramKilledError)
     end
 
-    pending "filters messages" do
-      # Test that filter can prevent quit messages
-      buf = IO::Memory.new
-      input = IO::Memory.new
+    it "filters messages" do
+      [0_u32, 1_u32, 2_u32].each do |prevent_count|
+        buf = IO::Memory.new
+        input = IO::Memory.new("")
+        model = TestModel.new
+        shutdowns = Atomic(UInt32).new(0_u32)
 
-      model = TestModel.new
-      shutdowns = 0
+        program = Tea.new_program(
+          model,
+          Tea.with_input(input),
+          Tea.with_output(buf),
+          Tea.without_signals,
+          Tea.with_filter do |_model, msg|
+            if msg.is_a?(Tea::QuitMsg) && shutdowns.get < prevent_count
+              shutdowns.add(1_u32)
+              nil
+            else
+              msg
+            end
+          end
+        )
 
-      program = Tea::Program.new(model)
-      # Filter would be set here to intercept quit messages
-
-      spawn do
-        until shutdowns >= 3
-          sleep 1.millisecond
-          program.send(Tea::QuitMsg.new)
+        spawn do
+          while shutdowns.get <= prevent_count
+            sleep 1.millisecond
+            program.quit
+          end
         end
+
+        _, err = program.run
+
+        err.should be_nil
+        shutdowns.get.should eq(prevent_count)
       end
-
-      _, err = program.run
-
-      err.should be_nil
     end
 
     it "handles context cancellation" do
@@ -378,10 +411,8 @@ describe "Tea" do
       err.should be_a(Tea::ProgramKilledError)
     end
 
-    pending "handles batch message without deadlock" do
+    it "handles batch message without deadlock" do
       ctx = Tea::ExecutionContext.new
-      buf = IO::Memory.new
-      input = IO::Memory.new
 
       inc_cmd = -> {
         ctx.cancel
@@ -389,7 +420,7 @@ describe "Tea" do
       }
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = new_noninteractive_program(model, ctx)
 
       spawn do
         until model.executed?
@@ -399,19 +430,24 @@ describe "Tea" do
         program.send(batch)
       end
 
-      _, err = program.run(ctx)
+      _, err = program.run
 
-      # err.should be_a(Tea::ProgramKilledError)
+      err.should be_a(Tea::ProgramKilledError)
     end
 
-    pending "handles batch messages" do
+    it "handles batch messages" do
       buf = IO::Memory.new
-      input = IO::Memory.new
+      input = IO::Memory.new("")
 
       inc_cmd = -> { IncrementMsg.new.as(Tea::Msg?) }
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(input),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
 
       spawn do
         batch = Tea::BatchMsg.new([inc_cmd, inc_cmd] of Tea::Cmd)
@@ -429,14 +465,19 @@ describe "Tea" do
       model.counter.should eq 2
     end
 
-    pending "handles sequence messages" do
+    it "handles sequence messages" do
       buf = IO::Memory.new
-      input = IO::Memory.new
+      input = IO::Memory.new("")
 
       inc_cmd = -> { IncrementMsg.new.as(Tea::Msg?) }
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(input),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
 
       spawn do
         seq = Tea::SequenceMsg.new([inc_cmd, inc_cmd, Tea.quit] of Tea::Cmd)
@@ -449,15 +490,20 @@ describe "Tea" do
       model.counter.should eq 2
     end
 
-    pending "handles sequence with batch messages" do
+    it "handles sequence with batch messages" do
       buf = IO::Memory.new
-      input = IO::Memory.new
+      input = IO::Memory.new("")
 
       inc_cmd = -> { IncrementMsg.new.as(Tea::Msg?) }
       batch_cmd = -> { Tea::BatchMsg.new([inc_cmd, inc_cmd] of Tea::Cmd).as(Tea::Msg?) }
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(input),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
 
       spawn do
         seq = Tea::SequenceMsg.new([batch_cmd, inc_cmd, Tea.quit] of Tea::Cmd)
@@ -470,19 +516,24 @@ describe "Tea" do
       model.counter.should eq 3
     end
 
-    pending "handles nested sequence messages" do
+    it "handles nested sequence messages" do
       buf = IO::Memory.new
-      input = IO::Memory.new
+      input = IO::Memory.new("")
 
       inc_cmd = -> { IncrementMsg.new.as(Tea::Msg?) }
 
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(input),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
 
       spawn do
         seq = Tea::SequenceMsg.new([
           inc_cmd,
-          -> { Tea.sequence([inc_cmd, inc_cmd, Tea.batch([inc_cmd, inc_cmd])]).call.as(Tea::Msg?) },
+          -> { Tea.sequence([inc_cmd, inc_cmd, Tea.batch([inc_cmd, inc_cmd])]).not_nil!.call.as(Tea::Msg?) },
           Tea.quit,
         ] of Tea::Cmd)
         program.send(seq)
@@ -494,12 +545,14 @@ describe "Tea" do
       model.counter.should eq 5
     end
 
-    pending "sends messages" do
-      buf = IO::Memory.new
-      input = IO::Memory.new
-
+    it "sends messages" do
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(IO::Memory.new("")),
+        Tea.with_output(IO::Memory.new),
+        Tea.without_signals,
+      )
 
       # Sending before start is a blocking operation
       spawn do
@@ -525,12 +578,14 @@ describe "Tea" do
       program.should be_a(Tea::Program)
     end
 
-    pending "handles panics" do
-      buf = IO::Memory.new
-      input = IO::Memory.new
-
+    it "handles panics" do
       model = TestModel.new
-      program = Tea::Program.new(model)
+      program = Tea.new_program(
+        model,
+        Tea.with_input(IO::Memory.new("")),
+        Tea.with_output(IO::Memory.new),
+        Tea.without_signals,
+      )
 
       spawn do
         until model.executed?
@@ -541,7 +596,8 @@ describe "Tea" do
 
       _, err = program.run
 
-      # err.should be_a(Tea::ProgramPanicError)
+      err.should be_a(Tea::ProgramKilledError)
+      err.not_nil!.cause.should be_a(Tea::ProgramPanicError)
     end
   end
 end

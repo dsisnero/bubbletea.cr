@@ -324,7 +324,7 @@ module Tea
     @msgs = Channel(Msg).new(1000) # Large buffer for high message volume
     @cmds = Channel(Cmd).new(1000) # Large buffer for high command volume
     @errs = Channel(Exception).new(1)
-    @finished = Channel(Nil).new(1)
+    @finished = Channel(Nil).new
     @mutex = Mutex.new
     @shutdown_mutex = Mutex.new
     @shutdown_done = false
@@ -356,7 +356,7 @@ module Tea
       return {nil, Exception.new("No initial model provided")} unless model
       run_context = context || @external_context || ExecutionContext.default
       cancel_signal = Channel(Nil).new(1)
-      @finished = Channel(Nil).new(1)
+      @finished = Channel(Nil).new
       @shutdown_done = false
       @msgs = Channel(Msg).new
       @cmds = Channel(Cmd).new
@@ -488,7 +488,10 @@ module Tea
           when err = @errs.receive
             @killed = true
             shutdown(true)
-            return {model, err}
+            if err.is_a?(ProgramKilledError)
+              return {model, err}
+            end
+            return {model, ProgramKilledError.new("program was killed", cause: err)}
           when msg = @msgs.receive
             break if @quitting
 
@@ -593,8 +596,14 @@ module Tea
         end
       rescue ex
         @running = false
+        @killed = true unless @disable_catch_panics
         shutdown(true)
-        {model, ex}
+        if @disable_catch_panics
+          {model, ex}
+        else
+          panic = ProgramPanicError.new("program experienced a panic: #{ex.message}", cause: ex)
+          {model, ProgramKilledError.new("program was killed", cause: panic)}
+        end
       ensure
         cancel_signal.close rescue nil
       end
@@ -603,6 +612,7 @@ module Tea
     # Send a command to be executed
     def send(cmd : Cmd?)
       return unless cmd
+      return if @shutdown_done
       @cmds.send(cmd) rescue nil
     end
 
@@ -644,6 +654,7 @@ module Tea
 
     # Send a message to the program
     def send(msg : Msg)
+      return if @shutdown_done
       @msgs.send(msg) rescue nil
     end
 
@@ -859,15 +870,18 @@ module Tea
 
     # Kill stops the program immediately and restores terminal state
     def kill
+      return unless @running
       @killed = true
       @quitting = true
-      @running = false
-      shutdown(true)
+      spawn do
+        @errs.send(ProgramKilledError.new("program was killed"))
+      rescue Channel::ClosedError
+      end
     end
 
     # Wait blocks until the program finishes
     def wait
-      @finished.receive
+      @finished.receive?
     end
 
     # Execute writes an ANSI sequence to the output buffer
@@ -907,7 +921,7 @@ module Tea
       wait_for_read_loop unless kill
       stop_renderer(kill)
       restore_terminal_state rescue nil
-      @finished.send(nil) rescue nil
+      @finished.close rescue nil
     end
 
     # exec runs an ExecCommand and delivers results to the program
@@ -960,16 +974,28 @@ module Tea
       err = restore_input
       return err if err
 
+      if renderer = @renderer
+        stop_renderer(false)
+        renderer.reset if reset
+      end
+
       nil
     end
 
     # restore_terminal restores terminal control after external commands
     def restore_terminal : Exception?
+      if err = init_terminal
+        return err
+      end
+
       err = init_input
       return err if err
 
       err = init_input_reader(true)
       return err if err
+
+      start_renderer
+      spawn { check_resize }
 
       nil
     end

@@ -31,29 +31,49 @@ class MockExecCommand
   end
 end
 
+# Exec command that records assigned stdio and can optionally fail.
+class InspectableExecCommand
+  include Tea::ExecCommand
+
+  getter stdin : IO? = nil
+  getter stdout : IO? = nil
+  getter stderr : IO? = nil
+
+  def initialize(@failure : Exception? = nil)
+  end
+
+  def run : Nil
+    @stdout.try &.puts("ok")
+    raise @failure.not_nil! if @failure
+  end
+
+  def set_stdin(reader : IO)
+    @stdin = reader
+  end
+
+  def set_stdout(writer : IO)
+    @stdout = writer
+  end
+
+  def set_stderr(writer : IO)
+    @stderr = writer
+  end
+end
+
 # Test model for exec tests
 class ExecTestModel
   include Tea::Model
 
-  property cmd : String
+  property command : String
+  property args : Array(String)
   property error : Exception? = nil
 
-  def initialize(@cmd : String)
+  def initialize(@command : String, @args : Array(String) = [] of String)
   end
 
   def init : Tea::Cmd?
-    # ExecProcess functionality would be implemented here
-    # For now, return a simple command
-    -> {
-      # Simulate process execution
-      begin
-        # In a real implementation, this would execute the command
-        # and return ExecFinishedMsg with the result
-        ExecFinishedMsg.new(nil).as(Tea::Msg?)
-      rescue ex
-        ExecFinishedMsg.new(ex).as(Tea::Msg?)
-      end
-    }
+    callback = ->(err : Exception?) { ExecFinishedMsg.new(err).as(Tea::Msg?) }
+    Tea.exec_process(@command, @args, callback)
   end
 
   def update(msg : Tea::Msg) : Tuple(Tea::Model, Tea::Cmd?)
@@ -71,6 +91,44 @@ class ExecTestModel
   def view : Tea::View
     Tea::View.new("\n")
   end
+end
+
+class ExecCallbackModel
+  include Tea::Model
+
+  property error : Exception? = nil
+  property completions : Int32 = 0
+
+  def initialize(@cmd : Tea::Cmd)
+  end
+
+  def init : Tea::Cmd?
+    @cmd
+  end
+
+  def update(msg : Tea::Msg) : Tuple(Tea::Model, Tea::Cmd?)
+    case msg
+    when ExecFinishedMsg
+      @completions += 1
+      @error = msg.error if msg.error
+      {self, Tea.quit}
+    else
+      {self, nil}
+    end
+  end
+
+  def view : Tea::View
+    Tea::View.new("\n")
+  end
+end
+
+private def new_exec_program(model : Tea::Model, output : IO = IO::Memory.new) : Tea::Program
+  Tea.new_program(
+    model,
+    Tea.with_input(IO::Memory.new("")),
+    Tea.with_output(output),
+    Tea.without_signals,
+  )
 end
 
 describe "Exec" do
@@ -91,47 +149,47 @@ describe "Exec" do
       cmd.should be_a(Tea::Cmd)
     end
 
-    pending "executes valid command" do
-      # Test executing a valid command (e.g., "true" on Unix)
-      # Skip on Windows
-      {% unless flag?(:windows) %}
-        model = ExecTestModel.new("true")
-        program = Tea::Program.new(model)
+    it "matches upstream process success and failure behavior" do
+      tests = [
+        {"invalid", true},
+      ] of {String, Bool}
 
-        # Run program
+      {% unless flag?(:windows) %}
+        tests << {"true", false}
+        tests << {"false", true}
+      {% end %}
+
+      tests.each do |command, expect_error|
+        model = ExecTestModel.new(command)
+        program = new_exec_program(model)
+
         _, err = program.run
 
         err.should be_nil
-        model.error.should be_nil
-      {% end %}
+        if expect_error
+          model.error.should_not be_nil
+        else
+          model.error.should be_nil
+        end
+      end
     end
 
-    pending "handles invalid command" do
-      model = ExecTestModel.new("invalid_command_that_does_not_exist")
-      program = Tea::Program.new(model)
+    it "passes stdio through to exec commands and delivers the callback message" do
+      command = InspectableExecCommand.new
+      model = ExecCallbackModel.new(
+        Tea.exec(command, ->(err : Exception?) { ExecFinishedMsg.new(err).as(Tea::Msg?) })
+      )
+      output = IO::Memory.new
+      program = new_exec_program(model, output)
 
       _, err = program.run
 
       err.should be_nil
-      model.error.should_not be_nil
-    end
-
-    pending "handles command failure" do
-      # Test executing a command that returns non-zero exit
-      {% unless flag?(:windows) %}
-        model = ExecTestModel.new("false")
-        program = Tea::Program.new(model)
-
-        _, err = program.run
-
-        err.should be_nil
-        model.error.should_not be_nil
-      {% end %}
-    end
-
-    pending "resets renderer after execution" do
-      # Test that the renderer is properly reset after
-      # external command execution
+      model.completions.should eq(1)
+      model.error.should be_nil
+      command.stdin.should_not be_nil
+      command.stdout.should_not be_nil
+      command.stderr.should_not be_nil
     end
   end
 
@@ -191,33 +249,39 @@ describe "Exec" do
   end
 
   describe "External command integration" do
-    pending "sends completion message" do
-      # Test that ExecProcess sends the correct completion
-      # message with error information
+    it "sends completion message errors back to the model" do
+      failure = Exception.new("boom")
+      command = InspectableExecCommand.new(failure)
+      model = ExecCallbackModel.new(
+        Tea.exec(command, ->(err : Exception?) { ExecFinishedMsg.new(err).as(Tea::Msg?) })
+      )
+
+      _, err = new_exec_program(model).run
+
+      err.should be_nil
+      model.completions.should eq(1)
+      model.error.should eq(failure)
     end
 
-    pending "handles concurrent commands" do
-      # Test behavior when multiple external commands
-      # are executed concurrently
-    end
-
-    pending "handles command timeout" do
-      # Test behavior when external command times out
-    end
-  end
-
-  describe "Cross-platform" do
-    pending "handles Windows commands" do
-      # Windows-specific command tests would go here
+    it "runs shell commands on the current platform" do
       {% if flag?(:windows) %}
-        # Test Windows-specific commands
-      {% end %}
-    end
+        model = ExecCallbackModel.new(
+          Tea.exec_shell("echo test", ->(err : Exception?) { ExecFinishedMsg.new(err).as(Tea::Msg?) })
+        )
+        _, err = new_exec_program(model).run
 
-    pending "handles Unix commands" do
-      # Unix-specific command tests would go here
-      {% unless flag?(:windows) %}
-        # Test Unix-specific commands
+        err.should be_nil
+        model.completions.should eq(1)
+        model.error.should be_nil
+      {% else %}
+        model = ExecCallbackModel.new(
+          Tea.exec_shell("printf test >/dev/null", ->(err : Exception?) { ExecFinishedMsg.new(err).as(Tea::Msg?) })
+        )
+        _, err = new_exec_program(model).run
+
+        err.should be_nil
+        model.completions.should eq(1)
+        model.error.should be_nil
       {% end %}
     end
   end
