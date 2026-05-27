@@ -1,0 +1,585 @@
+# source_id	kind	status	crystal_refs	notes
+clipboard.go::func::ReadClipboard	func	ported	src/tea/clipboard.cr	OSC52 clipboard operations
+clipboard.go::func::ReadPrimaryClipboard	func	ported	src/tea/clipboard.cr	OSC52 clipboard operations
+clipboard.go::func::SetClipboard	func	ported	src/tea/clipboard.cr	OSC52 clipboard operations
+clipboard.go::func::SetPrimaryClipboard	func	ported	src/tea/clipboard.cr	OSC52 clipboard operations
+clipboard.go::method::ClipboardMsg.Clipboard	method	ported	src/tea/clipboard.cr	OSC52 clipboard operations
+clipboard.go::method::ClipboardMsg.String	method	ported	src/tea/clipboard.cr	OSC52 clipboard operations
+clipboard.go::struct::ClipboardMsg	struct	ported	src/tea/clipboard.cr	OSC52 clipboard operations
+color.go::func::RequestBackgroundColor	func	ported	src/tea/messages.cr	Color query/response messages
+color.go::func::RequestCursorColor	func	ported	src/tea/messages.cr	Color query/response messages
+color.go::func::RequestForegroundColor	func	ported	src/tea/messages.cr	Color query/response messages
+color.go::method::BackgroundColorMsg.IsDark	method	ported	src/tea/messages.cr	Color query/response messages
+color.go::method::BackgroundColorMsg.String	method	ported	src/tea/messages.cr	Color query/response messages
+color.go::method::CursorColorMsg.IsDark	method	ported	src/tea/messages.cr	Color query/response messages
+color.go::method::CursorColorMsg.String	method	ported	src/tea/messages.cr	Color query/response messages
+color.go::method::ForegroundColorMsg.IsDark	method	ported	src/tea/messages.cr	Color query/response messages
+color.go::method::ForegroundColorMsg.String	method	ported	src/tea/messages.cr	Color query/response messages
+color.go::struct::BackgroundColorMsg	struct	ported	src/tea/messages.cr	Color query/response messages
+color.go::struct::CursorColorMsg	struct	ported	src/tea/messages.cr	Color query/response messages
+color.go::struct::ForegroundColorMsg	struct	ported	src/tea/messages.cr	Color query/response messages
+commands.go::func::Batch	func	ported	src/tea/commands.cr	Command helpers and timers
+commands.go::func::Every	func	ported	src/tea/commands.cr	Command helpers and timers
+commands.go::func::RequestWindowSize	func	ported	src/tea/commands.cr	Command helpers and timers
+commands.go::func::Sequence	func	ported	src/tea/commands.cr	Command helpers and timers
+commands.go::func::Tick	func	ported	src/tea/commands.cr	Command helpers and timers
+commands.go::type::BatchMsg	type	ported	src/tea/commands.cr	Command helpers and timers
+commands_test.go::test::TestBatch	test	missing	-	Go test port not yet started
+commands_test.go::test::TestEvery	test	missing	-	Go test port not yet started
+commands_test.go::test::TestSequence	test	missing	-	Go test port not yet started
+commands_test.go::test::TestTick	test	missing	-	Go test port not yet started
+cursor.go::const::CursorBar	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
+cursor.go::const::CursorBlock	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
+cursor.go::const::CursorUnderline	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
+cursor.go::func::RequestCursorPosition	func	ported	src/tea.cr	Cursor and view helpers in tea.cr
+cursor.go::struct::CursorPositionMsg	struct	ported	src/tea.cr	Cursor and view helpers in tea.cr
+cursor.go::struct::Position	struct	ported	src/tea.cr	Cursor and view helpers in tea.cr
+cursor.go::type::CursorShape	type	ported	src/tea.cr	Cursor and view helpers in tea.cr
+environ.go::method::EnvMsg.Getenv	method	ported	src/tea.cr	Environment message in tea.cr
+environ.go::method::EnvMsg.LookupEnv	method	ported	src/tea.cr	Environment message in tea.cr
+environ.go::type::EnvMsg	type	ported	src/tea.cr	Environment message in tea.cr
+examples/altscreen-toggle/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/altscreen-toggle/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/altscreen-toggle/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/autocomplete/main.go::method::keymap.FullHelp	method	missing	-	Example not yet ported
+examples/autocomplete/main.go::method::keymap.ShortHelp	method	missing	-	Example not yet ported
+examples/autocomplete/main.go::method::model.Cursor	method	missing	-	Example not yet ported
+examples/autocomplete/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/autocomplete/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/autocomplete/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/canvas/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/canvas/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/canvas/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/capability/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/capability/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/capability/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/cellbuffer/main.go::method::cellbuffer.String	method	missing	-	Example not yet ported
+examples/cellbuffer/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/cellbuffer/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/cellbuffer/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/chat/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/chat/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/chat/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/clickable/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/clickable/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/clickable/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/clickable/main.go::struct::LayerHitMsg	struct	missing	-	Example not yet ported
+examples/colorprofile/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/colorprofile/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/colorprofile/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/composable-views/main.go::method::mainModel.Init	method	missing	-	Example not yet ported
+examples/composable-views/main.go::method::mainModel.Next	method	missing	-	Example not yet ported
+examples/composable-views/main.go::method::mainModel.Update	method	missing	-	Example not yet ported
+examples/composable-views/main.go::method::mainModel.View	method	missing	-	Example not yet ported
+examples/cursor-style/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/cursor-style/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/cursor-style/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/debounce/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/debounce/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/debounce/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/doom-fire/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/doom-fire/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/doom-fire/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/exec/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/exec/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/exec/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/eyes/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/eyes/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/eyes/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/file-picker/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/file-picker/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/file-picker/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/focus-blur/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/focus-blur/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/focus-blur/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/fullscreen/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/fullscreen/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/fullscreen/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/glamour/main.go::method::example.Init	method	missing	-	Example not yet ported
+examples/glamour/main.go::method::example.Update	method	missing	-	Example not yet ported
+examples/glamour/main.go::method::example.View	method	missing	-	Example not yet ported
+examples/help/main.go::method::keyMap.FullHelp	method	missing	-	Example not yet ported
+examples/help/main.go::method::keyMap.ShortHelp	method	missing	-	Example not yet ported
+examples/help/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/help/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/help/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/http/main.go::method::errMsg.Error	method	missing	-	Example not yet ported
+examples/http/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/http/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/http/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/isbn-form/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/isbn-form/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/isbn-form/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/keyboard-enhancements/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/keyboard-enhancements/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/keyboard-enhancements/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/list-default/main.go::method::item.Description	method	missing	-	Example not yet ported
+examples/list-default/main.go::method::item.FilterValue	method	missing	-	Example not yet ported
+examples/list-default/main.go::method::item.Title	method	missing	-	Example not yet ported
+examples/list-default/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/list-default/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/list-default/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/list-fancy/delegate.go::method::delegateKeyMap.FullHelp	method	missing	-	Example not yet ported
+examples/list-fancy/delegate.go::method::delegateKeyMap.ShortHelp	method	missing	-	Example not yet ported
+examples/list-fancy/main.go::method::item.Description	method	missing	-	Example not yet ported
+examples/list-fancy/main.go::method::item.FilterValue	method	missing	-	Example not yet ported
+examples/list-fancy/main.go::method::item.Title	method	missing	-	Example not yet ported
+examples/list-fancy/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/list-fancy/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/list-fancy/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/list-simple/main.go::method::item.FilterValue	method	missing	-	Example not yet ported
+examples/list-simple/main.go::method::itemDelegate.Height	method	missing	-	Example not yet ported
+examples/list-simple/main.go::method::itemDelegate.Render	method	missing	-	Example not yet ported
+examples/list-simple/main.go::method::itemDelegate.Spacing	method	missing	-	Example not yet ported
+examples/list-simple/main.go::method::itemDelegate.Update	method	missing	-	Example not yet ported
+examples/list-simple/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/list-simple/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/list-simple/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/mouse/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/mouse/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/mouse/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/package-manager/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/package-manager/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/package-manager/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/pager/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/pager/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/pager/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/paginator/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/paginator/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/paginator/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/pipe/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/pipe/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/pipe/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/prevent-quit/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/prevent-quit/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/prevent-quit/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/print-key/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/print-key/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/print-key/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/progress-animated/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/progress-animated/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/progress-animated/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/progress-bar/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/progress-bar/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/progress-bar/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/progress-download/main.go::method::progressWriter.Start	method	missing	-	Example not yet ported
+examples/progress-download/main.go::method::progressWriter.Write	method	missing	-	Example not yet ported
+examples/progress-download/tui.go::method::model.Init	method	missing	-	Example not yet ported
+examples/progress-download/tui.go::method::model.Update	method	missing	-	Example not yet ported
+examples/progress-download/tui.go::method::model.View	method	missing	-	Example not yet ported
+examples/progress-static/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/progress-static/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/progress-static/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/query-term/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/query-term/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/query-term/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/realtime/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/realtime/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/realtime/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/result/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/result/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/result/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/send-msg/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/send-msg/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/send-msg/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/send-msg/main.go::method::resultMsg.String	method	missing	-	Example not yet ported
+examples/sequence/main.go::func::SleepPrintln	func	missing	-	Example not yet ported
+examples/sequence/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/sequence/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/sequence/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/set-terminal-color/main.go::method::colorType.String	method	missing	-	Example not yet ported
+examples/set-terminal-color/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/set-terminal-color/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/set-terminal-color/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/set-window-title/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/set-window-title/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/set-window-title/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/simple/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/simple/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/simple/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/simple/main_test.go::test::TestApp	test	missing	-	Example not yet ported
+examples/simple/main_test.go::test::TestAppInteractive	test	missing	-	Example not yet ported
+examples/space/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/space/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/space/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/spinner/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/spinner/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/spinner/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/spinners/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/spinners/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/spinners/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/splash/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/splash/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/splash/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/split-editors/main.go::method::model.Cursor	method	missing	-	Example not yet ported
+examples/split-editors/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/split-editors/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/split-editors/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/stopwatch/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/stopwatch/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/stopwatch/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/suspend/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/suspend/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/suspend/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Bug	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Electric	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Fire	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Flying	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Grass	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Ground	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::None	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Normal	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Poison	const	missing	-	Example not yet ported
+examples/table-resize/main.go::const::Water	const	missing	-	Example not yet ported
+examples/table-resize/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/table-resize/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/table-resize/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/table/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/table/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/table/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/tabs/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/tabs/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/tabs/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/textarea/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/textarea/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/textarea/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/textinput/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/textinput/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/textinput/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/textinputs/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/textinputs/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/textinputs/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/timer/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/timer/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/timer/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/tui-daemon-combo/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/tui-daemon-combo/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/tui-daemon-combo/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/vanish/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/vanish/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/vanish/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/views/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/views/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/views/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/window-size/main.go::method::model.Init	method	missing	-	Example not yet ported
+examples/window-size/main.go::method::model.Update	method	missing	-	Example not yet ported
+examples/window-size/main.go::method::model.View	method	missing	-	Example not yet ported
+exec.go::func::Exec	func	ported	src/tea/exec.cr	External command execution
+exec.go::func::ExecProcess	func	ported	src/tea/exec.cr	External command execution
+exec.go::method::osExecCommand.SetStderr	method	ported	src/tea/exec.cr	External command execution
+exec.go::method::osExecCommand.SetStdin	method	ported	src/tea/exec.cr	External command execution
+exec.go::method::osExecCommand.SetStdout	method	ported	src/tea/exec.cr	External command execution
+exec.go::type::ExecCallback	type	ported	src/tea/exec.cr	External command execution
+exec.go::type::ExecCommand	type	ported	src/tea/exec.cr	External command execution
+exec_test.go::test::TestTeaExec	test	missing	-	Go test port not yet started
+focus.go::struct::BlurMsg	struct	ported	src/tea/messages.cr	Focus and blur messages
+focus.go::struct::FocusMsg	struct	ported	src/tea/messages.cr	Focus and blur messages
+key.go::const::KeyBackspace	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyBegin	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyCapsLock	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyDelete	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyDown	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyEnd	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyEnter	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyEsc	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyEscape	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyExtended	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF1	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF10	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF11	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF12	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF13	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF14	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF15	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF16	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF17	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF18	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF19	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF2	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF20	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF21	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF22	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF23	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF24	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF25	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF26	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF27	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF28	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF29	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF3	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF30	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF31	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF32	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF33	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF34	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF35	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF36	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF37	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF38	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF39	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF4	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF40	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF41	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF42	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF43	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF44	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF45	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF46	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF47	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF48	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF49	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF5	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF50	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF51	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF52	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF53	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF54	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF55	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF56	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF57	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF58	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF59	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF6	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF60	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF61	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF62	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF63	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF7	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF8	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyF9	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyFind	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyHome	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyInsert	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyIsoLevel3Shift	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyIsoLevel5Shift	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp0	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp1	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp2	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp3	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp4	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp5	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp6	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp7	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp8	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKp9	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpBegin	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpComma	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpDecimal	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpDelete	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpDivide	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpDown	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpEnd	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpEnter	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpEqual	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpHome	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpInsert	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpLeft	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpMinus	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpMultiply	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpPgDown	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpPgUp	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpPlus	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpRight	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpSep	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyKpUp	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyLeft	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyLeftAlt	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyLeftCtrl	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyLeftHyper	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyLeftMeta	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyLeftShift	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyLeftSuper	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyLowerVol	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaFastForward	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaNext	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaPause	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaPlay	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaPlayPause	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaPrev	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaRecord	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaReverse	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaRewind	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMediaStop	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMenu	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyMute	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyNumLock	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyPause	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyPgDown	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyPgUp	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyPrintScreen	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyRaiseVol	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyReturn	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyRight	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyRightAlt	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyRightCtrl	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyRightHyper	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyRightMeta	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyRightShift	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyRightSuper	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyScrollLock	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeySelect	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeySpace	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyTab	const	ported	src/tea/key.cr	Key types and formatting
+key.go::const::KeyUp	const	ported	src/tea/key.cr	Key types and formatting
+key.go::method::Key.Keystroke	method	ported	src/tea/key.cr	Key types and formatting
+key.go::method::Key.String	method	ported	src/tea/key.cr	Key types and formatting
+key.go::method::KeyPressMsg.Key	method	ported	src/tea/key.cr	Key types and formatting
+key.go::method::KeyPressMsg.Keystroke	method	ported	src/tea/key.cr	Key types and formatting
+key.go::method::KeyPressMsg.String	method	ported	src/tea/key.cr	Key types and formatting
+key.go::method::KeyReleaseMsg.Key	method	ported	src/tea/key.cr	Key types and formatting
+key.go::method::KeyReleaseMsg.Keystroke	method	ported	src/tea/key.cr	Key types and formatting
+key.go::method::KeyReleaseMsg.String	method	ported	src/tea/key.cr	Key types and formatting
+key.go::struct::Key	struct	ported	src/tea/key.cr	Key types and formatting
+key.go::type::KeyMsg	type	ported	src/tea/key.cr	Key types and formatting
+key.go::type::KeyPressMsg	type	ported	src/tea/key.cr	Key types and formatting
+key.go::type::KeyReleaseMsg	type	ported	src/tea/key.cr	Key types and formatting
+keyboard.go::method::KeyboardEnhancementsMsg.SupportsEventTypes	method	ported	src/tea/messages.cr	Keyboard enhancement messages
+keyboard.go::method::KeyboardEnhancementsMsg.SupportsAlternateKeys	method	ported	src/tea/messages.cr	v2.0.6: supports alternate key reporting
+keyboard.go::method::KeyboardEnhancementsMsg.SupportsAllKeysAsEscapeCodes	method	ported	src/tea/messages.cr	v2.0.6: supports all keys as escape codes
+keyboard.go::method::KeyboardEnhancementsMsg.SupportsAssociatedText	method	ported	src/tea/messages.cr	v2.0.6: supports associated text reporting
+keyboard.go::method::KeyboardEnhancementsMsg.SupportsKeyDisambiguation	method	ported	src/tea/messages.cr	Keyboard enhancement messages
+keyboard.go::struct::KeyboardEnhancementsMsg	struct	ported	src/tea/messages.cr	Keyboard enhancement messages
+logging.go::func::LogToFile	func	ported	src/tea/logging.cr	Logging support
+logging.go::func::LogToFileWith	func	ported	src/tea/logging.cr	Logging support
+logging.go::type::LogOptionsSetter	type	ported	src/tea/logging.cr	Logging support
+logging_test.go::test::TestLogToFile	test	missing	-	Go test port not yet started
+mod.go::const::ModAlt	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::const::ModCapsLock	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::const::ModCtrl	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::const::ModHyper	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::const::ModMeta	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::const::ModNumLock	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::const::ModScrollLock	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::const::ModShift	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::const::ModSuper	const	ported	src/tea.cr	Key modifier constants in tea.cr
+mod.go::type::KeyMod	type	ported	src/tea.cr	Key modifier constants in tea.cr
+mouse.go::const::MouseBackward	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseButton10	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseButton11	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseForward	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseLeft	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseMiddle	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseNone	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseRight	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseWheelDown	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseWheelLeft	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseWheelRight	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::const::MouseWheelUp	const	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::Mouse.String	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::MouseClickMsg.Mouse	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::MouseClickMsg.String	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::MouseMotionMsg.Mouse	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::MouseMotionMsg.String	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::MouseReleaseMsg.Mouse	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::MouseReleaseMsg.String	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::MouseWheelMsg.Mouse	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::method::MouseWheelMsg.String	method	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::struct::Mouse	struct	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::type::MouseButton	type	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::type::MouseClickMsg	type	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::type::MouseMotionMsg	type	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::type::MouseMsg	type	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::type::MouseReleaseMsg	type	ported	src/tea/mouse.cr	Mouse types and formatting
+mouse.go::type::MouseWheelMsg	type	ported	src/tea/mouse.cr	Mouse types and formatting
+options.go::func::WithColorProfile	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithContext	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithEnvironment	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithFPS	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithFilter	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithInput	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithOutput	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithWindowSize	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithoutCatchPanics	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithoutRenderer	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithoutSignalHandler	func	ported	src/tea/options.cr	Program runtime options
+options.go::func::WithoutSignals	func	ported	src/tea/options.cr	Program runtime options
+options.go::type::ProgramOption	type	ported	src/tea/options.cr	Program runtime options
+options_test.go::test::TestOptions	test	missing	-	Go test port not yet started
+paste.go::method::PasteMsg.String	method	ported	src/tea/messages.cr	Paste messages
+paste.go::struct::PasteEndMsg	struct	ported	src/tea/messages.cr	Paste messages
+paste.go::struct::PasteMsg	struct	ported	src/tea/messages.cr	Paste messages
+paste.go::struct::PasteStartMsg	struct	ported	src/tea/messages.cr	Paste messages
+profile.go::struct::ColorProfileMsg	struct	ported	src/tea.cr	Color profile in tea.cr
+raw.go::func::Raw	func	ported	src/tea/messages.cr	RawMsg support
+raw.go::struct::RawMsg	struct	ported	src/tea/messages.cr	RawMsg support
+renderer.go::func::Printf	func	ported	src/tea/renderer.cr	Renderer interface and helpers
+renderer.go::func::Println	func	ported	src/tea/renderer.cr	Renderer interface and helpers
+screen.go::func::ClearScreen	func	ported	src/tea/screen.cr	Screen control commands
+screen.go::struct::ModeReportMsg	struct	ported	src/tea/screen.cr	Screen control commands
+screen.go::struct::WindowSizeMsg	struct	ported	src/tea/screen.cr	Screen control commands
+screen_test.go::test::TestClearMsg	test	missing	-	Go test port not yet started
+screen_test.go::test::TestViewModel	test	missing	-	Go test port not yet started
+tea.go::const::MouseModeAllMotion	const	ported	src/tea.cr	Core runtime loop and Program
+tea.go::const::MouseModeCellMotion	const	ported	src/tea.cr	Core runtime loop and Program
+tea.go::const::MouseModeNone	const	ported	src/tea.cr	Core runtime loop and Program
+tea.go::const::ProgressBarDefault	const	ported	src/tea.cr	Core runtime loop and Program
+tea.go::const::ProgressBarError	const	ported	src/tea.cr	Core runtime loop and Program
+tea.go::const::ProgressBarIndeterminate	const	ported	src/tea.cr	Core runtime loop and Program
+tea.go::const::ProgressBarNone	const	ported	src/tea.cr	Core runtime loop and Program
+tea.go::const::ProgressBarWarning	const	ported	src/tea.cr	Core runtime loop and Program
+tea.go::func::Interrupt	func	ported	src/tea.cr	Core runtime loop and Program
+tea.go::func::NewCursor	func	ported	src/tea.cr	Core runtime loop and Program
+tea.go::func::NewProgram	func	ported	src/tea.cr	Core runtime loop and Program
+tea.go::func::NewProgressBar	func	ported	src/tea.cr	Core runtime loop and Program
+tea.go::func::NewView	func	ported	src/tea.cr	Core runtime loop and Program
+tea.go::func::Quit	func	ported	src/tea.cr	Core runtime loop and Program
+tea.go::func::Suspend	func	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.Kill	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.Printf	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.Println	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.Quit	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.ReleaseTerminal	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.RestoreTerminal	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.Run	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.Send	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::Program.Wait	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::ProgressBarState.String	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::method::View.SetContent	method	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::Cursor	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::InterruptMsg	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::KeyboardEnhancements	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::Program	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::ProgressBar	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::QuitMsg	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::ResumeMsg	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::SuspendMsg	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::struct::View	struct	ported	src/tea.cr	Core runtime loop and Program
+tea.go::type::Cmd	type	ported	src/tea.cr	Core runtime loop and Program
+tea.go::type::Model	type	ported	src/tea.cr	Core runtime loop and Program
+tea.go::type::MouseMode	type	ported	src/tea.cr	Core runtime loop and Program
+tea.go::type::Msg	type	ported	src/tea.cr	Core runtime loop and Program
+tea.go::type::ProgressBarState	type	ported	src/tea.cr	Core runtime loop and Program
+tea_test.go::test::TestTeaBatchMsg	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaContext	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaContextBatchDeadlock	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaContextImplodeDeadlock	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaGoroutinePanic	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaKill	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaModel	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaNestedSequenceMsg	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaNoRun	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaPanic	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaQuit	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaSend	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaSequenceMsg	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaSequenceMsgWithBatchMsg	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaWaitKill	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaWaitQuit	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaWithFilter	test	missing	-	Go test port not yet started
+termcap.go::func::RequestCapability	func	ported	src/tea/messages.cr	Termcap capability messages
+termcap.go::method::CapabilityMsg.String	method	ported	src/tea/messages.cr	Termcap capability messages
+termcap.go::struct::CapabilityMsg	struct	ported	src/tea/messages.cr	Termcap capability messages
+tty.go::func::OpenTTY	func	ported	src/tea/tty.cr	TTY setup and restore
+tutorials/basics/main.go::method::model.Init	method	missing	-	Example not yet ported
+tutorials/basics/main.go::method::model.Update	method	missing	-	Example not yet ported
+tutorials/basics/main.go::method::model.View	method	missing	-	Example not yet ported
+tutorials/commands/main.go::method::errMsg.Error	method	missing	-	Example not yet ported
+tutorials/commands/main.go::method::model.Init	method	missing	-	Example not yet ported
+tutorials/commands/main.go::method::model.Update	method	missing	-	Example not yet ported
+tutorials/commands/main.go::method::model.View	method	missing	-	Example not yet ported
+xterm.go::func::RequestTerminalVersion	func	ported	src/tea/messages.cr	XTerm query/report messages
+xterm.go::method::TerminalVersionMsg.String	method	ported	src/tea/messages.cr	XTerm query/report messages
+xterm.go::struct::TerminalVersionMsg	struct	ported	src/tea/messages.cr	XTerm query/report messages
+examples/dynamic-textarea/main.go::method::model.Init	method	missing	-	v2.0.6: new example, not yet ported
+examples/dynamic-textarea/main.go::method::model.Update	method	missing	-	v2.0.6: new example, not yet ported
+examples/dynamic-textarea/main.go::method::model.View	method	missing	-	v2.0.6: new example, not yet ported

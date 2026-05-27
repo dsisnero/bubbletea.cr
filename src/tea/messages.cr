@@ -115,7 +115,32 @@ module Tea
     def supports_event_types : Bool
       supports_event_types?
     end
+
     # ameba:enable Naming/PredicateName
+
+    def supports_alternate_keys? : Bool
+      enhancements.report_alternate_keys?
+    end
+
+    def supports_alternate_keys : Bool
+      supports_alternate_keys?
+    end
+
+    def supports_all_keys_as_escape_codes? : Bool
+      enhancements.report_all_keys?
+    end
+
+    def supports_all_keys_as_escape_codes : Bool
+      supports_all_keys_as_escape_codes?
+    end
+
+    def supports_associated_text? : Bool
+      enhancements.report_associated_text?
+    end
+
+    def supports_associated_text : Bool
+      supports_associated_text?
+    end
   end
 
   # CursorPositionMsg reports the cursor position

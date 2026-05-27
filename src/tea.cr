@@ -374,11 +374,16 @@ module Tea
         if @disable_input
           @input = nil
         elsif @input.nil?
-          begin
-            tty_in, _tty_out = TTY.open
-            @input = tty_in
-          rescue ex
-            return {model, Exception.new("bubbletea: error opening TTY: #{ex.message}")}
+          @input = STDIN
+          if stdin = @input
+            unless stdin.tty?
+              begin
+                tty_in, _tty_out = TTY.open
+                @input = tty_in
+              rescue ex
+                return {model, Exception.new("bubbletea: error opening TTY: #{ex.message}")}
+              end
+            end
           end
         end
         if @env.items.empty?
@@ -843,10 +848,10 @@ module Tea
     # Convert ultraviolet KeyboardEnhancementsEvent to Tea KeyboardEnhancements
     private def convert_uv_enhancements(uv_event : Ultraviolet::KeyboardEnhancementsEvent) : KeyboardEnhancements
       enhancements = KeyboardEnhancements.new
-      # Map UV flags to Tea enhancements
-      enhancements.report_event_types = uv_event.supports_event_types?
-      enhancements.report_alternate_keys = uv_event.supports_key_disambiguation?
-      enhancements.report_all_keys = uv_event.supports_uniform_key_layout?
+      enhancements.report_event_types = uv_event.contains?(Ansi::KittyReportEventTypes)
+      enhancements.report_alternate_keys = uv_event.contains?(Ansi::KittyReportAlternateKeys)
+      enhancements.report_all_keys = uv_event.contains?(Ansi::KittyReportAllKeysAsEscapeCodes)
+      enhancements.report_associated_text = uv_event.contains?(Ansi::KittyReportAssociatedKeys)
       enhancements
     end
 
@@ -1023,7 +1028,7 @@ module Tea
         output = @output || STDOUT
         cursed = CursedRenderer.new(output, @env, width, height)
         # Go parity: set cursor movement optimizations from termios support.
-        cursed.set_optimizations(@use_hard_tabs, @use_backspace, false)
+        cursed.set_optimizations(@use_hard_tabs, @use_backspace, {% if flag?(:unix) %} @tty_input.nil? {% else %} false {% end %})
         @renderer = cursed
       end
       if @profile.nil?

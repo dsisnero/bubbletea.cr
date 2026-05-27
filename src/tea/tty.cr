@@ -323,21 +323,18 @@ module Tea
     # Uses SIGTSTP/SIGCONT signals
     private def suspend_process
       {% if flag?(:unix) %}
-        # Set up CONT signal handler
         cont_channel = Channel(Nil).new(1)
 
         Signal::CONT.trap do
           cont_channel.send(nil) rescue nil
         end
 
-        # Send TSTP to suspend
-        Process.signal(Signal::TSTP, 0)
-
-        # Wait for CONT signal
-        cont_channel.receive
-
-        # Reset signal handler
-        Signal::CONT.reset
+        begin
+          Process.signal(Signal::TSTP, 0)
+          cont_channel.receive
+        ensure
+          Signal::CONT.reset
+        end
       {% end %}
     end
 

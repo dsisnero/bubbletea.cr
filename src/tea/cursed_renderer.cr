@@ -95,7 +95,7 @@ module Tea
         @hard_tabs = hard_tabs
         @backspace = backspace
         @mapnl = mapnl
-        @scr.tab_stops = @width
+        @scr.tab_stops = @hard_tabs ? @width : -1
         @scr.backspace = @backspace
         @scr.map_newline = @mapnl
       end
@@ -178,10 +178,7 @@ module Tea
         @scr.write_string(Ansi::SetModifyOtherKeys2)
 
         # Kitty keyboard protocol
-        kitty_flags = Ansi::KittyDisambiguateEscapeCodes
-        if last.keyboard_enhancements.report_event_types?
-          kitty_flags |= Ansi::KittyReportEventTypes
-        end
+        kitty_flags = keyboard_enhancements_flags(last.keyboard_enhancements)
         @scr.write_string(Ansi.kitty_keyboard(kitty_flags, 1))
       end
     end
@@ -321,6 +318,11 @@ module Tea
         end
 
         frame_area = Ultraviolet.rect(0, 0, frame_width, frame_height)
+
+        if @starting && @hard_tabs
+          @scr.write_string(Ansi::SetTabEvery8Columns)
+        end
+
         if !@starting && !closing && last_view && view_equals(last_view, view) && frame_area == @cellbuf.bounds
           return
         end
@@ -399,10 +401,7 @@ module Tea
            view.alt_screen? != last_view.alt_screen?
           @scr.write_string(Ansi::SetModifyOtherKeys2)
 
-          kitty_flags = Ansi::KittyDisambiguateEscapeCodes
-          if view.keyboard_enhancements.report_event_types?
-            kitty_flags |= Ansi::KittyReportEventTypes
-          end
+          kitty_flags = keyboard_enhancements_flags(view.keyboard_enhancements)
           @scr.write_string(Ansi.kitty_keyboard(kitty_flags, 1))
           @scr.write_string(Ansi::RequestKittyKeyboard) unless closing
         end
@@ -534,7 +533,7 @@ module Tea
         scr.color_profile = @profile
         scr.relative_cursor = true
         scr.fullscreen = false
-        scr.tab_stops = @width
+        scr.tab_stops = @hard_tabs ? @width : -1
         scr.backspace = @backspace
         scr.map_newline = @mapnl
         {% if flag?(:windows) %}
@@ -748,6 +747,15 @@ module Tea
       end
 
       true
+    end
+
+    private def keyboard_enhancements_flags(ke : KeyboardEnhancements) : Int32
+      flags = 1 # always enable basic key disambiguation
+      flags |= Ansi::KittyReportEventTypes if ke.report_event_types?
+      flags |= Ansi::KittyReportAlternateKeys if ke.report_alternate_keys?
+      flags |= Ansi::KittyReportAllKeysAsEscapeCodes if ke.report_all_keys?
+      flags |= Ansi::KittyReportAssociatedKeys if ke.report_associated_text?
+      flags
     end
   end
 

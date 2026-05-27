@@ -1,6 +1,6 @@
 ---
 upstream_repo: "github.com/charmbracelet/bubbletea"
-pinned_revision: "07a69fbcf1e3649a797a929d724f94170d6affc3"
+pinned_revision: "fdcd0cfd598195e7043c18ab1bc65dcae03588f5"
 import_mode: "submodule"
 upstream_submodule_path: "vendor/bubbletea"
 ---

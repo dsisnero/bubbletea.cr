@@ -296,6 +296,44 @@ describe "Screen" do
     end
   end
 
+  describe "KeyboardEnhancementsMsg" do
+    it "reports supports_alternate_keys correctly" do
+      ke = Tea::KeyboardEnhancements.new(report_alternate_keys: true)
+      msg = Tea::KeyboardEnhancementsMsg.new(ke)
+      msg.supports_alternate_keys?.should be_true
+    end
+
+    it "reports supports_alternate_keys false when not enabled" do
+      ke = Tea::KeyboardEnhancements.new
+      msg = Tea::KeyboardEnhancementsMsg.new(ke)
+      msg.supports_alternate_keys?.should be_false
+    end
+
+    it "reports supports_all_keys_as_escape_codes correctly" do
+      ke = Tea::KeyboardEnhancements.new(report_all_keys: true)
+      msg = Tea::KeyboardEnhancementsMsg.new(ke)
+      msg.supports_all_keys_as_escape_codes?.should be_true
+    end
+
+    it "reports supports_all_keys_as_escape_codes false when not enabled" do
+      ke = Tea::KeyboardEnhancements.new
+      msg = Tea::KeyboardEnhancementsMsg.new(ke)
+      msg.supports_all_keys_as_escape_codes?.should be_false
+    end
+
+    it "reports supports_associated_text correctly" do
+      ke = Tea::KeyboardEnhancements.new(report_associated_text: true)
+      msg = Tea::KeyboardEnhancementsMsg.new(ke)
+      msg.supports_associated_text?.should be_true
+    end
+
+    it "reports supports_associated_text false when not enabled" do
+      ke = Tea::KeyboardEnhancements.new
+      msg = Tea::KeyboardEnhancementsMsg.new(ke)
+      msg.supports_associated_text?.should be_false
+    end
+  end
+
   describe "ProgressBar" do
     it "initializes with default values" do
       pb = Tea::ProgressBar.new
