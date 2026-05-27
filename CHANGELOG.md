@@ -4,7 +4,7 @@ All notable user-facing changes to this project will be documented in this file.
 
 Changes are grouped by release date and category. Only user-facing changes are included — internal refactors, test updates, and CI changes are omitted.
 
-## [2.0.6] — Upstream parity (v2.0.6)
+## [2.0.6] — 2026-05-27 — Upstream parity (v2.0.6)
 
 Upstream Go bubbletea v2.0.0 → v2.0.6 (4 files, +82/-17 lines).
 
