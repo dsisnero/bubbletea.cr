@@ -1016,9 +1016,7 @@ module Tea
         view.report_focus = true if @startup_report_focus
         view.disable_bracketed_paste = false if @startup_bracketed_paste
         renderer.render(view)
-        if error = renderer.flush(false)
-          @errs.send(error) rescue nil
-        end
+        renderer.flush(false)
       end
     end
 
