@@ -1016,6 +1016,9 @@ module Tea
         view.report_focus = true if @startup_report_focus
         view.disable_bracketed_paste = false if @startup_bracketed_paste
         renderer.render(view)
+        if error = renderer.flush(false)
+          @errs.send(error) rescue nil
+        end
       end
     end
 
@@ -1120,6 +1123,8 @@ module Tea
     # Matches Go's shouldQuerySynchronizedOutput terminal heuristic.
     private def should_query_synchronized_output(environ : Ultraviolet::Environ) : Bool
       term_type = environ.getenv("TERM")
+      return false if term_type.empty? || term_type == "dumb"
+
       term_program, has_term_program = environ.lookup_env("TERM_PROGRAM")
       _ssh_tty, has_ssh_tty = environ.lookup_env("SSH_TTY")
       _wt_session, has_wt_session = environ.lookup_env("WT_SESSION")

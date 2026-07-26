@@ -130,7 +130,65 @@ private def new_noninteractive_program(model : Tea::Model, ctx : Tea::ExecutionC
   )
 end
 
+class InitialFrameModel
+  include Tea::Model
+
+  def init : Tea::Cmd?
+    nil
+  end
+
+  def update(msg : Tea::Msg) : Tuple(Tea::Model, Tea::Cmd?)
+    {self, nil}
+  end
+
+  def view : Tea::View
+    Tea::View.new("initial frame")
+  end
+end
+
 describe "Tea" do
+  describe "initial rendering" do
+    it "flushes the initial frame before an input event arrives" do
+      output = IO::Memory.new
+      program = Tea.new_program(
+        InitialFrameModel.new,
+        Tea.with_input(nil),
+        Tea.with_output(output),
+        Tea.with_window_size(80, 24),
+        Tea.without_signals,
+      )
+      done = Channel(Exception?).new(1)
+
+      spawn { _model, error = program.run; done.send(error) }
+      sleep 40.milliseconds
+
+      output.to_s.should contain("initial frame")
+      program.quit
+      done.receive.should be_nil
+    end
+
+    it "does not probe unsupported synchronized-output modes on dumb terminals" do
+      output = IO::Memory.new
+      program = Tea.new_program(
+        InitialFrameModel.new,
+        Tea.with_input(nil),
+        Tea.with_output(output),
+        Tea.with_window_size(80, 24),
+        Tea.without_signals,
+      )
+      program.env = Ultraviolet::Environ.new(["TERM=dumb"])
+      done = Channel(Exception?).new(1)
+
+      spawn { _model, error = program.run; done.send(error) }
+      sleep 40.milliseconds
+
+      output.to_s.should_not contain(Ansi::RequestModeSynchronizedOutput)
+      output.to_s.should_not contain(Ansi::RequestModeUnicodeCore)
+      program.quit
+      done.receive.should be_nil
+    end
+  end
+
   describe "window size parity" do
     it "delivers initial WindowSizeMsg from with_window_size without tty" do
       model = InitialWindowSizeModel.new
