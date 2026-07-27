@@ -654,12 +654,12 @@ module Tea
     # on_mouse handles a mouse event
     # Implements renderer interface
     def on_mouse(msg : MouseMsg) : Cmd?
-      if last = @last_view
-        if on_mouse_handler = last.on_mouse
-          return on_mouse_handler.call(msg)
-        end
+      on_mouse_handler = @mutex.synchronize do
+        @last_view.try(&.on_mouse)
       end
-      nil
+      if on_mouse_handler
+        on_mouse_handler.call(msg)
+      end
     end
 
     private def enable_alt_screen(enable : Bool, write : Bool)

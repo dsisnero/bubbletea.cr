@@ -248,6 +248,25 @@ describe "Exec" do
     end
   end
 
+  describe "Exec with nil input" do
+    it "runs exec successfully when input is nil" do
+      # Port of Go test TestTeaExecWithNilInput
+      # Verifies that exec works when program has no input (WithInput(nil))
+      model = ExecTestModel.new("true")
+      program = Tea.new_program(
+        model,
+        Tea.with_input(nil),
+        Tea.with_output(IO::Memory.new),
+        Tea.without_signals,
+      )
+
+      _, err = program.run
+
+      err.should be_nil
+      model.error.should be_nil
+    end
+  end
+
   describe "External command integration" do
     it "sends completion message errors back to the model" do
       failure = Exception.new("boom")

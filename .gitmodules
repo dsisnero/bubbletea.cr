@@ -4,3 +4,6 @@
 [submodule "bubbletea-examples"]
 	path = bubbletea-examples
 	url = https://github.com/dsisnero/bubbles-examples.git
+[submodule "vendor/bubbles"]
+	path = vendor/bubbles
+	url = https://github.com/charmbracelet/bubbles.git

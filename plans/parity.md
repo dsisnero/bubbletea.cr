@@ -1,6 +1,6 @@
 ---
 upstream_repo: "github.com/charmbracelet/bubbletea"
-pinned_revision: "fdcd0cfd598195e7043c18ab1bc65dcae03588f5"
+pinned_revision: "fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1"
 import_mode: "submodule"
 upstream_submodule_path: "vendor/bubbletea"
 language: go
@@ -12,8 +12,8 @@ inventory_dir: "plans/inventory/"
 
 ## Source of Truth
 
-- **Upstream**: `github.com/charmbracelet/bubbletea` at `v2.0.6`
-- **Revision**: `fdcd0cfd598195e7043c18ab1bc65dcae03588f5`
+- **Upstream**: `github.com/charmbracelet/bubbletea` at `v2.0.8`
+- **Revision**: `fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1`
 - **Path**: `vendor/bubbletea`
 
 ## Feature Roadmap
@@ -102,9 +102,17 @@ inventory_dir: "plans/inventory/"
 - [x] **control sequences** — V2 control sequence parity
 - [x] Examples live in `bubbletea-examples/` submodule, specs in `spec/parity/`
 
-### Upstream v2.0.6 Upgrade (Complete)
+### Upstream v2.0.8 Upgrade (Complete)
 
-Upstream changes between v2.0.0 → v2.0.6: 4 files, +82/-17 lines.
+Upstream changes between v2.0.6 → v2.0.8: 2 files, +6/-4 lines (functional).
+
+- [x] **Data race fix** — `cursedRenderer.onMouse` mutex-protected `lastView` access
+  - Source: `cursed_renderer.go` → `src/tea/cursed_renderer.cr`
+  - Upstream commits: `c60f0c5` (PR #1691)
+
+- [x] **Nil input guard in RestoreTerminal** — skip `initInputReader` when `input` is nil
+  - Source: `tea.go` → `src/tea.cr`
+  - Upstream commits: `074596e` (PR #1680)
 
 - [x] **Extended keyboard enhancements** — `SupportsAlternateKeys`, `SupportsAllKeysAsEscapeCodes`, `SupportsAssociatedText` methods on `KeyboardEnhancementsMsg`
   - Source: `keyboard.go` → `src/tea/messages.cr`

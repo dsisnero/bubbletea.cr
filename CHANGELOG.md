@@ -4,6 +4,19 @@ All notable user-facing changes to this project will be documented in this file.
 
 Changes are grouped by release date and category. Only user-facing changes are included — internal refactors, test updates, and CI changes are omitted.
 
+## [2.0.8] — 2026-07-27 — Upstream parity (v2.0.8)
+
+Upstream Go bubbletea v2.0.6 → v2.0.8 (2 files, +6/-4 lines).
+
+### Added
+
+- `vendor/bubbles` submodule at charmbracelet/bubbles v2.1.1
+
+### Fixed
+
+- `CursedRenderer#on_mouse` — mutex-protect `@last_view` access to prevent data race (upstream PR #1691)
+- `Program#restore_terminal` — skip `init_input_reader` when input is nil, matching upstream guard (upstream PR #1680)
+
 ## [2.0.6] — 2026-05-27 — Upstream parity (v2.0.6)
 
 Upstream Go bubbletea v2.0.0 → v2.0.6 (4 files, +82/-17 lines).

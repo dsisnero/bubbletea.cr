@@ -996,8 +996,10 @@ module Tea
       err = init_input
       return err if err
 
-      err = init_input_reader(true)
-      return err if err
+      if @input
+        err = init_input_reader(true)
+        return err if err
+      end
 
       start_renderer
       spawn { check_resize }
