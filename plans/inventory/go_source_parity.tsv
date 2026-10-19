@@ -155,6 +155,9 @@ examples/prevent-quit/main.go::method::model.View	missing	-	Example not yet port
 examples/print-key/main.go::method::model.Init	missing	-	Example not yet ported
 examples/print-key/main.go::method::model.Update	missing	-	Example not yet ported
 examples/print-key/main.go::method::model.View	missing	-	Example not yet ported
+examples/program-status/main.go::method::model.Init	missing	-	Go example not ported
+examples/program-status/main.go::method::model.Update	missing	-	Go example not ported
+examples/program-status/main.go::method::model.View	missing	-	Go example not ported
 examples/progress-animated/main.go::method::model.Init	missing	-	Example not yet ported
 examples/progress-animated/main.go::method::model.Update	missing	-	Example not yet ported
 examples/progress-animated/main.go::method::model.View	missing	-	Example not yet ported
@@ -494,6 +497,20 @@ paste.go::struct::PasteEndMsg	mapped	src/tea/messages.cr	Paste messages
 paste.go::struct::PasteMsg	mapped	src/tea/messages.cr	Paste messages
 paste.go::struct::PasteStartMsg	mapped	src/tea/messages.cr	Paste messages
 profile.go::struct::ColorProfileMsg	mapped	src/tea.cr	Color profile in tea.cr
+programstatus.go::const::ProgramStateBlocked	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateClear	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateDone	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateError	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateIdle	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateWorking	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStatusKindAuth	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStatusKindPermission	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStatusKindQuestion	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::func::RequestProgramStatusSupport	mapped	src/tea/program_status.cr	OSC 7501 support query
+programstatus.go::struct::ProgramStatusSupportMsg	mapped	src/tea/program_status.cr	OSC 7501 support reply
+programstatus.go::type::ProgramState	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::type::ProgramStatus	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::type::ProgramStatusKind	mapped	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
 raw.go::func::Raw	mapped	src/tea/messages.cr	RawMsg support
 raw.go::struct::RawMsg	mapped	src/tea/messages.cr	RawMsg support
 renderer.go::func::Printf	mapped	src/tea/renderer.cr	Renderer interface and helpers

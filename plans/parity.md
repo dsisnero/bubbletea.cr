@@ -1,6 +1,6 @@
 ---
 upstream_repo: "github.com/charmbracelet/bubbletea"
-pinned_revision: "d5bfd5c2ff7480a6b94536c1cf4e73569b8d523e"
+pinned_revision: "f9df43c4f2c021d8740a2628d59cd810a862eb98"
 import_mode: "submodule"
 upstream_submodule_path: "vendor/bubbletea"
 language: go
@@ -12,30 +12,31 @@ inventory_dir: "plans/inventory/"
 
 ## Source of Truth
 
-- **Upstream**: `github.com/charmbracelet/bubbletea` at `v2.0.10`
-- **Revision**: `d5bfd5c2ff7480a6b94536c1cf4e73569b8d523e`
+- **Upstream**: `github.com/charmbracelet/bubbletea` at `v2.1.0`
+- **Revision**: `f9df43c4f2c021d8740a2628d59cd810a862eb98`
 - **Path**: `vendor/bubbletea`
 
 ## Where we are
 
-**Recently completed:** the upstream `v2.0.10` update
-([plans/bubbletea-v2.0.10-update.md](bubbletea-v2.0.10-update.md)). It adds
-`execute_query`, so every terminal query that expects a reply is skipped when
-input is disabled, and adds the missing `Tea.request_cursor_position` command.
+**Recently completed:** the upstream `v2.1.0` update
+([plans/bubbletea-v2.1.0-update.md](bubbletea-v2.1.0-update.md)). It adds
+Program Status Protocol (OSC 7501) reporting, tty `COLUMNS`/`LINES` fallback
+dimensions, and a signal-shutdown guard. The `ansi` and `ultraviolet` shards
+still lack OSC 7501, so the protocol is implemented locally and tracked in
+[shards_issues/ansi.1.md](../shards_issues/ansi.1.md) and
+[shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md).
 
-**Current focus:** no active chunk; `v2.0.10` is complete.
+**Current focus:** no active chunk; `v2.1.0` is complete and is the latest
+upstream release.
 
 **Next up (in order):**
 
-1. **Upstream `v2.1.0` update.** Minor release adding program status
-      rendering (`programstatus.go`), tty and signal tests, and renderer
-      changes. Create `plans/bubbletea-v2.1.0-update.md` using the v2.0.10 plan
-      as the template.
-2. **Audit the remaining baseline test-ledger rows.** 28 rows in
+1. **Audit the remaining baseline test-ledger rows.** 28 rows in
    `plans/inventory/go_test_parity.tsv` are still `missing` from the initial
    auto-generated baseline. Walk upstream tests, point each at its Crystal spec
    (or leave it `missing` with a reason), and keep the checker green.
-3. **Keep example parity green** in the `bubbletea-examples` submodule.
+2. **Keep example parity green** in the `bubbletea-examples` submodule.
+3. **Watch for the next upstream release** and the shard issues above.
 
 ### Chunk status
 
@@ -47,21 +48,22 @@ input is disabled, and adds the missing `Tea.request_cursor_position` command.
 | Upstream v2.0.8 upgrade | Complete | See roadmap section below |
 | Upstream v2.0.9 upgrade | Complete | [Plan](bubbletea-v2.0.9-update.md) |
 | Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
-| Upstream v2.1.0 upgrade | Not started | See **Next up** #1 |
+| Upstream v2.1.0 upgrade | Complete | [Plan](bubbletea-v2.1.0-update.md) |
+| Program Status Protocol | Complete | Local shim; see shard issues |
 | Example parity | Complete | `spec/parity/`, `spec/*_parity_spec.cr` |
 | Lint baseline | Complete | `make lint` — 0 findings |
-| Test-ledger audit | Not started | 28 baseline rows (see **Next up** #2) |
+| Test-ledger audit | Not started | 28 baseline rows (see **Next up** #1) |
 
 ### Last known state (2026-10-19)
 
-- Last parity feature: v2.0.10 update
-  ([plan](bubbletea-v2.0.10-update.md))
+- Last parity feature: v2.1.0 update
+  ([plan](bubbletea-v2.1.0-update.md))
 - `make format` — pass
-- `make lint` — pass (17 files, 0 findings)
-- `make test` — 142 examples, 0 failures
+- `make lint` — pass (19 files, 0 findings)
+- `make test` — 159 examples, 0 failures
 - `make check-go-{port-inventory,source-parity,test-parity}` — pass
 - `scripts/check_{port,source,test}_parity.sh` over `plans/inventory/` — pass
-  (591 port items, 556 source items, 35 tests)
+  (613 port items, 573 source items, 40 tests)
 - `make parity-specs` — 4 examples, 0 failures
 
 ## Feature Roadmap
@@ -233,19 +235,43 @@ Patch release; one behavioral commit plus a Go toolchain bump.
 - [x] **Go 1.26 bump** — no Crystal impact
   - Upstream commit: `657aaae` (PR #1807)
 
+### Upstream v2.1.0 Upgrade (Complete)
+
+Detailed plan: [plans/bubbletea-v2.1.0-update.md](bubbletea-v2.1.0-update.md).
+Minor release adding OSC 7501 program status, dimension fallback, and a signal
+shutdown fix.
+
+- [x] **Program Status Protocol (OSC 7501)** — types, `View#program_status`,
+      renderer reporting (including clear-on-id-change and leave-on-close),
+      support query and reply translation
+  - Source: `programstatus.go` → `src/tea/program_status.cr`
+  - Upstream commit: `41bc626` (PR #1841)
+  - Local shim: `ansi`/`ultraviolet` lack the protocol (shard issues 1)
+- [x] **Fallback dimensions** — `COLUMNS`/`LINES` from the program (or process)
+      environment, then 80x24; non-tty outputs keep their configured size
+  - Source: `tty.go` → `src/tea/tty.cr`, `src/tea.cr`
+  - Upstream commit: `96d69d2` (PR #1836)
+- [x] **Signal shutdown guard** — skip delivery once shutdown started; Crystal
+      traps use detached fibers, so the Go goroutine deadlock is structurally
+      absent (divergence documented)
+  - Source: `tea.go` → `src/tea.cr`
+  - Upstream commit: `ff51ba4` (PR #1806)
+- [x] **Documentation fixes** — no code change
+  - Upstream commit: `33f6a40` (PR #1833)
+
 ## Inventory Summary
 
 | Manifest | Ported/Mapped | Missing/Skipped | Total |
 |----------|:------------:|:---------------:|:-----:|
-| `go_port_inventory.tsv` | 329 | 262 | 591 |
-| `go_source_parity.tsv` | 322 | 234 | 556 |
-| `go_test_parity.tsv` | 7 | 28 | 35 |
+| `go_port_inventory.tsv` | 347 | 265 (+1 skipped) | 613 |
+| `go_source_parity.tsv` | 336 | 237 | 573 |
+| `go_test_parity.tsv` | 11 | 28 (+1 skipped) | 40 |
 
 - "Missing" items in port_inventory are mostly test/examples/tutorials — not API-level targets.
 - Source parity "missing" items are test APIs, example files, and tutorial code that don't have direct Crystal source equivalents.
 - The 28 `missing` rows in `go_test_parity.tsv` are the untouched auto-generated
-  baseline (see **Next up** #2); only the seven audited
-  `v2.0.8`/`v2.0.9`/`v2.0.10` tests are marked `ported` so far.
+  baseline (see **Next up** #1); the audited `v2.0.8`–`v2.1.0` tests are marked
+  `ported`, except the Go-specific signal test (`skipped`).
 
 ## Known Divergences
 
@@ -254,6 +280,8 @@ Patch release; one behavioral commit plus a Go toolchain bump.
 | `signals_unix.go`, `signals_windows.go` | Absorbed into `src/tea.cr` via Crystal `Signal` module | Crystal's signal handling is idiomatic and equivalent |
 | `termios_bsd.go`, `termios_other.go`, `termios_unix.go`, `termios_windows.go` | Delegated to `ultraviolet` shard | Ultraviolet provides equivalent terminal raw-mode and size APIs |
 | `tty_windows.go` | Not ported (Crystal's Windows TTY is OS-level) | Handled by ultraviolet on Windows |
+| `programstatus.go` types/encoding | Local `src/tea/program_status.cr` | `ansi`/`ultraviolet` shards lack OSC 7501; see `shards_issues/{ansi,ultraviolet}.1.md` |
+| Go signal-goroutine shutdown fix | Guarded detached fibers in `src/tea.cr` | Crystal traps already run off-fiber; no blocking shutdown path to fix |
 
 ## Verification
 

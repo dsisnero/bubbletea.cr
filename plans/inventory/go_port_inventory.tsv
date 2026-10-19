@@ -159,6 +159,9 @@ examples/prevent-quit/main.go::method::model.View	method	missing	-	Example not y
 examples/print-key/main.go::method::model.Init	method	missing	-	Example not yet ported
 examples/print-key/main.go::method::model.Update	method	missing	-	Example not yet ported
 examples/print-key/main.go::method::model.View	method	missing	-	Example not yet ported
+examples/program-status/main.go::method::model.Init	test	missing	-	Go example not ported
+examples/program-status/main.go::method::model.Update	test	missing	-	Go example not ported
+examples/program-status/main.go::method::model.View	test	missing	-	Go example not ported
 examples/progress-animated/main.go::method::model.Init	method	missing	-	Example not yet ported
 examples/progress-animated/main.go::method::model.Update	method	missing	-	Example not yet ported
 examples/progress-animated/main.go::method::model.View	method	missing	-	Example not yet ported
@@ -504,6 +507,22 @@ paste.go::struct::PasteEndMsg	struct	ported	src/tea/messages.cr	Paste messages
 paste.go::struct::PasteMsg	struct	ported	src/tea/messages.cr	Paste messages
 paste.go::struct::PasteStartMsg	struct	ported	src/tea/messages.cr	Paste messages
 profile.go::struct::ColorProfileMsg	struct	ported	src/tea.cr	Color profile in tea.cr
+programstatus.go::const::ProgramStateBlocked	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateClear	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateDone	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateError	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateIdle	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStateWorking	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStatusKindAuth	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStatusKindPermission	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::const::ProgramStatusKindQuestion	const	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::func::RequestProgramStatusSupport	func	ported	src/tea/program_status.cr	OSC 7501 support query
+programstatus.go::struct::ProgramStatusSupportMsg	struct	ported	src/tea/program_status.cr	OSC 7501 support reply
+programstatus.go::type::ProgramState	type	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::type::ProgramStatus	type	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus.go::type::ProgramStatusKind	type	ported	src/tea/program_status.cr	Program Status Protocol (OSC 7501)
+programstatus_test.go::test::TestCursedRenderer_programStatus	test	ported	spec/program_status_spec.cr	renderer status lifecycle
+programstatus_test.go::test::TestTranslateProgramStatusSupport	test	ported	spec/program_status_spec.cr	OSC 7501 support reply translation
 raw.go::func::Raw	func	ported	src/tea/messages.cr	RawMsg support
 raw.go::struct::RawMsg	struct	ported	src/tea/messages.cr	RawMsg support
 renderer.go::func::Printf	func	ported	src/tea/renderer.cr	Renderer interface and helpers
@@ -513,6 +532,7 @@ screen.go::struct::ModeReportMsg	struct	ported	src/tea/screen.cr	Screen control 
 screen.go::struct::WindowSizeMsg	struct	ported	src/tea/screen.cr	Screen control commands
 screen_test.go::test::TestClearMsg	test	missing	-	Go test port not yet started
 screen_test.go::test::TestViewModel	test	missing	-	Go test port not yet started
+signals_test.go::test::TestHandleSignalsReturnsAfterContextCancelDuringPendingSend	test	skipped	-	Crystal traps spawn detached fibers; Go goroutine deadlock does not apply
 tea.go::const::MouseModeAllMotion	const	ported	src/tea.cr	Core runtime loop and Program
 tea.go::const::MouseModeCellMotion	const	ported	src/tea.cr	Core runtime loop and Program
 tea.go::const::MouseModeNone	const	ported	src/tea.cr	Core runtime loop and Program
@@ -577,6 +597,8 @@ termcap.go::func::RequestCapability	func	ported	src/tea/messages.cr	Termcap capa
 termcap.go::method::CapabilityMsg.String	method	ported	src/tea/messages.cr	Termcap capability messages
 termcap.go::struct::CapabilityMsg	struct	ported	src/tea/messages.cr	Termcap capability messages
 tty.go::func::OpenTTY	func	ported	src/tea/tty.cr	TTY setup and restore
+tty_test.go::test::TestFallbackDimensions	test	ported	spec/tty_spec.cr	COLUMNS/LINES and 80x24 fallback
+tty_test.go::test::TestProgramNonTTYDimensions	test	ported	spec/tty_spec.cr	non-tty output keeps configured size
 tutorials/basics/main.go::method::model.Init	method	missing	-	Example not yet ported
 tutorials/basics/main.go::method::model.Update	method	missing	-	Example not yet ported
 tutorials/basics/main.go::method::model.View	method	missing	-	Example not yet ported

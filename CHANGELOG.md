@@ -4,6 +4,33 @@ All notable user-facing changes to this project will be documented in this file.
 
 Changes are grouped by release date and category. Only user-facing changes are included — internal refactors, test updates, and CI changes are omitted.
 
+## [2.1.0] — 2026-10-19 — Upstream parity (v2.1.0)
+
+Upstream Go bubbletea v2.0.10 → v2.1.0.
+
+### Added
+
+- `View#program_status` — Program Status Protocol (OSC 7501) reporting: idle,
+  working, done, blocked, error, and clear, with record ids, blocked kinds,
+  progress, title, and message
+- `Tea.request_program_status_support` / `ProgramStatusSupportMsg` — optional
+  support detection; replies are recognised from raw OSC input
+- `Program#fallback_dimensions` — uses `COLUMNS`/`LINES` from the program
+  environment, then the process environment, then 80x24 when the tty reports a
+  non-positive size
+
+### Changed
+
+- Non-tty programs keep their configured dimensions (0x0 by default) instead
+  of assuming 80x24
+- Signal delivery is skipped once shutdown has started
+
+### Notes
+
+- OSC 7501 types and encoding live in `src/tea/program_status.cr` because the
+  pinned `ansi` and `ultraviolet` shards do not implement the protocol yet;
+  see `shards_issues/ansi.1.md` and `shards_issues/ultraviolet.1.md`
+
 ## [2.0.10] — 2026-10-19 — Upstream parity (v2.0.10)
 
 Upstream Go bubbletea v2.0.9 → v2.0.10 (1 behavioral fix; Go 1.26 bump).

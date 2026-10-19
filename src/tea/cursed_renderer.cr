@@ -202,6 +202,11 @@ module Tea
           set_progress_bar(pb)
         end
 
+        # Report the program status; it is left in place on close.
+        if ps = last.program_status
+          set_program_status(nil, ps)
+        end
+
         # Enable keyboard enhancements
         unless @no_input
           @scr.write_string(Ansi::SetModifyOtherKeys2)
@@ -509,6 +514,12 @@ module Tea
           set_progress_bar(view.progress_bar)
         end
 
+        # Report the program status if it changed.
+        last_status = last_view.try(&.program_status)
+        unless program_status_equals(last_status, view.program_status)
+          set_program_status(last_status, view.program_status)
+        end
+
         @scr.render(@cellbuf)
 
         if cur = view.cursor
@@ -782,6 +793,7 @@ module Tea
       return false if a.window_title != b.window_title
       return false if a.foreground_color != b.foreground_color
       return false if a.background_color != b.background_color
+      return false if !program_status_equals(a.program_status, b.program_status)
       return false if a.keyboard_enhancements != b.keyboard_enhancements
 
       # Compare cursors
@@ -811,6 +823,24 @@ module Tea
       end
 
       true
+    end
+
+    private def program_status_equals(a : ProgramStatus?, b : ProgramStatus?) : Bool
+      a == b
+    end
+
+    # Reports +cur+ to the terminal. When +cur+ is nil, or addresses a
+    # different record than +prev+, the record of +prev+ is cleared first.
+    private def set_program_status(prev : ProgramStatus?, cur : ProgramStatus?)
+      if prev && (cur.nil? || cur.id != prev.id)
+        sequence = ProgramStatusProtocol.clear_id(prev.id)
+        @scr.write_string(sequence) unless sequence.empty?
+      end
+
+      if cur
+        sequence = ProgramStatusProtocol.set(cur)
+        @scr.write_string(sequence) unless sequence.empty?
+      end
     end
 
     private def keyboard_enhancements_flags(ke : KeyboardEnhancements) : Int32

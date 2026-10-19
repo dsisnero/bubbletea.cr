@@ -107,6 +107,11 @@ module Tea
     # ProgressBar shows a progress bar in the terminal
     property progress_bar : ProgressBar? = nil
 
+    # ProgramStatus reports the program status to the terminal using the
+    # Program Status Protocol (OSC 7501). The status is not cleared when the
+    # program exits, so done and error reports stay visible to the user.
+    property program_status : ProgramStatus? = nil
+
     # AltScreen puts the program in the alternate screen buffer
     property? alt_screen : Bool = false
 
@@ -439,12 +444,11 @@ module Tea
         if tty_output = @tty_output
           ws = uninitialized LibC::Winsize
           if LibC.ioctl(tty_output.fd, Ultraviolet::TIOCGWINSZ, pointerof(ws).as(Void*)) == 0
-            width = ws.ws_col.to_i
-            height = ws.ws_row.to_i
+            width, height = fallback_dimensions(ws.ws_col.to_i, ws.ws_row.to_i)
+          else
+            width, height = fallback_dimensions(width, height)
           end
         end
-        width = 80 if width <= 0
-        height = 24 if height <= 0
         @width = width
         @height = height
 
@@ -552,6 +556,8 @@ module Tea
               execute_query("\e]12;?\a")
             when RequestCursorPositionMsg
               execute_query(Ansi::RequestCursorPositionReport)
+            when ProgramStatusSupportMsg
+              execute_query(ProgramStatusProtocol::REQUEST_SUPPORT)
             when TerminalVersionRequestMsg
               execute_query("\e[>q")
             when RequestCapabilityMsg
@@ -780,6 +786,12 @@ module Tea
         KeyboardEnhancementsMsg.new(convert_uv_enhancements(event))
       when Ultraviolet::ModeReportEvent
         ModeReportMsg.new(event.mode, event.value)
+      when Ultraviolet::UnknownOscEvent
+        if ProgramStatusProtocol.support_reply?(event.value)
+          ProgramStatusSupportMsg.new
+        else
+          Tea.wrap(event)
+        end
       else
         Tea.wrap(event)
       end
@@ -1092,11 +1104,13 @@ module Tea
         Signal::INT.trap do
           # Match Go's async signal delivery model: don't send directly from
           # the trap callback, which can race Crystal's scheduler internals.
-          spawn { send(InterruptMsg.new) unless @ignore_signals }
+          # The detached fiber also means a pending send cannot block shutdown
+          # (Go needed a context-aware select for that).
+          spawn { send(InterruptMsg.new) unless @ignore_signals || @shutdown_done }
         end
 
         Signal::TERM.trap do
-          spawn { send(QuitMsg.new) unless @ignore_signals }
+          spawn { send(QuitMsg.new) unless @ignore_signals || @shutdown_done }
         end
 
         spawn do
@@ -1210,6 +1224,7 @@ require "./tea/ultraviolet"
 
 # Require all message types
 require "./tea/messages"
+require "./tea/program_status"
 require "./tea/commands"
 require "./tea/key"
 require "./tea/mouse"

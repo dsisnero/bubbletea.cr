@@ -12,8 +12,11 @@ exec_test.go::test::TestTeaExec	missing	-	baseline
 exec_test.go::test::TestTeaExecWithNilInput	ported	spec/exec_spec.cr	ExecProcess with WithInput(nil)
 logging_test.go::test::TestLogToFile	missing	-	baseline
 options_test.go::test::TestOptions	missing	-	baseline
+programstatus_test.go::test::TestCursedRenderer_programStatus	ported	spec/program_status_spec.cr	renderer status lifecycle
+programstatus_test.go::test::TestTranslateProgramStatusSupport	ported	spec/program_status_spec.cr	OSC 7501 support reply translation
 screen_test.go::test::TestClearMsg	missing	-	baseline
 screen_test.go::test::TestViewModel	missing	-	baseline
+signals_test.go::test::TestHandleSignalsReturnsAfterContextCancelDuringPendingSend	skipped	-	Crystal traps spawn detached fibers; Go goroutine deadlock does not apply
 tea_test.go::test::TestProgressBarStateStringOutOfRange	ported	spec/screen_spec.cr	ProgressBarState#string returns Unknown out of range
 tea_test.go::test::TestTeaNoCapabilityQueryWithoutInput	ported	spec/terminal_queries_spec.cr	startup query skipped when input disabled
 tea_test.go::test::TestTeaNoTerminalQueriesWithoutInput	ported	spec/terminal_queries_spec.cr	input-dependent queries skipped when input disabled
@@ -34,3 +37,5 @@ tea_test.go::test::TestTeaSequenceMsgWithBatchMsg	missing	-	baseline
 tea_test.go::test::TestTeaWaitKill	missing	-	baseline
 tea_test.go::test::TestTeaWaitQuit	missing	-	baseline
 tea_test.go::test::TestTeaWithFilter	missing	-	baseline
+tty_test.go::test::TestFallbackDimensions	ported	spec/tty_spec.cr	COLUMNS/LINES and 80x24 fallback
+tty_test.go::test::TestProgramNonTTYDimensions	ported	spec/tty_spec.cr	non-tty output keeps configured size

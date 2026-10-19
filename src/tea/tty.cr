@@ -248,18 +248,39 @@ module Tea
       end
     end
 
+    # fallback_dimensions returns width and height, falling back to COLUMNS and
+    # LINES environment variables or 80x24 defaults when dimensions are
+    # non-positive.
+    def fallback_dimensions(width : Int32, height : Int32) : {Int32, Int32}
+      width = positive_dimension(env_value("COLUMNS"), 80) if width <= 0
+      height = positive_dimension(env_value("LINES"), 24) if height <= 0
+      {width, height}
+    end
+
+    private def env_value(key : String) : String
+      # Upstream behavior: an explicit program environment (even one without
+      # the key) wins over the process environment.
+      if @env.items.empty?
+        ENV[key]? || ""
+      else
+        @env.getenv(key)
+      end
+    end
+
+    private def positive_dimension(value : String, default : Int32) : Int32
+      parsed = value.to_i?
+      parsed && parsed > 0 ? parsed : default
+    end
+
     # Check and report terminal resize
     def check_resize
       if tty_output = @tty_output
         ws = uninitialized LibC::Winsize
         if LibC.ioctl(tty_output.fd, Ultraviolet::TIOCGWINSZ, pointerof(ws).as(Void*)) == 0
-          width = ws.ws_col.to_i
-          height = ws.ws_row.to_i
-          if width > 0 && height > 0
-            @width, @height = width, height
-            spawn { send(WindowSizeMsg.new(@width, @height)) }
-            return
-          end
+          width, height = fallback_dimensions(ws.ws_col.to_i, ws.ws_row.to_i)
+          @width, @height = width, height
+          spawn { send(WindowSizeMsg.new(width, height)) }
+          return
         end
       elsif @width > 0 && @height > 0
         # Non-TTY outputs (e.g. IO::Memory parity harnesses) still need an
@@ -267,17 +288,6 @@ module Tea
         spawn { send(WindowSizeMsg.new(@width, @height)) }
         return
       end
-
-      # Ensure models still get one initial size message.
-      send_fallback_window_size
-    end
-
-    private def send_fallback_window_size
-      if @width <= 0 || @height <= 0
-        @width = 80
-        @height = 24
-      end
-      spawn { send(WindowSizeMsg.new(@width, @height)) }
     end
 
     # Initialize TTY input (set raw mode, etc.)
