@@ -396,6 +396,16 @@ module Tea
     -> : Msg? { RequestCursorColorMsg.new }
   end
 
+  # RequestCursorPosition returns a command that requests the cursor position.
+  # The reply arrives as a CursorPositionMsg, so it requires input.
+  struct RequestCursorPositionMsg
+    include Msg
+  end
+
+  def self.request_cursor_position : Cmd
+    -> : Msg? { RequestCursorPositionMsg.new }
+  end
+
   # Raw prints the given string to the terminal without any formatting.
   # This is intended for advanced use cases where you need to query the terminal
   # or send escape sequences directly.

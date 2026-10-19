@@ -34,8 +34,8 @@ cursed_renderer_test.go::test::TestCursedRenderer_updatesKittyKeyboardFlagsInPla
 cursor.go::const::CursorBar	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
 cursor.go::const::CursorBlock	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
 cursor.go::const::CursorUnderline	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
-cursor.go::func::RequestCursorPosition	func	ported	src/tea.cr	Cursor and view helpers in tea.cr
-cursor.go::struct::CursorPositionMsg	struct	ported	src/tea.cr	Cursor and view helpers in tea.cr
+cursor.go::func::RequestCursorPosition	func	ported	src/tea/messages.cr	Cursor position request command
+cursor.go::struct::CursorPositionMsg	struct	ported	src/tea/messages.cr	Cursor position reply message
 cursor.go::struct::Position	struct	ported	src/tea.cr	Cursor and view helpers in tea.cr
 cursor.go::type::CursorShape	type	ported	src/tea.cr	Cursor and view helpers in tea.cr
 environ.go::method::EnvMsg.Getenv	method	ported	src/tea.cr	Environment message in tea.cr
@@ -554,6 +554,8 @@ tea.go::type::MouseMode	type	ported	src/tea.cr	Core runtime loop and Program
 tea.go::type::Msg	type	ported	src/tea.cr	Core runtime loop and Program
 tea.go::type::ProgressBarState	type	ported	src/tea.cr	Core runtime loop and Program
 tea_test.go::test::TestProgressBarStateStringOutOfRange	test	ported	spec/screen_spec.cr	ProgressBarState#string returns Unknown out of range
+tea_test.go::test::TestTeaNoCapabilityQueryWithoutInput	test	ported	spec/terminal_queries_spec.cr	startup query skipped when input disabled
+tea_test.go::test::TestTeaNoTerminalQueriesWithoutInput	test	ported	spec/terminal_queries_spec.cr	input-dependent queries skipped when input disabled
 tea_test.go::test::TestTeaBatchMsg	test	missing	-	Go test port not yet started
 tea_test.go::test::TestTeaContext	test	missing	-	Go test port not yet started
 tea_test.go::test::TestTeaContextBatchDeadlock	test	missing	-	Go test port not yet started

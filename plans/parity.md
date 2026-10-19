@@ -1,6 +1,6 @@
 ---
 upstream_repo: "github.com/charmbracelet/bubbletea"
-pinned_revision: "73b6d91ac1c3854dd4af046ab5f9e51d3b3b4290"
+pinned_revision: "d5bfd5c2ff7480a6b94536c1cf4e73569b8d523e"
 import_mode: "submodule"
 upstream_submodule_path: "vendor/bubbletea"
 language: go
@@ -12,26 +12,25 @@ inventory_dir: "plans/inventory/"
 
 ## Source of Truth
 
-- **Upstream**: `github.com/charmbracelet/bubbletea` at `v2.0.9`
-- **Revision**: `73b6d91ac1c3854dd4af046ab5f9e51d3b3b4290`
+- **Upstream**: `github.com/charmbracelet/bubbletea` at `v2.0.10`
+- **Revision**: `d5bfd5c2ff7480a6b94536c1cf4e73569b8d523e`
 - **Path**: `vendor/bubbletea`
 
 ## Where we are
 
-**Recently completed:** the upstream `v2.0.9` update
-([plans/bubbletea-v2.0.9-update.md](bubbletea-v2.0.9-update.md)). It ports the
-Kitty keyboard stack restore, the `pendingErase` fix, `ProgressBarState#string`
-out-of-range handling, and the no-input renderer guard. `make lint` is green
-and the v2.0.8 ledger rows remain tracked.
+**Recently completed:** the upstream `v2.0.10` update
+([plans/bubbletea-v2.0.10-update.md](bubbletea-v2.0.10-update.md)). It adds
+`execute_query`, so every terminal query that expects a reply is skipped when
+input is disabled, and adds the missing `Tea.request_cursor_position` command.
 
-**Current focus:** no active chunk; `v2.0.9` is complete.
+**Current focus:** no active chunk; `v2.0.10` is complete.
 
 **Next up (in order):**
 
-1. **Upstream `v2.0.10` update.** Patch release with terminal capability and
-   option additions (`tea.go`, `options.go`, `color.go`, `termcap.go`,
-   `xterm.go`, plus tests). Create `plans/bubbletea-v2.0.10-update.md` using
-   the v2.0.9 plan as the template.
+1. **Upstream `v2.1.0` update.** Minor release adding program status
+      rendering (`programstatus.go`), tty and signal tests, and renderer
+      changes. Create `plans/bubbletea-v2.1.0-update.md` using the v2.0.10 plan
+      as the template.
 2. **Audit the remaining baseline test-ledger rows.** 28 rows in
    `plans/inventory/go_test_parity.tsv` are still `missing` from the initial
    auto-generated baseline. Walk upstream tests, point each at its Crystal spec
@@ -47,21 +46,22 @@ and the v2.0.8 ledger rows remain tracked.
 | Input, messages, logging | Complete | Keys, mouse, clipboard, focus, paste |
 | Upstream v2.0.8 upgrade | Complete | See roadmap section below |
 | Upstream v2.0.9 upgrade | Complete | [Plan](bubbletea-v2.0.9-update.md) |
-| Upstream v2.0.10 upgrade | Not started | See **Next up** #1 |
+| Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
+| Upstream v2.1.0 upgrade | Not started | See **Next up** #1 |
 | Example parity | Complete | `spec/parity/`, `spec/*_parity_spec.cr` |
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Not started | 28 baseline rows (see **Next up** #2) |
 
 ### Last known state (2026-10-19)
 
-- Last parity feature: v2.0.9 update
-  ([plan](bubbletea-v2.0.9-update.md))
+- Last parity feature: v2.0.10 update
+  ([plan](bubbletea-v2.0.10-update.md))
 - `make format` — pass
 - `make lint` — pass (17 files, 0 findings)
-- `make test` — 138 examples, 0 failures
+- `make test` — 142 examples, 0 failures
 - `make check-go-{port-inventory,source-parity,test-parity}` — pass
 - `scripts/check_{port,source,test}_parity.sh` over `plans/inventory/` — pass
-  (589 port items, 556 source items, 33 tests)
+  (591 port items, 556 source items, 35 tests)
 - `make parity-specs` — 4 examples, 0 failures
 
 ## Feature Roadmap
@@ -213,19 +213,39 @@ small fixes in `tea.go`, `key.go`, and `mouse.go`.
       `spec/parity/v2_control_sequences_spec.cr` now match the v2.0.9 goldens
       (`[=1;1u` → `[>1u`, `[=0;1u` → `[<1u`)
 
+### Upstream v2.0.10 Upgrade (Complete)
+
+Detailed plan: [plans/bubbletea-v2.0.10-update.md](bubbletea-v2.0.10-update.md).
+Patch release; one behavioral commit plus a Go toolchain bump.
+
+- [x] **Skip queries without input** — `execute_query` drops every terminal
+      query that expects a reply when input is disabled (background,
+      foreground and cursor color, clipboard reads, terminal version,
+      termcap, cursor position) plus the startup synchronized-output /
+      unicode-core probe
+  - Source: `tea.go` (`executeQuery`) → `src/tea.cr`
+  - Upstream commit: `8b10e22` (PR #1801, gum#1118)
+- [x] **`RequestCursorPosition` command** — was only a direct print helper;
+      now a program command that flows through the event loop and can be
+      gated like the other queries
+  - Source: `cursor.go` → `src/tea/messages.cr`
+- [x] **Setters and `RawMsg` unchanged** — they do not expect replies
+- [x] **Go 1.26 bump** — no Crystal impact
+  - Upstream commit: `657aaae` (PR #1807)
+
 ## Inventory Summary
 
 | Manifest | Ported/Mapped | Missing/Skipped | Total |
 |----------|:------------:|:---------------:|:-----:|
-| `go_port_inventory.tsv` | 327 | 262 | 589 |
+| `go_port_inventory.tsv` | 329 | 262 | 591 |
 | `go_source_parity.tsv` | 322 | 234 | 556 |
-| `go_test_parity.tsv` | 5 | 28 | 33 |
+| `go_test_parity.tsv` | 7 | 28 | 35 |
 
 - "Missing" items in port_inventory are mostly test/examples/tutorials — not API-level targets.
 - Source parity "missing" items are test APIs, example files, and tutorial code that don't have direct Crystal source equivalents.
 - The 28 `missing` rows in `go_test_parity.tsv` are the untouched auto-generated
-  baseline (see **Next up** #2); only the five audited `v2.0.8`/`v2.0.9` tests
-  are marked `ported` so far.
+  baseline (see **Next up** #2); only the seven audited
+  `v2.0.8`/`v2.0.9`/`v2.0.10` tests are marked `ported` so far.
 
 ## Known Divergences
 

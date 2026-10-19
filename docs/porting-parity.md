@@ -1,6 +1,6 @@
 ---
 upstream_repo: "github.com/charmbracelet/bubbletea"
-pinned_revision: "73b6d91ac1c3854dd4af046ab5f9e51d3b3b4290"
+pinned_revision: "d5bfd5c2ff7480a6b94536c1cf4e73569b8d523e"
 import_mode: "submodule"
 upstream_submodule_path: "vendor/bubbletea"
 ---
@@ -13,7 +13,7 @@ explains the upstream tracking model.
 ## Upstream Source of Truth
 
 - **Repository**: `github.com/charmbracelet/bubbletea`
-- **Pinned revision**: `73b6d91ac1c3854dd4af046ab5f9e51d3b3b4290` (`v2.0.9`)
+- **Pinned revision**: `d5bfd5c2ff7480a6b94536c1cf4e73569b8d523e` (`v2.0.10`)
 - **Import mode**: `submodule`
 - **Upstream path**: `vendor/bubbletea`
 

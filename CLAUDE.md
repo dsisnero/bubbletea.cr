@@ -6,8 +6,8 @@
 > Do not re-derive state from git.
 
 Crystal port of Go's [Bubble Tea](https://github.com/charmbracelet/bubbletea)
-TUI framework, vendored at `vendor/bubbletea` (release `v2.0.9`, commit
-`73b6d91ac1c3854dd4af046ab5f9e51d3b3b4290`). Example apps and their parity
+TUI framework, vendored at `vendor/bubbletea` (release `v2.0.10`, commit
+`d5bfd5c2ff7480a6b94536c1cf4e73569b8d523e`). Example apps and their parity
 specs live in the `bubbletea-examples` submodule; `vendor/bubbles` (`v2.1.1`)
 is the widget upstream for future ports.
 
@@ -102,8 +102,8 @@ port: <feature name>
 - divergences, if any
 - gates: make format / make lint / make test results
 
-Upstream: charmbracelet/bubbletea v2.0.9
-(73b6d91ac1c3854dd4af046ab5f9e51d3b3b4290)
+Upstream: charmbracelet/bubbletea v2.0.10
+(d5bfd5c2ff7480a6b94536c1cf4e73569b8d523e)
 ```
 
 Use `port:` for parity work. Non-porting changes (docs, tooling, CI) use

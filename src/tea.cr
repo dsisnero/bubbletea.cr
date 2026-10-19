@@ -464,7 +464,7 @@ module Tea
         # Match Go behavior: query synchronized output support by default.
         # Allow explicit opt-out for problematic terminals.
         if !@disable_renderer && should_query_synchronized_output(@env)
-          execute(Ansi::RequestModeSynchronizedOutput + Ansi::RequestModeUnicodeCore)
+          execute_query(Ansi::RequestModeSynchronizedOutput + Ansi::RequestModeUnicodeCore)
         end
 
         # Start command processor
@@ -537,23 +537,25 @@ module Tea
                 end
               end
             when ReadClipboardMsg
-              execute("\e]52;c;?\a")
+              execute_query("\e]52;c;?\a")
             when SetClipboardMsg
               execute("\e]52;c;#{Base64.strict_encode(msg.content)}\a")
             when ReadPrimaryClipboardMsg
-              execute("\e]52;p;?\a")
+              execute_query("\e]52;p;?\a")
             when SetPrimaryClipboardMsg
               execute("\e]52;p;#{Base64.strict_encode(msg.content)}\a")
             when RequestBackgroundColorMsg
-              execute("\e]11;?\a")
+              execute_query("\e]11;?\a")
             when RequestForegroundColorMsg
-              execute("\e]10;?\a")
+              execute_query("\e]10;?\a")
             when RequestCursorColorMsg
-              execute("\e]12;?\a")
+              execute_query("\e]12;?\a")
+            when RequestCursorPositionMsg
+              execute_query(Ansi::RequestCursorPositionReport)
             when TerminalVersionRequestMsg
-              execute("\e[>q")
+              execute_query("\e[>q")
             when RequestCapabilityMsg
-              execute("\eP+q#{msg.capability.to_slice.hexstring.upcase}\e\\")
+              execute_query("\eP+q#{msg.capability.to_slice.hexstring.upcase}\e\\")
             when CapabilityMsg
               if (msg.content == "RGB" || msg.content == "Tc") && @profile != Ultraviolet::ColorProfile::TrueColor
                 profile = Ultraviolet::ColorProfile::TrueColor
@@ -870,6 +872,20 @@ module Tea
       @mutex.synchronize do
         @output_buf << sequence
       end
+    end
+
+    # ExecuteQuery writes a terminal query to the output buffer. Queries expect
+    # a reply on input, so when input is disabled the query is skipped: the
+    # program cannot read the response, and the terminal's reply would leak
+    # into the shell once the program exits (#1590).
+    #
+    # This covers every query that expects a reply, including background,
+    # foreground, and cursor color requests, cursor position reports,
+    # clipboard reads, and terminal version and termcap queries.
+    private def execute_query(sequence : String)
+      return if @disable_input
+
+      execute(sequence)
     end
 
     # Flush writes the output buffer to the actual output
