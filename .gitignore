@@ -1,4 +1,8 @@
-/docs/
+# Crystal API docs output (hand-written docs under docs/ are tracked)
+/docs/*.html
+/docs/css/
+/docs/js/
+/docs/api/
 /lib/
 /bin/
 /.shards/
@@ -19,3 +23,6 @@
 
 # AppleDouble resource fork files (FAT32/exFAT removable drives)
 ._*
+
+# npm tooling (tree-sitter parsers for local docs tooling)
+/node_modules/
