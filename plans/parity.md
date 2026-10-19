@@ -60,8 +60,8 @@ re-ported to their upstream shape:
 
 ### Last known state (2026-10-19)
 
-- Last commit: `298168d` — docs(readme): rewrite with upstream-style tutorial
-  and Crystal examples
+- Last parity feature: `06ce8ab` — port: track v2.0.8 mouse/flush and
+  nil-input exec tests
 - `make format` — pass
 - `make test` — 134 examples, 0 failures
 - `ameba` — 155 findings (pre-existing; see **Next up** #1)
