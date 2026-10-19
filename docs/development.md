@@ -25,6 +25,12 @@
    make test
    ```
 
+## Start of session
+
+Read [Resuming Work](resuming.md) first. Current focus and next work live in
+[plans/parity.md](../plans/parity.md); upstream tracking details are in
+[Porting Parity](porting-parity.md).
+
 ## Daily Workflow
 
 1. **Start development session**:
@@ -58,7 +64,7 @@
 | `make lint` | Run ameba linter (auto-fix then verify) |
 | `make test` | Run all Crystal specs |
 | `make clean` | Remove temporary files and build artifacts |
-| `make build-examples` | Build example applications |
+| `make build-examples` | Build submodule examples against local `src/` into `./temp/examples` (skips `bubbles` examples) |
 | `make check-go-port-inventory` | Check Go port inventory |
 | `make check-go-source-parity` | Check Go source parity |
 | `make check-go-test-parity` | Check Go test parity |

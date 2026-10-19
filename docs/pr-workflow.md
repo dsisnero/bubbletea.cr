@@ -4,6 +4,10 @@
 
 Format: `<type>(<scope>): <description>`
 
+Parity work that ports upstream Go behavior uses `port: <feature>` instead,
+with bullets for what changed and the upstream pin. See the **Commit message**
+section of [AGENTS.md](../AGENTS.md) for the full shape.
+
 **Types**: feat, fix, docs, refactor, test, chore, perf
 
 ### Examples

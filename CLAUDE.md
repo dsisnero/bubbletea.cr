@@ -1,76 +1,125 @@
 # bubbletea.cr
 
-Crystal port of Go's bubbletea TUI framework
+> **How to resume:** read `plans/parity.md` first and use its **Where we are**
+> block (current focus + ordered "Next up"), then run `make format` and
+> `make test`. Details: [docs/resuming.md](docs/resuming.md). Do not re-derive
+> state from git.
+
+Crystal port of Go's [Bubble Tea](https://github.com/charmbracelet/bubbletea)
+TUI framework, vendored at `vendor/bubbletea` (release `v2.0.8`, commit
+`fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1`). Example apps and their parity
+specs live in the `bubbletea-examples` submodule; `vendor/bubbles` (`v2.1.1`)
+is the widget upstream for future ports.
 
 ## Commands
 
 ```bash
-make install                 # Install dependencies
-make update                  # Update dependencies
-make format                  # Check code formatting
-make lint                    # Run ameba linter (fix then verify)
-make test                    # Run specs
-make clean                   # Clean temporary files
-make build-examples          # Build example applications
-make check-go-port-inventory # Check Go port inventory
-make check-go-source-parity  # Check Go source parity
-make check-go-test-parity    # Check Go test parity
-make parity-specs            # Run example parity specs with local caches
-make parity-shell            # Print parity environment setup command
+make install                 # shards install (deps under ./temp/cache)
+make update                  # shards update
+make format                  # crystal tool format --check
+make lint                    # ameba --fix then ameba
+make test                    # crystal spec
+make clean                   # wipe ./temp contents
+make build-examples          # build bubbletea-examples into ./temp/examples
+make check-go-port-inventory # ledger check: docs/go_port_inventory.tsv
+make check-go-source-parity  # ledger check: docs/go_source_parity.tsv
+make check-go-test-parity    # ledger check: docs/go_test_parity.tsv
+make parity-specs            # run parity specs with local caches
+make parity-shell            # print the parity environment setup command
 ```
 
-## Documentation
+`make build-examples` compiles the `bubbletea-examples` sources against this
+repository's `src/` and `lib/` into `./temp/examples`, so it does not need the
+submodule's own (currently stale) lockfile. Examples that require `bubbles`
+are skipped because that shard is a separate port and not a dependency here.
 
-| Document | Purpose |
-|----------|---------|
-| [Architecture](docs/architecture.md) | System design, data flow, package responsibilities |
-| [Development](docs/development.md) | Prerequisites, setup, daily workflow |
-| [Coding Guidelines](docs/coding-guidelines.md) | Code style, error handling, naming conventions |
-| [Testing](docs/testing.md) | Test commands, conventions, patterns |
-| [PR Workflow](docs/pr-workflow.md) | Commits, PRs, branch naming, review process |
-| [Porting Parity](docs/porting-parity.md) | Upstream source tracking and parity verification |
-| [Upgrade Guide v2](docs/upgrade_guide_v2.md) | Migration from v1 to v2 (Crystal-specific) |
+## Docs
 
-## Core Principles
+- [Resuming work](docs/resuming.md)
+- [Architecture](docs/architecture.md)
+- [Development](docs/development.md)
+- [Coding Guidelines](docs/coding-guidelines.md)
+- [Testing](docs/testing.md)
+- [PR Workflow](docs/pr-workflow.md)
+- [Porting Parity](docs/porting-parity.md)
+- [Upgrade Guide v2](docs/upgrade_guide_v2.md)
 
-1. Upstream Go code is source of truth
-2. Preserve behavior exactly
-3. Don't skip functionality
-4. Maintain test parity
-5. Follow Crystal best practices
+## Principles
 
-## Commits
+1. Upstream Go behavior is the source of truth; `vendor/bubbletea` wins over
+   local preference.
+2. Port behavior, not style: Crystal idioms must not change Go semantics.
+3. Port upstream tests early and never weaken assertions.
+4. Track per-symbol parity in `plans/inventory/`; track status in
+   `plans/parity.md`.
+5. Commit one completed feature at a time.
 
-Format: `<type>(<scope>): <description>`
+## Session continuity (read this first)
 
-Types: feat, fix, docs, refactor, test, chore, perf
+`plans/parity.md` is the single source of truth for where we are. At the start
+of every session:
 
-Examples:
+1. Read `plans/parity.md` and use its **Where we are** block to find the
+   current focus, the ordered "Next up" list, and per-area chunk status. Do not
+   re-derive state from git history.
+2. Skim `git log --oneline -10` and `git status` to confirm the working tree.
+3. Run `make format` and `make test` before changes to confirm a clean
+   baseline. `make lint` currently has a pre-existing baseline; see
+   `plans/parity.md` before treating its output as a regression.
 
-- feat(tea): add mouse event handling
-- fix(renderer): correct cursor positioning
-- docs(README): update installation instructions
+See [docs/resuming.md](docs/resuming.md) for the full resume checklist.
 
-## Crystal Code Gates
+### Keeping `plans/parity.md` resumable
 
-```bash
-crystal tool format src spec
-ameba src spec
-crystal spec
-rumdl fmt docs/ *.md
+- `plans/parity.md` starts with a **Where we are** block (`Current focus`,
+  `Next up`, chunk status by area). Keep it accurate after every feature.
+- Work items are feature-sized (roughly one branch/commit). Per-symbol state
+  lives in `plans/inventory/go_*.tsv`, not in the plan.
+- If the plan grows too large, split it into `plans/<area>.md`, link each from
+  `plans/parity.md`, and mark each split file complete/in-progress plus the
+  file being worked on next.
+
+### Definition of done for every feature (required)
+
+A feature is complete only when all of the following are true, and all of it
+must be committed as **one** atomic commit before starting the next feature:
+
+1. the API surface is implemented;
+2. upstream tests (or equivalent characterization specs) exist and pass;
+3. gates pass: `make format` and `make test`, plus `make lint` with no new
+   findings;
+4. parity inventory rows for the feature are updated in `plans/inventory/`;
+5. `plans/parity.md` status is updated and the **Where we are** block refreshed
+   (current focus + next up);
+6. any intentional divergence is documented (in `plans/parity.md` and/or the
+   commit message).
+
+### Commit message
+
+```text
+port: <feature name>
+
+- what changed (files/areas)
+- upstream tests ported
+- divergences, if any
+- gates: make format / make lint / make test results
+
+Upstream: charmbracelet/bubbletea v2.0.8
+(fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1)
 ```
+
+Use `port:` for parity work. Non-porting changes (docs, tooling, CI) use
+`<type>(<scope>): <description>` as described in
+[docs/pr-workflow.md](docs/pr-workflow.md).
 
 ## External Dependencies
 
-- **Upstream Go repository**: `vendor/bubbletea` submodule must be at correct
-  commit
-  - Verification: `git submodule status vendor/bubbletea`
+- **Upstream Go repository**: `vendor/bubbletea` submodule must be at the
+  pinned commit.
+  - Verification: `git submodule status`
   - Update: `git submodule update --init --remote vendor/bubbletea`
-
-## Debugging
-
-When something breaks, check parity with upstream Go code first. Compare
-behavior with `vendor/bubbletea` at the same commit.
+- **Example apps**: `bubbletea-examples` submodule.
+- **Widget upstream**: `vendor/bubbles` at `v2.1.1`.
 
 ## Conventions
 
@@ -78,5 +127,10 @@ behavior with `vendor/bubbletea` at the same commit.
 - Port test logic exactly from Go tests
 - Mark missing functionality as `pending` in specs
 - Follow Go test patterns for coverage and edge cases
-- Use `./temp` directory for temporary files
+- Use `./temp` for temporary files and caches
 - Never commit temporary files to git
+
+## Debugging
+
+When something breaks, check parity with upstream Go code first. Compare
+behavior with `vendor/bubbletea` at the pinned commit.

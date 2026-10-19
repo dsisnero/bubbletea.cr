@@ -7,6 +7,7 @@
 <p align="center">
   <a href="docs/architecture.md">Architecture</a> &middot;
   <a href="docs/development.md">Development</a> &middot;
+  <a href="docs/resuming.md">Resuming</a> &middot;
   <a href="docs/coding-guidelines.md">Guidelines</a> &middot;
   <a href="docs/testing.md">Testing</a> &middot;
   <a href="docs/pr-workflow.md">PR Workflow</a> &middot;
@@ -203,6 +204,7 @@ Watch in real time with `tail -f debug.log` in another terminal.
 |----------|---------|
 | [Architecture](docs/architecture.md) | System design, data flow, package responsibilities |
 | [Development](docs/development.md) | Prerequisites, setup, daily workflow |
+| [Resuming Work](docs/resuming.md) | Start-of-session checklist and plan pointers |
 | [Coding Guidelines](docs/coding-guidelines.md) | Code style, error handling, naming conventions |
 | [Testing](docs/testing.md) | Test commands, conventions, patterns |
 | [PR Workflow](docs/pr-workflow.md) | Commits, PRs, branch naming, review process |
