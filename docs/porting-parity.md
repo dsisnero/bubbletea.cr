@@ -1,16 +1,19 @@
 ---
 upstream_repo: "github.com/charmbracelet/bubbletea"
-pinned_revision: "fdcd0cfd598195e7043c18ab1bc65dcae03588f5"
+pinned_revision: "fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1"
 import_mode: "submodule"
 upstream_submodule_path: "vendor/bubbletea"
 ---
 
 # Porting Parity
 
+Status and next work live in [plans/parity.md](../plans/parity.md); this page
+explains the upstream tracking model.
+
 ## Upstream Source of Truth
 
 - **Repository**: `github.com/charmbracelet/bubbletea`
-- **Pinned revision**: `07a69fbcf1e3649a797a929d724f94170d6affc3`
+- **Pinned revision**: `fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1` (`v2.0.8`)
 - **Import mode**: `submodule`
 - **Upstream path**: `vendor/bubbletea`
 

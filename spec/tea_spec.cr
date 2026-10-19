@@ -214,47 +214,60 @@ describe "Tea" do
 
   describe "mouse concurrency" do
     it "handles concurrent mouse events without data race" do
-      # Port of Go test TestCursedRenderer_mouseVsFlush
-      # Exercises the on_mouse path under concurrent access
+      # Port of Go test TestCursedRenderer_mouseVsFlush.
+      # Regression test for https://github.com/charmbracelet/bubbletea/issues/1690:
+      # on_mouse touches last_view while flush renders concurrently.
+      reader, writer = IO.pipe
       model = MouseRaceModel.new
       output = IO::Memory.new
 
       program = Tea.new_program(
         model,
-        Tea.with_input(IO::Memory.new("")),
+        Tea.with_context(Tea::ExecutionContext.new),
+        Tea.with_input(reader),
         Tea.with_output(output),
+        Tea.with_environment(
+          Ultraviolet::Environ.new([
+            "TERM=xterm-256color",
+            "TERM_PROGRAM=Apple_Terminal",
+          ])
+        ),
         Tea.without_signals,
         Tea.with_window_size(80, 24),
       )
 
-      done = Channel(Exception?).new(1)
-      spawn do
-        _, err = program.run
-        done.send(err)
-      end
-
-      sleep 150.milliseconds
-
-      100.times do |i|
-        case i % 4
-        when 0
-          program.send(Tea.mouse_click(i % 80, i % 24, Ultraviolet::MouseButton::Left))
-        when 1
-          program.send(Tea.mouse_motion(i % 80, i % 24))
-        when 2
-          program.send(Tea.mouse_wheel(i % 80, i % 24, Ultraviolet::MouseButton::WheelUp))
-        else
-          program.send(Tea.mouse_release(i % 80, i % 24, Ultraviolet::MouseButton::Left))
+      begin
+        done = Channel(Exception?).new(1)
+        spawn do
+          _, err = program.run
+          done.send(err)
         end
-      end
 
-      program.quit
+        sleep 150.milliseconds
 
-      select
-      when err = done.receive
-        err.should be_nil
-      when timeout(5.seconds)
-        fail("program did not exit after Quit")
+        100.times do |i|
+          case i % 4
+          when 0
+            program.send(Tea.mouse_click(i % 80, i % 24, Ultraviolet::MouseButton::Left))
+          when 1
+            program.send(Tea.mouse_motion(i % 80, i % 24))
+          when 2
+            program.send(Tea.mouse_wheel(i % 80, i % 24, Ultraviolet::MouseButton::WheelUp))
+          else
+            program.send(Tea.mouse_release(i % 80, i % 24, Ultraviolet::MouseButton::Left))
+          end
+        end
+
+        program.quit
+
+        select
+        when err = done.receive
+          err.should be_nil
+        when timeout(5.seconds)
+          fail("program did not exit after Quit")
+        end
+      ensure
+        writer.close
       end
     end
   end

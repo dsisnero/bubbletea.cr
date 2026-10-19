@@ -28,6 +28,7 @@ commands_test.go::test::TestBatch	test	missing	-	Go test port not yet started
 commands_test.go::test::TestEvery	test	missing	-	Go test port not yet started
 commands_test.go::test::TestSequence	test	missing	-	Go test port not yet started
 commands_test.go::test::TestTick	test	missing	-	Go test port not yet started
+cursed_renderer_test.go::test::TestCursedRenderer_mouseVsFlush	test	ported	spec/tea_spec.cr	on_mouse vs flush race regression (upstream #1690)
 cursor.go::const::CursorBar	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
 cursor.go::const::CursorBlock	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
 cursor.go::const::CursorUnderline	const	ported	src/tea.cr	Cursor and view helpers in tea.cr
@@ -272,6 +273,7 @@ exec.go::method::osExecCommand.SetStdout	method	ported	src/tea/exec.cr	External 
 exec.go::type::ExecCallback	type	ported	src/tea/exec.cr	External command execution
 exec.go::type::ExecCommand	type	ported	src/tea/exec.cr	External command execution
 exec_test.go::test::TestTeaExec	test	missing	-	Go test port not yet started
+exec_test.go::test::TestTeaExecWithNilInput	test	ported	spec/exec_spec.cr	ExecProcess with WithInput(nil)
 focus.go::struct::BlurMsg	struct	ported	src/tea/messages.cr	Focus and blur messages
 focus.go::struct::FocusMsg	struct	ported	src/tea/messages.cr	Focus and blur messages
 key.go::const::KeyBackspace	const	ported	src/tea/key.cr	Key types and formatting

@@ -131,6 +131,15 @@ private def new_exec_program(model : Tea::Model, output : IO = IO::Memory.new) :
   )
 end
 
+# Port of upstream `successExecCommand`: exits 0 on every platform.
+private def success_exec_command : {String, Array(String)}
+  {% if flag?(:windows) %}
+    {"cmd", ["/c", "exit 0"]}
+  {% else %}
+    {"true", [] of String}
+  {% end %}
+end
+
 describe "Exec" do
   describe "Exec" do
     it "creates an exec command" do
@@ -250,13 +259,17 @@ describe "Exec" do
 
   describe "Exec with nil input" do
     it "runs exec successfully when input is nil" do
-      # Port of Go test TestTeaExecWithNilInput
-      # Verifies that exec works when program has no input (WithInput(nil))
-      model = ExecTestModel.new("true")
+      # Port of Go test TestTeaExecWithNilInput.
+      # Upstream's testExecNoInputModel ignores its command and always runs
+      # successExecCommand(); input is explicitly nil.
+      command, args = success_exec_command
+      model = ExecTestModel.new(command, args)
+      output = IO::Memory.new
+
       program = Tea.new_program(
         model,
         Tea.with_input(nil),
-        Tea.with_output(IO::Memory.new),
+        Tea.with_output(output),
         Tea.without_signals,
       )
 

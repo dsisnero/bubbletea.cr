@@ -16,6 +16,60 @@ inventory_dir: "plans/inventory/"
 - **Revision**: `fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1`
 - **Path**: `vendor/bubbletea`
 
+## Where we are
+
+**Recently completed:** upstream `v2.0.8` test-ledger refresh. The two tests
+that landed in `v2.0.8` are now tracked as `ported`, and both specs were
+re-ported to their upstream shape:
+
+- `cursed_renderer_test.go::TestCursedRenderer_mouseVsFlush` →
+  `spec/tea_spec.cr` (pipe input, `TERM`/`TERM_PROGRAM` environment, context,
+  100 mixed mouse sends; upstream #1690 regression).
+- `exec_test.go::TestTeaExecWithNilInput` → `spec/exec_spec.cr` (platform-aware
+  success command, `WithInput(nil)`).
+
+`./scripts/check_port_inventory.sh`, `./scripts/check_test_parity.sh`, and
+`./scripts/check_source_parity.sh` all pass.
+
+**Current focus:** burning down the ameba baseline so `make lint` is green.
+
+**Next up (in order):**
+
+1. **Burn down the ameba baseline** so `make lint` is green: 155 findings —
+   90 `Lint/NotNil`, 14 `Metrics/CyclomaticComplexity`,
+   5 `Lint/UselessAssign`, 3 `Lint/UnneededDisableDirective`,
+   3 `Documentation/DocumentationAdmonition`.
+2. **Audit the remaining baseline test-ledger rows.** 28 rows in
+   `plans/inventory/go_test_parity.tsv` are still `missing` from the initial
+   auto-generated baseline. Walk upstream tests, point each at its Crystal spec
+   (or leave it `missing` with a reason), and keep the checker green.
+3. **Keep example parity green** in the `bubbletea-examples` submodule.
+
+### Chunk status
+
+| Area | Status | Notes |
+| ---- | ------ | ----- |
+| Core runtime | Complete | `tea.go`, `commands.go`, `options.go`, `exec.go` |
+| Terminal I/O | Complete | TTY delegated to `ultraviolet` (documented) |
+| Input, messages, logging | Complete | Keys, mouse, clipboard, focus, paste |
+| Upstream v2.0.8 upgrade | Complete | See roadmap section below |
+| Example parity | Complete | `spec/parity/`, `spec/*_parity_spec.cr` |
+| v2.0.8 ledger refresh | Complete | Both new tests tracked as `ported` |
+| Test-ledger audit | Not started | 28 baseline rows (see **Next up** #2) |
+| Lint baseline | In progress | See **Next up** #1 |
+
+### Last known state (2026-10-19)
+
+- Last commit: `298168d` — docs(readme): rewrite with upstream-style tutorial
+  and Crystal examples
+- `make format` — pass
+- `make test` — 134 examples, 0 failures
+- `ameba` — 155 findings (pre-existing; see **Next up** #1)
+- `make check-go-{port-inventory,source-parity,test-parity}` — pass
+- `scripts/check_{port,source,test}_parity.sh` over `plans/inventory/` — pass
+  (586 port items, 556 source items, 30 tests)
+- `make parity-specs` — 4 examples, 0 failures
+
 ## Feature Roadmap
 
 ### Core Runtime (Complete)
@@ -137,12 +191,15 @@ Upstream changes between v2.0.6 → v2.0.8: 2 files, +6/-4 lines (functional).
 
 | Manifest | Ported/Mapped | Missing/Skipped | Total |
 |----------|:------------:|:---------------:|:-----:|
-| `go_port_inventory.tsv` | 322 | 262 | 584 |
+| `go_port_inventory.tsv` | 324 | 262 | 586 |
 | `go_source_parity.tsv` | 322 | 234 | 556 |
-| `go_test_parity.tsv` | 26 | 2 | 28 |
+| `go_test_parity.tsv` | 2 | 28 | 30 |
 
 - "Missing" items in port_inventory are mostly test/examples/tutorials — not API-level targets.
 - Source parity "missing" items are test APIs, example files, and tutorial code that don't have direct Crystal source equivalents.
+- The 28 `missing` rows in `go_test_parity.tsv` are the untouched auto-generated
+  baseline (see **Next up** #2); only the two `v2.0.8` tests are audited as
+  `ported` so far.
 
 ## Known Divergences
 
@@ -156,15 +213,25 @@ Upstream changes between v2.0.6 → v2.0.8: 2 files, +6/-4 lines (functional).
 
 ```bash
 # Quality gates
-crystal tool format --check src spec
-ameba src spec
-crystal spec
+make format
+make lint
+make test
 
-# Parity drift checks
+# Parity drift checks (coarse ledgers in docs/)
+make check-go-port-inventory
+make check-go-source-parity
+make check-go-test-parity
+
+# Per-symbol ledger checks (stricter, plans/inventory/)
 ./scripts/check_port_inventory.sh . plans/inventory/go_port_inventory.tsv vendor/bubbletea go
 ./scripts/check_source_parity.sh . plans/inventory/go_source_parity.tsv vendor/bubbletea go
 ./scripts/check_test_parity.sh . plans/inventory/go_test_parity.tsv vendor/bubbletea go
 
+# Example parity specs
+make parity-specs
+
 # Adversarial signoff
 ./scripts/verify_parity_adversarial.sh . vendor/bubbletea go 'crystal spec' 'go test ./...'
 ```
+
+The per-symbol checks all pass; keep them green when touching the ledgers.
