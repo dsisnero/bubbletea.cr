@@ -361,5 +361,18 @@ describe "Screen" do
       pb = Tea::ProgressBar.new(150.0, 100.0)
       pb.percent.should eq 100.0
     end
+
+    it "returns Unknown for out-of-range states" do
+      # Port of Go test TestProgressBarStateStringOutOfRange.
+      # State is a public field upstream, so callers can assign values outside
+      # the known range; String() must not panic.
+      {-1, 5, 100}.each do |value|
+        Tea::ProgressBarState.new(value).string.should eq "Unknown"
+      end
+
+      (0..4).each do |value|
+        Tea::ProgressBarState.new(value).string.should_not eq "Unknown"
+      end
+    end
   end
 end

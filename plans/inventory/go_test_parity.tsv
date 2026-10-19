@@ -4,6 +4,8 @@ commands_test.go::test::TestEvery	missing	-	baseline
 commands_test.go::test::TestSequence	missing	-	baseline
 commands_test.go::test::TestTick	missing	-	baseline
 cursed_renderer_test.go::test::TestCursedRenderer_mouseVsFlush	ported	spec/tea_spec.cr	on_mouse vs flush race regression (upstream #1690)
+cursed_renderer_test.go::test::TestCursedRenderer_restoresKittyKeyboardStack	ported	spec/cursed_renderer_spec.cr	kitty keyboard stack restore across stop/start and screen switches
+cursed_renderer_test.go::test::TestCursedRenderer_updatesKittyKeyboardFlagsInPlace	ported	spec/cursed_renderer_spec.cr	kitty keyboard flags updated in place
 examples/simple/main_test.go::test::TestApp	missing	-	baseline
 examples/simple/main_test.go::test::TestAppInteractive	missing	-	baseline
 exec_test.go::test::TestTeaExec	missing	-	baseline
@@ -12,6 +14,7 @@ logging_test.go::test::TestLogToFile	missing	-	baseline
 options_test.go::test::TestOptions	missing	-	baseline
 screen_test.go::test::TestClearMsg	missing	-	baseline
 screen_test.go::test::TestViewModel	missing	-	baseline
+tea_test.go::test::TestProgressBarStateStringOutOfRange	ported	spec/screen_spec.cr	ProgressBarState#string returns Unknown out of range
 tea_test.go::test::TestTeaBatchMsg	missing	-	baseline
 tea_test.go::test::TestTeaContext	missing	-	baseline
 tea_test.go::test::TestTeaContextBatchDeadlock	missing	-	baseline

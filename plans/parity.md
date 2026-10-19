@@ -1,6 +1,6 @@
 ---
 upstream_repo: "github.com/charmbracelet/bubbletea"
-pinned_revision: "fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1"
+pinned_revision: "73b6d91ac1c3854dd4af046ab5f9e51d3b3b4290"
 import_mode: "submodule"
 upstream_submodule_path: "vendor/bubbletea"
 language: go
@@ -12,44 +12,31 @@ inventory_dir: "plans/inventory/"
 
 ## Source of Truth
 
-- **Upstream**: `github.com/charmbracelet/bubbletea` at `v2.0.8`
-- **Revision**: `fc707bb7ea0161405bb6c653ec93f6a9c6a72fe1`
+- **Upstream**: `github.com/charmbracelet/bubbletea` at `v2.0.9`
+- **Revision**: `73b6d91ac1c3854dd4af046ab5f9e51d3b3b4290`
 - **Path**: `vendor/bubbletea`
 
 ## Where we are
 
-**Recently completed:** upstream `v2.0.8` test-ledger refresh, followed by the
-ameba baseline cleanup.
+**Recently completed:** the upstream `v2.0.9` update
+([plans/bubbletea-v2.0.9-update.md](bubbletea-v2.0.9-update.md)). It ports the
+Kitty keyboard stack restore, the `pendingErase` fix, `ProgressBarState#string`
+out-of-range handling, and the no-input renderer guard. `make lint` is green
+and the v2.0.8 ledger rows remain tracked.
 
-The two tests that landed in `v2.0.8` are tracked as `ported` and were
-re-ported to their upstream shape:
-
-- `cursed_renderer_test.go::TestCursedRenderer_mouseVsFlush` →
-  `spec/tea_spec.cr` (pipe input, `TERM`/`TERM_PROGRAM` environment, context,
-  100 mixed mouse sends; upstream #1690 regression).
-- `exec_test.go::TestTeaExecWithNilInput` → `spec/exec_spec.cr` (platform-aware
-  success command, `WithInput(nil)`).
-
-`make lint` is now green (0 findings). `.ameba.yml` excludes the
-`bubbletea-examples` submodule, and the remaining root findings were fixed:
-
-- Go-parity `set_output`/`set_prefix` and `set_stdin`/`set_stdout`/
-  `set_stderr` gained Crystal aliases (`output=`, `prefix=`, `stdin=`,
-  `stdout=`, `stderr=`); the Go names stay as the contract.
-- `not_nil!` was removed from `exec.cr`/`tea.cr`, the identity mouse-button
-  conversion was dropped (`Tea::MouseButton` aliases
-  `Ultraviolet::MouseButton`), and the tty read loop plus the
-  synchronized-output heuristic were split into helpers.
-
-**Current focus:** auditing the remaining baseline test-ledger rows.
+**Current focus:** no active chunk; `v2.0.9` is complete.
 
 **Next up (in order):**
 
-1. **Audit the remaining baseline test-ledger rows.** 28 rows in
+1. **Upstream `v2.0.10` update.** Patch release with terminal capability and
+   option additions (`tea.go`, `options.go`, `color.go`, `termcap.go`,
+   `xterm.go`, plus tests). Create `plans/bubbletea-v2.0.10-update.md` using
+   the v2.0.9 plan as the template.
+2. **Audit the remaining baseline test-ledger rows.** 28 rows in
    `plans/inventory/go_test_parity.tsv` are still `missing` from the initial
    auto-generated baseline. Walk upstream tests, point each at its Crystal spec
    (or leave it `missing` with a reason), and keep the checker green.
-2. **Keep example parity green** in the `bubbletea-examples` submodule.
+3. **Keep example parity green** in the `bubbletea-examples` submodule.
 
 ### Chunk status
 
@@ -59,21 +46,22 @@ re-ported to their upstream shape:
 | Terminal I/O | Complete | TTY delegated to `ultraviolet` (documented) |
 | Input, messages, logging | Complete | Keys, mouse, clipboard, focus, paste |
 | Upstream v2.0.8 upgrade | Complete | See roadmap section below |
+| Upstream v2.0.9 upgrade | Complete | [Plan](bubbletea-v2.0.9-update.md) |
+| Upstream v2.0.10 upgrade | Not started | See **Next up** #1 |
 | Example parity | Complete | `spec/parity/`, `spec/*_parity_spec.cr` |
-| v2.0.8 ledger refresh | Complete | Both new tests tracked as `ported` |
 | Lint baseline | Complete | `make lint` — 0 findings |
-| Test-ledger audit | Not started | 28 baseline rows (see **Next up** #1) |
+| Test-ledger audit | Not started | 28 baseline rows (see **Next up** #2) |
 
 ### Last known state (2026-10-19)
 
-- Last parity feature: `06ce8ab` — port: track v2.0.8 mouse/flush and
-  nil-input exec tests
+- Last parity feature: v2.0.9 update
+  ([plan](bubbletea-v2.0.9-update.md))
 - `make format` — pass
 - `make lint` — pass (17 files, 0 findings)
-- `make test` — 134 examples, 0 failures
+- `make test` — 138 examples, 0 failures
 - `make check-go-{port-inventory,source-parity,test-parity}` — pass
 - `scripts/check_{port,source,test}_parity.sh` over `plans/inventory/` — pass
-  (586 port items, 556 source items, 30 tests)
+  (589 port items, 556 source items, 33 tests)
 - `make parity-specs` — 4 examples, 0 failures
 
 ## Feature Roadmap
@@ -193,19 +181,51 @@ Upstream changes between v2.0.6 → v2.0.8: 2 files, +6/-4 lines (functional).
 - [x] **UV→KeyboardEnhancements flag mapping fix** — Corrected `convert_uv_enhancements` to use per-flag `contains?` checks matching Go ANSI constants
   - Source: `tea.go` → `src/tea.cr`
 
+### Upstream v2.0.9 Upgrade (Complete)
+
+Detailed plan: [plans/bubbletea-v2.0.9-update.md](bubbletea-v2.0.9-update.md).
+Patch release; 12 commits, functional changes in `cursed_renderer.go` plus
+small fixes in `tea.go`, `key.go`, and `mouse.go`.
+
+- [x] **Kitty keyboard stack restore** — push flags on activation, pop on
+      stop/screen switch, update flags in place when only flags change
+  - Source: `cursed_renderer.go` → `src/tea/cursed_renderer.cr`
+  - Upstream commit: `0d3e281` (PR #1750)
+- [x] **No-input renderer guard** — `no_input=` suppresses all keyboard
+      enhancement output and queries so terminal responses cannot leak
+  - Source: `tea.go` (`setNoInput`) → `src/tea.cr`, `src/tea/cursed_renderer.cr`
+- [x] **`pendingErase`** — `resize`/`clear_screen` force a full redraw and
+      `flush` cannot early-return
+  - Source: `cursed_renderer.go` → `src/tea/cursed_renderer.cr`
+  - Upstream commit: `faf4dcf` (PR #1755)
+- [x] **`ProgressBarState#string` out-of-range** — returns `"Unknown"`
+      instead of panicking
+  - Source: `tea.go` → `src/tea.cr`
+  - Upstream commit: `930e18c` (PR #1748)
+- [x] **Media/mouse constants** — `KeyMediaRecord` and `MouseButton11`
+      correctly alias the ultraviolet constants (already correct here)
+  - Source: `key.go`, `mouse.go`
+  - Upstream commits: `dc4b017` (#1757), `1862dfb` (#1754)
+- [x] **Renderer reset deadlock fix** — `close` now uses an unlocked reset
+      helper instead of re-entering the non-reentrant mutex (found by the new
+      renderer tests)
+- [x] **Parity fixture updated** — kitty sequences in
+      `spec/parity/v2_control_sequences_spec.cr` now match the v2.0.9 goldens
+      (`[=1;1u` → `[>1u`, `[=0;1u` → `[<1u`)
+
 ## Inventory Summary
 
 | Manifest | Ported/Mapped | Missing/Skipped | Total |
 |----------|:------------:|:---------------:|:-----:|
-| `go_port_inventory.tsv` | 324 | 262 | 586 |
+| `go_port_inventory.tsv` | 327 | 262 | 589 |
 | `go_source_parity.tsv` | 322 | 234 | 556 |
-| `go_test_parity.tsv` | 2 | 28 | 30 |
+| `go_test_parity.tsv` | 5 | 28 | 33 |
 
 - "Missing" items in port_inventory are mostly test/examples/tutorials — not API-level targets.
 - Source parity "missing" items are test APIs, example files, and tutorial code that don't have direct Crystal source equivalents.
 - The 28 `missing` rows in `go_test_parity.tsv` are the untouched auto-generated
-  baseline (see **Next up** #1); only the two `v2.0.8` tests are audited as
-  `ported` so far.
+  baseline (see **Next up** #2); only the five audited `v2.0.8`/`v2.0.9` tests
+  are marked `ported` so far.
 
 ## Known Divergences
 

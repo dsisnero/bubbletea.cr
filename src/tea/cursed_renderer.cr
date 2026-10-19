@@ -61,6 +61,13 @@ module Tea
     @starting : Bool = false
     @unicode_core_mode : Bool = false
 
+    # Pending erase: an erase was queued but not yet drained by flush.
+    @pending_erase : Bool = false
+
+    # Whether input is disabled, in which case keyboard enhancement queries
+    # are pointless and would leak terminal responses after exit.
+    @no_input : Bool = false
+
     def initialize(w : IO, env : Ultraviolet::Environ, width : Int32, height : Int32)
       @w = w
       @buf = IO::Memory.new
@@ -88,6 +95,27 @@ module Tea
     end
 
     # ameba:enable Naming/AccessorMethodName
+
+    # no_input disables keyboard enhancement requests. When the program runs
+    # without input, the terminal's response to a keyboard enhancement query
+    # would arrive after the program has exited and leak into the shell.
+    def no_input=(no_input : Bool)
+      @mutex.synchronize do
+        @no_input = no_input
+      end
+    end
+
+    # reset_keyboard_enhancements writes the sequences that reset keyboard
+    # enhancement protocols when switching between the main and alt screens.
+    # modifyOtherKeys has no stack, so it is reset in place; the Kitty keyboard
+    # stack is popped, but only if we previously pushed an entry (i.e. this is
+    # not the first render). With input disabled the protocol is never touched.
+    private def reset_keyboard_enhancements(buf : IO::Memory)
+      return if @no_input
+
+      buf << Ansi::ResetModifyOtherKeys
+      buf << Ansi.pop_kitty_keyboard(1) unless @last_view.nil?
+    end
 
     # set_optimizations sets the cursor movement optimizations
     def set_optimizations(hard_tabs : Bool, backspace : Bool, mapnl : Bool)
@@ -175,11 +203,14 @@ module Tea
         end
 
         # Enable keyboard enhancements
-        @scr.write_string(Ansi::SetModifyOtherKeys2)
+        unless @no_input
+          @scr.write_string(Ansi::SetModifyOtherKeys2)
 
-        # Kitty keyboard protocol
-        kitty_flags = keyboard_enhancements_flags(last.keyboard_enhancements)
-        @scr.write_string(Ansi.kitty_keyboard(kitty_flags, 1))
+          # The entry was popped when the renderer was stopped, so push a
+          # fresh one for the screen we're about to restore.
+          kitty_flags = keyboard_enhancements_flags(last.keyboard_enhancements)
+          @scr.write_string(Ansi.push_kitty_keyboard(kitty_flags))
+        end
       end
     end
 
@@ -188,9 +219,13 @@ module Tea
     def close : Exception?
       @mutex.synchronize do
         if last = @last_view
-          # Reset keyboard protocol
-          @buf << Ansi::ResetModifyOtherKeys
-          @buf << Ansi.kitty_keyboard(0, 1)
+          # Pop the keyboard protocol of the last screen used; the other
+          # screen was popped when we switched. With input disabled we never
+          # pushed an entry, so there is nothing to pop.
+          unless @no_input
+            @buf << Ansi::ResetModifyOtherKeys
+            @buf << Ansi.pop_kitty_keyboard(1)
+          end
 
           # Go to bottom of screen regardless of mode.
           @scr.move_to(0, @cellbuf.height - 1)
@@ -282,8 +317,9 @@ module Tea
         # Preserve cursor position across reset.
         x, y = @scr.position
 
-        # Reset renderer state
-        reset
+        # Reset renderer state. @mutex is already held here, so use the
+        # unlocked variant instead of re-entering the non-reentrant mutex.
+        reset_unlocked
         @scr.set_position(x, y)
 
         nil
@@ -323,11 +359,12 @@ module Tea
           @scr.write_string(Ansi::SetTabEvery8Columns)
         end
 
-        if !@starting && !closing && last_view && view_equals(last_view, view) && frame_area == @cellbuf.bounds
+        if !@starting && !closing && !@pending_erase && last_view && view_equals(last_view, view) && frame_area == @cellbuf.bounds
           return
         end
 
         @starting = false
+        @pending_erase = false
 
         if frame_area != @cellbuf.bounds
           @scr.erase
@@ -396,13 +433,30 @@ module Tea
           end
         end
 
-        if last_view.nil? ||
-           view.keyboard_enhancements != last_view.keyboard_enhancements ||
-           view.alt_screen? != last_view.alt_screen?
+        keyboard_changed = if last_view
+                             view.keyboard_enhancements != last_view.keyboard_enhancements ||
+                               view.alt_screen? != last_view.alt_screen?
+                           else
+                             true
+                           end
+
+        # Skipped entirely when input is disabled: the enhancements only
+        # affect keyboard input, and querying the terminal would leave its
+        # response unconsumed, leaking into the shell after the program exits.
+        if !@no_input && keyboard_changed
           @scr.write_string(Ansi::SetModifyOtherKeys2)
 
           kitty_flags = keyboard_enhancements_flags(view.keyboard_enhancements)
-          @scr.write_string(Ansi.kitty_keyboard(kitty_flags, 1))
+          if last_view.nil? || view.alt_screen? != last_view.alt_screen?
+            # First render or screen switch: the previous screen's entry (if
+            # any) is popped below, so push a fresh one for this screen.
+            @scr.write_string(Ansi.push_kitty_keyboard(kitty_flags))
+          else
+            # Only the flags changed while the same screen stays active.
+            # Update the topmost stack entry in place instead of popping and
+            # re-pushing, so a keyboard change doesn't churn the stack.
+            @scr.write_string(Ansi.kitty_keyboard(kitty_flags, 1))
+          end
           @scr.write_string(Ansi::RequestKittyKeyboard) unless closing
         end
 
@@ -474,8 +528,10 @@ module Tea
 
         output_buf = IO::Memory.new
         if should_update_alt_screen
-          output_buf << Ansi::ResetModifyOtherKeys
-          output_buf << Ansi.kitty_keyboard(0, 1)
+          # We always reset keyboard enhancements when switching screens
+          # because the terminal is expected to have two different keyboard
+          # registries for main and alt screens.
+          reset_keyboard_enhancements(output_buf)
           if view.alt_screen?
             output_buf << Ansi::SetModeAltScreenSaveCursor
           else
@@ -528,23 +584,29 @@ module Tea
     # Implements renderer interface
     def reset
       @mutex.synchronize do
-        @buf.clear
-        scr = Ultraviolet::TerminalRenderer.new(@buf, @env.items)
-        scr.color_profile = @profile
-        scr.relative_cursor = true
-        scr.fullscreen = false
-        scr.tab_stops = @hard_tabs ? @width : -1
-        scr.backspace = @backspace
-        scr.map_newline = @mapnl
-        {% if flag?(:windows) %}
-          scr.scroll_optim = false
-        {% else %}
-          scr.scroll_optim = true
-        {% end %}
-        @scr = scr
-        @cellbuf = Ultraviolet::ScreenBuffer.new(@width, @height)
-        @last_view = nil
+        reset_unlocked
       end
+    end
+
+    # reset_unlocked performs the reset; the caller must hold @mutex.
+    private def reset_unlocked
+      @buf.clear
+      scr = Ultraviolet::TerminalRenderer.new(@buf, @env.items)
+      scr.color_profile = @profile
+      scr.relative_cursor = true
+      scr.fullscreen = false
+      scr.tab_stops = @hard_tabs ? @width : -1
+      scr.backspace = @backspace
+      scr.map_newline = @mapnl
+      {% if flag?(:windows) %}
+        scr.scroll_optim = false
+      {% else %}
+        scr.scroll_optim = true
+      {% end %}
+      @scr = scr
+      @cellbuf = Ultraviolet::ScreenBuffer.new(@width, @height)
+      # Go parity: reset keeps last_view so stop/start can re-push the
+      # keyboard stack entry and restore the previous view state.
     end
 
     # insert_above inserts unmanaged lines above the renderer
@@ -607,6 +669,7 @@ module Tea
         @width = width
         @height = height
         @scr.resize(width, height)
+        @pending_erase = true
       end
     end
 
@@ -648,6 +711,7 @@ module Tea
       @mutex.synchronize do
         @scr.move_to(0, 0)
         @scr.erase
+        @pending_erase = true
       end
     end
 

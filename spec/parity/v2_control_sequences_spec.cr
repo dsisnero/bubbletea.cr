@@ -41,7 +41,7 @@ end
 
 describe "v2 control sequence parity" do
   it "matches Go teatest v2 TestApp fixture bytes" do
-    expected_b64 = "G1s/MjAyNiRwG1s/MjAyNyRwG1s/MjVsG1s/MjAwNGgbWz40OzJtG1s9MTsxdRtbP3UNG1tKSGkuIFRoaXMgcHJvZ3JhbSB3aWxsIGV4aXQgaW4gMTAgc2Vjb25kcy4gVG8gcXVpdCBzb29uZXIgcHJlc3MgYW55IGtleQ0KG1tBG1szMEM5IHNlY29uZHMuIFRvIHF1aXQgc29vbmVyIHByZXNzIGFueSBrZXkuDRtbPjRtG1s9MDsxdQobW0obWz8yNWgbWz8yMDA0bA=="
+    expected_b64 = "G1s/MjAyNiRwG1s/MjAyNyRwG1s/MjVsG1s/MjAwNGgbWz40OzJtG1s+MXUbWz91DRtbSkhpLiBUaGlzIHByb2dyYW0gd2lsbCBleGl0IGluIDEwIHNlY29uZHMuIFRvIHF1aXQgc29vbmVyIHByZXNzIGFueSBrZXkNChtbQRtbMzBDOSBzZWNvbmRzLiBUbyBxdWl0IHNvb25lciBwcmVzcyBhbnkga2V5Lg0bWz40bRtbPDF1ChtbShtbPzI1aBtbPzIwMDRs"
     expected = Base64.decode(expected_b64)
 
     input = IO::Memory.new

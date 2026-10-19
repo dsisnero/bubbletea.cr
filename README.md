@@ -237,8 +237,8 @@ See [Development Guide](docs/development.md) for full setup.
 
 ## Upstream Parity
 
-This port tracks upstream `github.com/charmbracelet/bubbletea` at **v2.0.8**
-(revision `fc707bb`). See [Porting Parity](docs/porting-parity.md) for the
+This port tracks upstream `github.com/charmbracelet/bubbletea` at **v2.0.9**
+(revision `73b6d91`). See [Porting Parity](docs/porting-parity.md) for the
 current inventory and drift checks.
 
 ## Contributing

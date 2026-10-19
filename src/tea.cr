@@ -150,8 +150,16 @@ module Tea
     Warning
 
     # Go parity helper for ProgressBarState.String().
+    # Values outside the known range return "Unknown" instead of panicking.
     def string : String
-      to_s
+      case self
+      when None          then "None"
+      when Default       then "Default"
+      when Error         then "Error"
+      when Indeterminate then "Indeterminate"
+      when Warning       then "Warning"
+      else                    "Unknown"
+      end
     end
   end
 
@@ -999,6 +1007,9 @@ module Tea
         cursed = CursedRenderer.new(output, @env, width, height)
         # Go parity: set cursor movement optimizations from termios support.
         cursed.set_optimizations(@use_hard_tabs, @use_backspace, {% if flag?(:unix) %} @tty_input.nil? {% else %} false {% end %})
+        # With input disabled, keyboard enhancement queries would leak their
+        # terminal responses after the program exits.
+        cursed.no_input = @disable_input
         @renderer = cursed
       end
       if @profile.nil?
