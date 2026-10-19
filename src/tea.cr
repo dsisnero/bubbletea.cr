@@ -350,7 +350,6 @@ module Tea
     end
 
     # Start the program with the given context
-    # ameba:disable Metrics/CyclomaticComplexity
     def run(context : ExecutionContext? = nil) : Tuple(Model?, Exception?)
       model = @initial_model
       return {nil, Exception.new("No initial model provided")} unless model
@@ -549,8 +548,9 @@ module Tea
               execute("\eP+q#{msg.capability.to_slice.hexstring.upcase}\e\\")
             when CapabilityMsg
               if (msg.content == "RGB" || msg.content == "Tc") && @profile != Ultraviolet::ColorProfile::TrueColor
-                @profile = Ultraviolet::ColorProfile::TrueColor
-                send(ColorProfileMsg.new(@profile.not_nil!))
+                profile = Ultraviolet::ColorProfile::TrueColor
+                @profile = profile
+                send(ColorProfileMsg.new(profile))
               end
             when ColorProfileMsg
               @profile = msg.profile
@@ -699,32 +699,28 @@ module Tea
 
     private def dispatch_cmd_async(cmd : Cmd)
       spawn do
-        begin
-          msg = cmd.call
-          send(msg) if msg
-        rescue ex
-          handle_runtime_exception(ex)
-        end
+        msg = cmd.call
+        send(msg) if msg
+      rescue ex
+        handle_runtime_exception(ex)
       end
     end
 
     private def exec_batch_command_async(cmd : Cmd, done : Channel(Nil))
       spawn do
-        begin
-          result = cmd.call
-          case result
-          when BatchMsg
-            exec_batch_msg(result)
-          when SequenceMsg
-            exec_sequence_msg(result)
-          else
-            send(result) if result
-          end
-        rescue ex
-          handle_runtime_exception(ex)
-        ensure
-          done.send(nil)
+        result = cmd.call
+        case result
+        when BatchMsg
+          exec_batch_msg(result)
+        when SequenceMsg
+          exec_sequence_msg(result)
+        else
+          send(result) if result
         end
+      rescue ex
+        handle_runtime_exception(ex)
+      ensure
+        done.send(nil)
       end
     end
 
@@ -807,42 +803,14 @@ module Tea
 
     # Convert ultraviolet Mouse to Tea Mouse
     private def convert_uv_mouse(uv_mouse : Ultraviolet::Mouse) : Mouse
+      # Tea::MouseButton is an alias of Ultraviolet::MouseButton, so the
+      # upstream conversion is the identity function.
       Mouse.new(
         x: uv_mouse.x,
         y: uv_mouse.y,
-        button: convert_uv_mouse_button(uv_mouse.button),
+        button: uv_mouse.button,
         modifiers: convert_uv_modifiers(uv_mouse.mod)
       )
-    end
-
-    # Convert ultraviolet MouseButton to Tea MouseButton
-    private def convert_uv_mouse_button(uv_button : Ultraviolet::MouseButton) : MouseButton
-      case uv_button
-      when Ultraviolet::MouseButton::Left
-        Ultraviolet::MouseButton::Left
-      when Ultraviolet::MouseButton::Middle
-        Ultraviolet::MouseButton::Middle
-      when Ultraviolet::MouseButton::Right
-        Ultraviolet::MouseButton::Right
-      when Ultraviolet::MouseButton::WheelUp
-        Ultraviolet::MouseButton::WheelUp
-      when Ultraviolet::MouseButton::WheelDown
-        Ultraviolet::MouseButton::WheelDown
-      when Ultraviolet::MouseButton::WheelLeft
-        Ultraviolet::MouseButton::WheelLeft
-      when Ultraviolet::MouseButton::WheelRight
-        Ultraviolet::MouseButton::WheelRight
-      when Ultraviolet::MouseButton::Backward
-        Ultraviolet::MouseButton::Backward
-      when Ultraviolet::MouseButton::Forward
-        Ultraviolet::MouseButton::Forward
-      when Ultraviolet::MouseButton::Button10
-        Ultraviolet::MouseButton::Button10
-      when Ultraviolet::MouseButton::Button11
-        Ultraviolet::MouseButton::Button11
-      else
-        Ultraviolet::MouseButton::None
-      end
     end
 
     # Convert ultraviolet KeyboardEnhancementsEvent to Tea KeyboardEnhancements
@@ -1129,11 +1097,14 @@ module Tea
       (!has_term_program && !has_ssh_tty) ||
         has_wt_session ||
         (has_term_program && !term_program.includes?("Apple") && !has_ssh_tty) ||
-        term_type.includes?("ghostty") ||
-        term_type.includes?("wezterm") ||
-        term_type.includes?("alacritty") ||
-        term_type.includes?("kitty") ||
-        term_type.includes?("rio")
+        queries_synchronized_output?(term_type)
+    end
+
+    # Terminals known to support synchronized output queries.
+    private def queries_synchronized_output?(term_type : String) : Bool
+      {"ghostty", "wezterm", "alacritty", "kitty", "rio"}.any? do |name|
+        term_type.includes?(name)
+      end
     end
   end
 

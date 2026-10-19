@@ -1,9 +1,9 @@
 # bubbletea.cr
 
 > **How to resume:** read `plans/parity.md` first and use its **Where we are**
-> block (current focus + ordered "Next up"), then run `make format` and
-> `make test`. Details: [docs/resuming.md](docs/resuming.md). Do not re-derive
-> state from git.
+> block (current focus + ordered "Next up"), then run `make format`,
+> `make lint`, and `make test`. Details: [docs/resuming.md](docs/resuming.md).
+> Do not re-derive state from git.
 
 Crystal port of Go's [Bubble Tea](https://github.com/charmbracelet/bubbletea)
 TUI framework, vendored at `vendor/bubbletea` (release `v2.0.8`, commit
@@ -63,9 +63,8 @@ of every session:
    current focus, the ordered "Next up" list, and per-area chunk status. Do not
    re-derive state from git history.
 2. Skim `git log --oneline -10` and `git status` to confirm the working tree.
-3. Run `make format` and `make test` before changes to confirm a clean
-   baseline. `make lint` currently has a pre-existing baseline; see
-   `plans/parity.md` before treating its output as a regression.
+3. Run `make format`, `make lint`, and `make test` before changes to confirm a
+   clean baseline.
 
 See [docs/resuming.md](docs/resuming.md) for the full resume checklist.
 
@@ -86,8 +85,7 @@ must be committed as **one** atomic commit before starting the next feature:
 
 1. the API surface is implemented;
 2. upstream tests (or equivalent characterization specs) exist and pass;
-3. gates pass: `make format` and `make test`, plus `make lint` with no new
-   findings;
+3. gates pass: `make format`, `make lint`, and `make test`;
 4. parity inventory rows for the feature are updated in `plans/inventory/`;
 5. `plans/parity.md` status is updated and the **Where we are** block refreshed
    (current focus + next up);

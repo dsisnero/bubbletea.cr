@@ -97,12 +97,9 @@ module Tea
     end
 
     # Go parity helper for KeyboardEnhancementsMsg.SupportsKeyDisambiguation().
-    # ameba:disable Naming/PredicateName
     def supports_key_disambiguation : Bool
       supports_key_disambiguation?
     end
-
-    # ameba:enable Naming/PredicateName
 
     # Returns whether the terminal supports reporting different types
     # of key events (press, release, and repeat)
@@ -111,12 +108,9 @@ module Tea
     end
 
     # Go parity helper for KeyboardEnhancementsMsg.SupportsEventTypes().
-    # ameba:disable Naming/PredicateName
     def supports_event_types : Bool
       supports_event_types?
     end
-
-    # ameba:enable Naming/PredicateName
 
     def supports_alternate_keys? : Bool
       enhancements.report_alternate_keys?

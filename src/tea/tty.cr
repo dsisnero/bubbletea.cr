@@ -186,40 +186,54 @@ module Tea
 
       begin
         if scanner = @input_scanner
-          eventc = Channel(Ultraviolet::Event).new
-          stop = @reader_stop
-          STDERR.puts("tea: read_loop start") if ENV["TEA_DEBUG_IO"]?
-
-          spawn do
-            begin
-              scanner.stream_events(eventc, stop)
-            rescue ex
-              STDERR.puts("tea: stream_events error #{ex.class}: #{ex.message}") if ENV["TEA_DEBUG_IO"]?
-              if @running && !@shutdown_done
-                @errs.send(ex) rescue nil
-              end
-            ensure
-              STDERR.puts("tea: stream_events finished") if ENV["TEA_DEBUG_IO"]?
-              eventc.close
-            end
-          end
-
-          while @running
-            event = eventc.receive?
-            break unless event
-            STDERR.puts("tea: event #{event.class}") if ENV["TEA_DEBUG_IO"]?
-            send(translate_input_event(event))
-          end
+          stream_input_events(scanner)
         end
       rescue ex
-        STDERR.puts("tea: read_loop error #{ex.class}: #{ex.message}") if ENV["TEA_DEBUG_IO"]?
-        if @running && !@shutdown_done
-          @errs.send(ex) rescue nil
-        end
+        debug_input("tea: read_loop error #{ex.class}: #{ex.message}")
+        report_read_loop_error(ex)
       ensure
-        STDERR.puts("tea: read_loop end") if ENV["TEA_DEBUG_IO"]?
+        debug_input("tea: read_loop end")
         done.send(nil) rescue nil
       end
+    end
+
+    # Forward terminal events to the program until it stops.
+    private def stream_input_events(scanner : Ultraviolet::TerminalReader)
+      eventc = Channel(Ultraviolet::Event).new
+      stop = @reader_stop
+      debug_input("tea: read_loop start")
+
+      spawn { stream_events(scanner, eventc, stop) }
+
+      while @running
+        event = eventc.receive?
+        break unless event
+        debug_input("tea: event #{event.class}")
+        send(translate_input_event(event))
+      end
+    end
+
+    # Pump events from the terminal reader into the event channel.
+    private def stream_events(scanner : Ultraviolet::TerminalReader,
+                              eventc : Channel(Ultraviolet::Event),
+                              stop : Channel(Nil)?)
+      scanner.stream_events(eventc, stop)
+    rescue ex
+      debug_input("tea: stream_events error #{ex.class}: #{ex.message}")
+      report_read_loop_error(ex)
+    ensure
+      debug_input("tea: stream_events finished")
+      eventc.close
+    end
+
+    private def report_read_loop_error(ex : Exception)
+      if @running && !@shutdown_done
+        @errs.send(ex) rescue nil
+      end
+    end
+
+    private def debug_input(message : String)
+      STDERR.puts(message) if ENV["TEA_DEBUG_IO"]?
     end
 
     # Wait for read loop to finish
@@ -269,19 +283,8 @@ module Tea
     # Initialize TTY input (set raw mode, etc.)
     # Platform-specific implementation
     def init_input : Exception?
-      @tty_input = nil
-      @tty_output = nil
-
-      if input = @input
-        if fd = input.as?(IO::FileDescriptor)
-          @tty_input = fd if fd.tty?
-        end
-      end
-      if output = @output
-        if fd = output.as?(IO::FileDescriptor)
-          @tty_output = fd if fd.tty?
-        end
-      end
+      @tty_input = tty_device(@input)
+      @tty_output = tty_device(@output)
 
       input_is_tty = @tty_input.try(&.tty?) || false
       _output_is_tty = @tty_output.try(&.tty?) || false
@@ -302,6 +305,14 @@ module Tea
       end
 
       nil
+    end
+
+    # Return the descriptor when +io+ is a terminal, nil otherwise.
+    private def tty_device(io : IO?) : IO::FileDescriptor?
+      return nil unless io
+
+      fd = io.as?(IO::FileDescriptor)
+      fd if fd && fd.tty?
     end
 
     private def check_optimized_movements(state : Ultraviolet::TtyState?) : Nil

@@ -5,8 +5,23 @@
 module Tea
   # LogOptionsSetter mirrors Go's logging abstraction.
   module LogOptionsSetter
+    # Go-parity setters required by the upstream `LogOptionsSetter` contract.
+    # ameba:disable Naming/AccessorMethodName
     abstract def set_output(output : IO) : Nil
+    # ameba:disable Naming/AccessorMethodName
     abstract def set_prefix(prefix : String) : Nil
+
+    # Crystal-idiomatic aliases for builder-style configuration:
+    #
+    #   logger.output = file
+    #   logger.prefix = "debug "
+    def output=(output : IO) : Nil
+      set_output(output)
+    end
+
+    def prefix=(prefix : String) : Nil
+      set_prefix(prefix)
+    end
   end
 
   # LogToFile sets up logging to a file with the given path and prefix.
@@ -36,13 +51,13 @@ module Tea
   # LogToFileWith does allows to call LogToFile with a custom LogOptionsSetter.
   def self.log_to_file_with(path : String, prefix : String, logger : LogOptionsSetter) : File
     file = File.open(path, "a")
-    logger.set_output(file)
+    logger.output = file
 
     final_prefix = prefix
     if final_prefix.size > 0 && !final_prefix[-1].whitespace?
       final_prefix += " "
     end
-    logger.set_prefix(final_prefix)
+    logger.prefix = final_prefix
 
     file
   rescue ex

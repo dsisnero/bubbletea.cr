@@ -37,14 +37,11 @@ atomically. If the tree is dirty, finish or stash before starting.
 
 ```bash
 make format
+make lint
 make test
 ```
 
-Both must pass before changing anything.
-
-`make lint` is not yet green: the repository carries a pre-existing ameba
-baseline (see **Next up** #2 in `plans/parity.md`). Run it and compare counts;
-treat only *new* findings as a regression you introduced.
+All three must pass before changing anything.
 
 ## 4. Pick the next feature
 

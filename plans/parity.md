@@ -18,8 +18,10 @@ inventory_dir: "plans/inventory/"
 
 ## Where we are
 
-**Recently completed:** upstream `v2.0.8` test-ledger refresh. The two tests
-that landed in `v2.0.8` are now tracked as `ported`, and both specs were
+**Recently completed:** upstream `v2.0.8` test-ledger refresh, followed by the
+ameba baseline cleanup.
+
+The two tests that landed in `v2.0.8` are tracked as `ported` and were
 re-ported to their upstream shape:
 
 - `cursed_renderer_test.go::TestCursedRenderer_mouseVsFlush` →
@@ -28,22 +30,26 @@ re-ported to their upstream shape:
 - `exec_test.go::TestTeaExecWithNilInput` → `spec/exec_spec.cr` (platform-aware
   success command, `WithInput(nil)`).
 
-`./scripts/check_port_inventory.sh`, `./scripts/check_test_parity.sh`, and
-`./scripts/check_source_parity.sh` all pass.
+`make lint` is now green (0 findings). `.ameba.yml` excludes the
+`bubbletea-examples` submodule, and the remaining root findings were fixed:
 
-**Current focus:** burning down the ameba baseline so `make lint` is green.
+- Go-parity `set_output`/`set_prefix` and `set_stdin`/`set_stdout`/
+  `set_stderr` gained Crystal aliases (`output=`, `prefix=`, `stdin=`,
+  `stdout=`, `stderr=`); the Go names stay as the contract.
+- `not_nil!` was removed from `exec.cr`/`tea.cr`, the identity mouse-button
+  conversion was dropped (`Tea::MouseButton` aliases
+  `Ultraviolet::MouseButton`), and the tty read loop plus the
+  synchronized-output heuristic were split into helpers.
+
+**Current focus:** auditing the remaining baseline test-ledger rows.
 
 **Next up (in order):**
 
-1. **Burn down the ameba baseline** so `make lint` is green: 155 findings —
-   90 `Lint/NotNil`, 14 `Metrics/CyclomaticComplexity`,
-   5 `Lint/UselessAssign`, 3 `Lint/UnneededDisableDirective`,
-   3 `Documentation/DocumentationAdmonition`.
-2. **Audit the remaining baseline test-ledger rows.** 28 rows in
+1. **Audit the remaining baseline test-ledger rows.** 28 rows in
    `plans/inventory/go_test_parity.tsv` are still `missing` from the initial
    auto-generated baseline. Walk upstream tests, point each at its Crystal spec
    (or leave it `missing` with a reason), and keep the checker green.
-3. **Keep example parity green** in the `bubbletea-examples` submodule.
+2. **Keep example parity green** in the `bubbletea-examples` submodule.
 
 ### Chunk status
 
@@ -55,16 +61,16 @@ re-ported to their upstream shape:
 | Upstream v2.0.8 upgrade | Complete | See roadmap section below |
 | Example parity | Complete | `spec/parity/`, `spec/*_parity_spec.cr` |
 | v2.0.8 ledger refresh | Complete | Both new tests tracked as `ported` |
-| Test-ledger audit | Not started | 28 baseline rows (see **Next up** #2) |
-| Lint baseline | In progress | See **Next up** #1 |
+| Lint baseline | Complete | `make lint` — 0 findings |
+| Test-ledger audit | Not started | 28 baseline rows (see **Next up** #1) |
 
 ### Last known state (2026-10-19)
 
 - Last parity feature: `06ce8ab` — port: track v2.0.8 mouse/flush and
   nil-input exec tests
 - `make format` — pass
+- `make lint` — pass (17 files, 0 findings)
 - `make test` — 134 examples, 0 failures
-- `ameba` — 155 findings (pre-existing; see **Next up** #1)
 - `make check-go-{port-inventory,source-parity,test-parity}` — pass
 - `scripts/check_{port,source,test}_parity.sh` over `plans/inventory/` — pass
   (586 port items, 556 source items, 30 tests)
@@ -198,7 +204,7 @@ Upstream changes between v2.0.6 → v2.0.8: 2 files, +6/-4 lines (functional).
 - "Missing" items in port_inventory are mostly test/examples/tutorials — not API-level targets.
 - Source parity "missing" items are test APIs, example files, and tutorial code that don't have direct Crystal source equivalents.
 - The 28 `missing` rows in `go_test_parity.tsv` are the untouched auto-generated
-  baseline (see **Next up** #2); only the two `v2.0.8` tests are audited as
+  baseline (see **Next up** #1); only the two `v2.0.8` tests are audited as
   `ported` so far.
 
 ## Known Divergences

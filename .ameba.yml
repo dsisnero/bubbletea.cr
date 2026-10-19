@@ -1,6 +1,8 @@
 Version: "1.7.0-dev"
 
 Excluded:
+  # Submodules and vendored code are separate projects with their own gates.
+  - bubbletea-examples
   - vendor
   - lib
   - temp

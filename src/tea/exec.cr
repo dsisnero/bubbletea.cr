@@ -8,15 +8,31 @@ module Tea
   # This is satisfied by Process or custom implementations
   module ExecCommand
     abstract def run : Nil
-    # Crystal idiom: `stdin=`, `stdout=`, `stderr=`.
-    # Kept as Go-parity API names.
+
+    # Go-parity setters required by the upstream `ExecCommand` contract.
     # ameba:disable Naming/AccessorMethodName
     abstract def set_stdin(reader : IO)
     # ameba:disable Naming/AccessorMethodName
     abstract def set_stdout(writer : IO)
     # ameba:disable Naming/AccessorMethodName
     abstract def set_stderr(writer : IO)
-    # ameba:enable Naming/AccessorMethodName
+
+    # Crystal-idiomatic aliases for builder-style setup:
+    #
+    #   cmd.stdin = input
+    #   cmd.stdout = output
+    #   cmd.stderr = output
+    def stdin=(reader : IO)
+      set_stdin(reader)
+    end
+
+    def stdout=(writer : IO)
+      set_stdout(writer)
+    end
+
+    def stderr=(writer : IO)
+      set_stderr(writer)
+    end
   end
 
   # ExecCallback is called after command execution with any error
@@ -81,9 +97,9 @@ module Tea
     # ameba:enable Naming/AccessorMethodName
 
     def run : Nil
-      input = @stdin ? @stdin.not_nil! : Process::Redirect::Inherit
-      output = @stdout ? @stdout.not_nil! : Process::Redirect::Inherit
-      error = @stderr ? @stderr.not_nil! : Process::Redirect::Inherit
+      input = @stdin || Process::Redirect::Inherit
+      output = @stdout || Process::Redirect::Inherit
+      error = @stderr || Process::Redirect::Inherit
       process = Process.new(@command, @args, input: input, output: output, error: error)
       status = process.wait
       unless status.success?
@@ -124,9 +140,9 @@ module Tea
     # ameba:enable Naming/AccessorMethodName
 
     def run : Nil
-      input = @stdin ? @stdin.not_nil! : Process::Redirect::Inherit
-      output = @stdout ? @stdout.not_nil! : Process::Redirect::Inherit
-      error = @stderr ? @stderr.not_nil! : Process::Redirect::Inherit
+      input = @stdin || Process::Redirect::Inherit
+      output = @stdout || Process::Redirect::Inherit
+      error = @stderr || Process::Redirect::Inherit
       process = Process.new(@command, shell: true, input: input, output: output, error: error)
       status = process.wait
       unless status.success?
