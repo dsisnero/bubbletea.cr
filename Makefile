@@ -17,11 +17,11 @@ export GOFLAGS := -modcacherw
 
 install:
 	mkdir -p "$(CACHE_ROOT)"
-	BEADS_DIR=$$(pwd)/.beads shards install
+	shards install
 
 update:
 	mkdir -p "$(CACHE_ROOT)"
-	BEADS_DIR=$$(pwd)/.beads shards update
+	shards update
 
 format:
 	crystal tool format --check

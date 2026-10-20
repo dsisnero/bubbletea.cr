@@ -15,9 +15,6 @@
 /shard.lock
 /skills/crystal-shard-lib-patch
 
-# Dolt database files (added by bd init)
-.dolt/
-*.db
 /vendor/temp
 .claude/
 
