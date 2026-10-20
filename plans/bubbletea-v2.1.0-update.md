@@ -1,9 +1,9 @@
 # bubbletea.v2 — v2.0.10 → v2.1.0 Update Plan
 
-**Upstream:** `github.com/charmbracelet/bubbletea`  
-**Current pinned:** `d5bfd5c` (v2.0.10)  
-**Target:** `f9df43c` (v2.1.0, released 2026-10-08)  
-**Submodule:** `vendor/bubbletea`  
+**Upstream:** `github.com/charmbracelet/bubbletea`
+**Current pinned:** `d5bfd5c` (v2.0.10)
+**Target:** `f9df43c` (v2.1.0, released 2026-10-08)
+**Submodule:** `vendor/bubbletea`
 **Parent plan:** [plans/parity.md](parity.md)
 
 ---
@@ -36,8 +36,10 @@ shard has the protocol yet, so this port implements it locally:
   is recognised from `Ultraviolet::UnknownOscEvent` because the decoder has no
   typed event.
 
-Shard gaps are tracked in:
-[shards_issues/ansi.1.md](../shards_issues/ansi.1.md) and
+The `ansi` shard now provides `ProgramStatus`, the state/kind constants, and
+the OSC 7501 encoder, so this port aliases those types instead of duplicating
+them. Support-reply detection stays local until ultraviolet ports the decoder
+event; the remaining gap is tracked in
 [shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md).
 
 ### Fallback dimensions
@@ -82,7 +84,8 @@ and documents the structural divergence instead of porting the exact test.
 
 ### Phase 3: Port implementation
 
-- [x] `src/tea/program_status.cr` — types, constants, protocol encoder
+- [x] `src/tea/program_status.cr` — shard type aliases, Go-parity constants,
+      support-reply shim
 - [x] `View#program_status` + renderer start/flush/close/equality
 - [x] Event loop: `ProgramStatusSupportMsg` → gated query
 - [x] Input translation: OSC 7501 support reply from `UnknownOscEvent`
@@ -110,7 +113,7 @@ and documents the structural divergence instead of porting the exact test.
 
 - [x] `make format`
 - [x] `make lint` — 18 files, 0 findings
-- [x] `make test` — 159 examples, 0 failures
+- [x] `make test` — 156 examples, 0 failures
 - [x] `make parity-specs` — 4 examples, 0 failures
 - [x] `make check-go-port-inventory`
 - [x] `make check-go-source-parity`

@@ -1,10 +1,5 @@
 require "spec"
-require "base64"
 require "../src/bubbletea"
-
-private def program_status_set(status : Tea::ProgramStatus) : String
-  Tea::ProgramStatusProtocol.set(status)
-end
 
 private def assert_status_in_order(got : String, *wants : String) : Nil
   rest = got
@@ -16,69 +11,18 @@ private def assert_status_in_order(got : String, *wants : String) : Nil
 end
 
 describe "Program Status Protocol" do
-  it "encodes the documented states and fields" do
-    set = ->(status : Tea::ProgramStatus) { program_status_set(status) }
-
-    set.call(Tea::ProgramStatus.new(state: Tea::ProgramState::Working))
-      .should eq "\e]7501;state=working\a"
-
-    set.call(Tea::ProgramStatus.new(
-      state: Tea::ProgramState::Blocked,
-      kind: Tea::ProgramStatusKind::Permission,
-      app: "terraform",
-      message: "Apply 3 to add, 1 to change, 0 to destroy?",
-    )).should eq(
-      "\e]7501;state=blocked:kind=permission:app=terraform:" \
-      "msg=#{Base64.strict_encode("Apply 3 to add, 1 to change, 0 to destroy?")}\a"
-    )
-
-    set.call(Tea::ProgramStatus.new(
-      state: Tea::ProgramState::Working,
-      id: "us-east",
-      title: "US East",
+  it "aliases the ansi shard types and constants" do
+    status = Tea::ProgramStatus.new(
+      state: Tea::ProgramStateWorking,
+      kind: Tea::ProgramStatusKindQuestion,
+      has_progress: true,
       progress: 40,
-      has_progress: true,
-      message: "Pushing image",
-    )).should eq(
-      "\e]7501;state=working:id=us-east:progress=40:" \
-      "title=#{Base64.strict_encode("US East")}:msg=#{Base64.strict_encode("Pushing image")}\a"
     )
 
-    set.call(Tea::ProgramStatus.new(
-      state: Tea::ProgramState::Blocked,
-      progress: 300,
-      has_progress: true,
-    )).should eq "\e]7501;state=blocked:progress=100\a"
-  end
-
-  it "omits fields that do not apply or are invalid" do
-    set = ->(status : Tea::ProgramStatus) { program_status_set(status) }
-
-    set.call(Tea::ProgramStatus.new(state: Tea::ProgramState::Done, progress: 50, has_progress: true))
-      .should eq "\e]7501;state=done\a"
-    set.call(Tea::ProgramStatus.new(state: Tea::ProgramState::Working, kind: Tea::ProgramStatusKind::Auth))
-      .should eq "\e]7501;state=working\a"
-    set.call(Tea::ProgramStatus.new(state: Tea::ProgramState::Idle, app: "my app"))
-      .should eq "\e]7501;state=idle\a"
-    set.call(Tea::ProgramStatus.new(state: Tea::ProgramState::Error, message: "a\n\nb"))
-      .should eq "\e]7501;state=error:msg=#{Base64.strict_encode("a b")}\a"
-    set.call(Tea::ProgramStatus.new(state: Tea::ProgramState::Clear, app: "x", message: "y"))
-      .should eq Tea::ProgramStatusProtocol::CLEAR
-  end
-
-  it "rejects invalid record ids" do
-    {"a b", "a//b", "a/b/c/d/e/f/g/h/i", "a" * 33}.each do |id|
-      program_status_set(Tea::ProgramStatus.new(state: Tea::ProgramState::Idle, id: id)).should eq ""
-    end
-
-    program_status_set(Tea::ProgramStatus.new(state: Tea::ProgramState::Idle, id: "build/test"))
-      .should eq "\e]7501;state=idle:id=build/test\a"
-  end
-
-  it "clears a record by id" do
-    Tea::ProgramStatusProtocol.clear_id("eu-west").should eq "\e]7501;state=clear:id=eu-west\a"
-    Tea::ProgramStatusProtocol.clear_id("bad id").should eq ""
-    Tea::ProgramStatusProtocol::REQUEST_SUPPORT.should eq "\e]7501;?\a"
+    status.should be_a(Ansi::ProgramStatus)
+    status.state.should eq Ansi::ProgramState::Working
+    status.kind.should eq Ansi::ProgramStatusKind::Question
+    status.has_progress?.should be_true
   end
 end
 
@@ -95,7 +39,7 @@ describe Tea::CursedRenderer do
     renderer.start
 
     working = Tea::ProgramStatus.new(
-      state: Tea::ProgramState::Working,
+      state: Tea::ProgramStateWorking,
       app: "tea",
       message: "Building",
     )
@@ -104,7 +48,7 @@ describe Tea::CursedRenderer do
     view.program_status = working
     renderer.render(view)
     renderer.flush(false).should be_nil
-    output.to_s.should contain(Tea::ProgramStatusProtocol.set(working))
+    output.to_s.should contain(Ansi.set_program_status(working))
 
     # Unchanged status is not written again.
     output.clear
@@ -114,52 +58,54 @@ describe Tea::CursedRenderer do
 
     # Changed message is written.
     changed = Tea::ProgramStatus.new(
-      state: Tea::ProgramState::Working,
+      state: Tea::ProgramStateWorking,
       app: "tea",
       message: "Linking",
     )
-    output.clear
     changed_view = Tea::View.new("hello")
     changed_view.program_status = changed
+    output.clear
     renderer.render(changed_view)
     renderer.flush(false).should be_nil
-    output.to_s.should contain(Tea::ProgramStatusProtocol.set(changed))
+    output.to_s.should contain(Ansi.set_program_status(changed))
 
     # Switching to a child record clears the root and sets the child.
     child = Tea::ProgramStatus.new(
-      state: Tea::ProgramState::Blocked,
+      state: Tea::ProgramStateBlocked,
       id: "job",
-      kind: Tea::ProgramStatusKind::Question,
+      kind: Tea::ProgramStatusKindQuestion,
     )
-    output.clear
     child_view = Tea::View.new("hello")
     child_view.program_status = child
+    output.clear
     renderer.render(child_view)
     renderer.flush(false).should be_nil
     got = output.to_s
-    got.should_not contain(Tea::ProgramStatusProtocol.clear_id("job"))
+    got.should_not contain(Ansi.clear_program_status_id("job"))
     assert_status_in_order(got,
-      "\e]7501;state=clear\a",
-      Tea::ProgramStatusProtocol.set(child)
+      Ansi::ClearProgramStatus,
+      Ansi.set_program_status(child)
     )
 
     # Removing the status clears the child record.
     output.clear
     renderer.render(Tea::View.new("hello"))
     renderer.flush(false).should be_nil
-    output.to_s.should contain(Tea::ProgramStatusProtocol.clear_id("job"))
+    output.to_s.should contain(Ansi.clear_program_status_id("job"))
 
     # Invalid ids are not written.
     output.clear
-    invalid = Tea::ProgramStatus.new(state: Tea::ProgramState::Idle, id: "bad id")
     invalid_view = Tea::View.new("hello")
-    invalid_view.program_status = invalid
+    invalid_view.program_status = Tea::ProgramStatus.new(
+      state: Tea::ProgramStateIdle,
+      id: "bad id",
+    )
     renderer.render(invalid_view)
     renderer.flush(false).should be_nil
     output.to_s.should_not contain("7501")
 
     # Done status stays in place on close.
-    done = Tea::ProgramStatus.new(state: Tea::ProgramState::Done, app: "tea")
+    done = Tea::ProgramStatus.new(state: Tea::ProgramStateDone, app: "tea")
     done_view = Tea::View.new("hello")
     done_view.program_status = done
     renderer.render(done_view)
@@ -172,13 +118,14 @@ describe Tea::CursedRenderer do
     output.clear
     renderer.start
     renderer.flush(false).should be_nil
-    output.to_s.should contain(Tea::ProgramStatusProtocol.set(done))
+    output.to_s.should contain(Ansi.set_program_status(done))
   end
 end
 
 describe "program status support" do
   it "translates an OSC 7501 reply into ProgramStatusSupportMsg" do
-    # Port of Go test TestTranslateProgramStatusSupport.
+    # Port of Go test TestTranslateProgramStatusSupport. The ultraviolet
+    # decoder still emits UnknownOscEvent, so the shim recognises the reply.
     program = Tea::Program.new
     msg = program.translate_input_event(Ultraviolet::UnknownOscEvent.new("\e]7501;?\a"))
 

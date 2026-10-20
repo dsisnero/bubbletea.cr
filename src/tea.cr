@@ -557,7 +557,7 @@ module Tea
             when RequestCursorPositionMsg
               execute_query(Ansi::RequestCursorPositionReport)
             when ProgramStatusSupportMsg
-              execute_query(ProgramStatusProtocol::REQUEST_SUPPORT)
+              execute_query(Ansi::RequestProgramStatusSupport)
             when TerminalVersionRequestMsg
               execute_query("\e[>q")
             when RequestCapabilityMsg
@@ -787,7 +787,7 @@ module Tea
       when Ultraviolet::ModeReportEvent
         ModeReportMsg.new(event.mode, event.value)
       when Ultraviolet::UnknownOscEvent
-        if ProgramStatusProtocol.support_reply?(event.value)
+        if ProgramStatusSupport.reply?(event.value)
           ProgramStatusSupportMsg.new
         else
           Tea.wrap(event)

@@ -21,10 +21,10 @@ inventory_dir: "plans/inventory/"
 **Recently completed:** the upstream `v2.1.0` update
 ([plans/bubbletea-v2.1.0-update.md](bubbletea-v2.1.0-update.md)). It adds
 Program Status Protocol (OSC 7501) reporting, tty `COLUMNS`/`LINES` fallback
-dimensions, and a signal-shutdown guard. The `ansi` and `ultraviolet` shards
-still lack OSC 7501, so the protocol is implemented locally and tracked in
-[shards_issues/ansi.1.md](../shards_issues/ansi.1.md) and
-[shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md).
+dimensions, and a signal-shutdown guard. The `ansi` shard now owns the OSC 7501
+types and encoder; only support-reply detection is still local because
+`ultraviolet` has not ported the decoder event
+([shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md)).
 
 **Current focus:** no active chunk; `v2.1.0` is complete and is the latest
 upstream release.
@@ -60,7 +60,7 @@ upstream release.
   ([plan](bubbletea-v2.1.0-update.md))
 - `make format` — pass
 - `make lint` — pass (19 files, 0 findings)
-- `make test` — 159 examples, 0 failures
+- `make test` — 156 examples, 0 failures
 - `make check-go-{port-inventory,source-parity,test-parity}` — pass
 - `scripts/check_{port,source,test}_parity.sh` over `plans/inventory/` — pass
   (613 port items, 573 source items, 40 tests)
@@ -246,7 +246,8 @@ shutdown fix.
       support query and reply translation
   - Source: `programstatus.go` → `src/tea/program_status.cr`
   - Upstream commit: `41bc626` (PR #1841)
-  - Local shim: `ansi`/`ultraviolet` lack the protocol (shard issues 1)
+  - Types/encoder: `ansi` shard; reply detection: local shim until
+    ultraviolet port 1 lands
 - [x] **Fallback dimensions** — `COLUMNS`/`LINES` from the program (or process)
       environment, then 80x24; non-tty outputs keep their configured size
   - Source: `tty.go` → `src/tea/tty.cr`, `src/tea.cr`
@@ -280,7 +281,7 @@ shutdown fix.
 | `signals_unix.go`, `signals_windows.go` | Absorbed into `src/tea.cr` via Crystal `Signal` module | Crystal's signal handling is idiomatic and equivalent |
 | `termios_bsd.go`, `termios_other.go`, `termios_unix.go`, `termios_windows.go` | Delegated to `ultraviolet` shard | Ultraviolet provides equivalent terminal raw-mode and size APIs |
 | `tty_windows.go` | Not ported (Crystal's Windows TTY is OS-level) | Handled by ultraviolet on Windows |
-| `programstatus.go` types/encoding | Local `src/tea/program_status.cr` | `ansi`/`ultraviolet` shards lack OSC 7501; see `shards_issues/{ansi,ultraviolet}.1.md` |
+| `programstatus.go` support reply | Local `ProgramStatusSupport.reply?` shim | `ultraviolet` still lacks `ProgramStatusSupportEvent`; see `shards_issues/ultraviolet.1.md` |
 | Go signal-goroutine shutdown fix | Guarded detached fibers in `src/tea.cr` | Crystal traps already run off-fiber; no blocking shutdown path to fix |
 
 ## Verification

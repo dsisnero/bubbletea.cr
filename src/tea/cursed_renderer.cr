@@ -833,12 +833,12 @@ module Tea
     # different record than +prev+, the record of +prev+ is cleared first.
     private def set_program_status(prev : ProgramStatus?, cur : ProgramStatus?)
       if prev && (cur.nil? || cur.id != prev.id)
-        sequence = ProgramStatusProtocol.clear_id(prev.id)
+        sequence = Ansi.clear_program_status_id(prev.id)
         @scr.write_string(sequence) unless sequence.empty?
       end
 
       if cur
-        sequence = ProgramStatusProtocol.set(cur)
+        sequence = Ansi.set_program_status(cur)
         @scr.write_string(sequence) unless sequence.empty?
       end
     end
