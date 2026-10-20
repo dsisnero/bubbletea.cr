@@ -123,11 +123,16 @@ describe Tea::CursedRenderer do
 end
 
 describe "program status support" do
-  it "translates an OSC 7501 reply into ProgramStatusSupportMsg" do
-    # Port of Go test TestTranslateProgramStatusSupport. The ultraviolet
-    # decoder still emits UnknownOscEvent, so the shim recognises the reply.
+  it "translates a program status support reply" do
+    # Port of Go test TestTranslateProgramStatusSupport.
     program = Tea::Program.new
-    msg = program.translate_input_event(Ultraviolet::UnknownOscEvent.new("\e]7501;?\a"))
+    msg =
+      {% if Ultraviolet.has_constant?("ProgramStatusSupportEvent") %}
+        program.translate_input_event(Ultraviolet::ProgramStatusSupportEvent.new)
+      {% else %}
+        # Tagged ultraviolet 1.1.1 still reports OSC 7501 as UnknownOscEvent.
+        program.translate_input_event(Ultraviolet::UnknownOscEvent.new("\e]7501;?\a"))
+      {% end %}
 
     msg.should be_a(Tea::ProgramStatusSupportMsg)
   end

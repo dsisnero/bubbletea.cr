@@ -7,50 +7,47 @@
 **Local tracking number:** 1 (no upstream issue filed yet)
 **Status:** open — the encoder landed in `ansi`, the decoder event has not
 
-## What is missing
+## Status
 
-The decoder does not recognise the OSC 7501 support reply:
+The decoder landed on `main` at `756d7a7`:
 
-- No `ProgramStatusSupportEvent` (or equivalent) in the event aliases.
-- `Ultraviolet::Decoder` falls through to `UnknownOscEvent` for
-  `OSC 7501 ; ?` instead of emitting a typed event.
-- No `ProgramStatus` / `ProgramState` / `ProgramStatusKind` aliases (the
-  `ansi` shard has the types; ultraviolet has no re-exports).
-- No `TerminalScreen#set_program_status` / `#program_status`.
+- `src/ultraviolet/program_status.cr` adds the `ProgramStatus` /
+  `ProgramState` / `ProgramStatusKind` aliases and
+  `ProgramStatusSupportEvent`.
+- `Decoder` maps `OSC 7501` data beginning with `?` to
+  `ProgramStatusSupportEvent` instead of `UnknownOscEvent`.
 
-A grep for `ProgramStatus|7501` over the shard source returns no matches at
-version 1.1.1.
+`ansi` already owns the types and encoder (`aa47d48`).
 
-## What is already resolved
+## Packaging blocker
 
-`ansi` now implements the types and encoder (commit `aa47d48`), and this port
-uses `Ansi::ProgramStatus`, `Ansi.set_program_status`,
-`Ansi.clear_program_status_id`, and `Ansi::RequestProgramStatusSupport`
-directly. The former local encoder shim was deleted.
+No release tag includes the decoder yet: `v1.1.1` still points at `150cc99`,
+and `shard.yml` still says `version: 1.1.1`. Pinning a branch or commit from
+this repo does not resolve:
 
-## Why it is missing
+```
+- `ultraviolet (branch main)` required by `shard.yml`
+- `ultraviolet (*)` required by `lipgloss 2.0.1`
+```
 
-The shard tracks Charm's ultraviolet, but it has not ported the decoder half
-of the feature yet. Upstream maps OSC 7501 data beginning with `?` to
-`ProgramStatusSupportEvent` in `decoder.go`; that code has no Crystal
-counterpart.
+Shards cannot satisfy a git-ref pin from one source against the `*`
+requirement from `lipgloss`. The action needed is a tagged release
+(e.g. `v1.2.0`).
 
 ## Downstream impact
 
-bubbletea.cr keeps a narrow shim in `src/tea/program_status.cr`:
+bubbletea.cr consumes the typed event when the installed shard has it and
+falls back to raw OSC parsing for tagged releases:
 
 ```crystal
-module ProgramStatusSupport
-  def self.reply?(sequence : String) : Bool
-    prefix = "\e]7501;"
-    sequence.starts_with?(prefix) && sequence[prefix.size]? == '?'
-  end
-end
+{% if Ultraviolet.has_constant?("ProgramStatusSupportEvent") %}
+  return ProgramStatusSupportMsg.new if event.is_a?(Ultraviolet::ProgramStatusSupportEvent)
+{% end %}
 ```
 
-`Program#translate_input_event` checks it for `UnknownOscEvent`. This works but
-means the whole raw sequence reaches the program, and any future protocol
-variation must be parsed by hand.
+`Program#translate_input_event` still checks `ProgramStatusSupport.reply?` for
+`UnknownOscEvent`. The fallback becomes dead code once a release ships the
+decoder and can be deleted.
 
 ## Suggested API
 
@@ -86,10 +83,11 @@ otherwise keep emitting `UnknownOscEvent`.
 
 ## Verification
 
-Once implemented, bubbletea.cr should:
+Verified locally against `main` (`756d7a7`): the typed event translates to
+`ProgramStatusSupportMsg` and the full spec suite passes. After a tagged
+release:
 
-1. translate a typed `ProgramStatusSupportEvent` in
-   `Program#translate_input_event`,
+1. run `shards update ultraviolet`,
 2. delete `ProgramStatusSupport.reply?` and the `UnknownOscEvent` fallback,
 3. drop this issue file and update the **Known Divergences** row in
    `plans/parity.md`.
