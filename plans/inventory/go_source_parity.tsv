@@ -1,3 +1,4 @@
+# baseline=github.com/charmbracelet/bubbletea@f9df43c4f2c021d8740a2628d59cd810a862eb98 (v2.1.0)
 # source_api_id	status	crystal_refs	notes
 clipboard.go::func::ReadClipboard	mapped	src/tea/clipboard.cr	OSC52 clipboard operations
 clipboard.go::func::ReadPrimaryClipboard	mapped	src/tea/clipboard.cr	OSC52 clipboard operations

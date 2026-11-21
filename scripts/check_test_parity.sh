@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
+# Thin forwarding wrapper for the installed cross-language parity skill.
+#
+# Usage: check_test_parity.sh [ROOT] [MANIFEST] [SOURCE] [LANGUAGE]
 set -euo pipefail
 
-ROOT_DIR="${1:-$(pwd)}"
-MANIFEST="${2:-}"
-SOURCE_PATH="${3:-${PORT_SOURCE_DIR:-}}"
-LANGUAGE="${4:-${PORT_LANGUAGE:-go}}"
-PARSER="${PORT_PARSER:-auto}"
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/parity_skill.sh
+. "${SCRIPT_DIR}/parity_skill.sh"
 
-args=(--root "${ROOT_DIR}" --language "${LANGUAGE}" --parser "${PARSER}")
-[[ -n "${MANIFEST}" ]] && args+=(--manifest "${MANIFEST}")
-[[ -n "${SOURCE_PATH}" ]] && args+=(--source "${SOURCE_PATH}")
-
-"${SCRIPT_DIR}/check_test_parity.rb" "${args[@]}"
+target="$(parity_skill_script check_test_parity.sh)"
+exec "${target}" "$@"

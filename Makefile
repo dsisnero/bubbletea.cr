@@ -1,6 +1,12 @@
-.PHONY: install update format lint test clean build-examples check-go-port-inventory check-go-source-parity check-go-test-parity parity-specs parity-shell
+.PHONY: install update format lint test clean build-examples check-port-inventory check-source-parity check-test-parity check-parity check-go-port-inventory check-go-source-parity check-go-test-parity verify-parity-skill parity-specs parity-shell
 
 CACHE_ROOT := $(abspath ./temp/cache)
+# Canonical parity implementation: the installed cross-language skill, reached
+# through the thin forwarding wrappers in ./scripts.
+PARITY_SKILL_DIR ?= $(HOME)/.agents/skills/crystal_forge/skills/cross-language-crystal-parity
+PORT_PARSER ?= regex
+export PARITY_SKILL_DIR
+export PORT_PARSER
 PARITY_SPECS := $(wildcard spec/*_parity_spec.cr) $(wildcard spec/parity)
 EXAMPLE_SRC_DIR := bubbletea-examples/src
 EXAMPLE_OUT := $(abspath ./temp/examples)
@@ -61,6 +67,20 @@ build-examples:
 
 clean:
 	if [ -d ./temp ]; then find ./temp -mindepth 1 -delete; fi
+
+check-port-inventory:
+	./scripts/check_port_inventory.sh . plans/inventory/go_port_inventory.tsv vendor/bubbletea go
+
+check-source-parity:
+	./scripts/check_source_parity.sh . plans/inventory/go_source_parity.tsv vendor/bubbletea go
+
+check-test-parity:
+	./scripts/check_test_parity.sh . plans/inventory/go_test_parity.tsv vendor/bubbletea go
+
+check-parity: check-port-inventory check-source-parity check-test-parity check-go-port-inventory check-go-source-parity check-go-test-parity
+
+verify-parity-skill:
+	"$(PARITY_SKILL_DIR)/scripts/verify_skill_install.sh" . go $(PORT_PARSER)
 
 check-go-port-inventory:
 	./bin/check_go_port_inventory.sh . docs/go_port_inventory.tsv vendor/bubbletea

@@ -298,10 +298,13 @@ make check-go-port-inventory
 make check-go-source-parity
 make check-go-test-parity
 
-# Per-symbol ledger checks (stricter, plans/inventory/)
-./scripts/check_port_inventory.sh . plans/inventory/go_port_inventory.tsv vendor/bubbletea go
-./scripts/check_source_parity.sh . plans/inventory/go_source_parity.tsv vendor/bubbletea go
-./scripts/check_test_parity.sh . plans/inventory/go_test_parity.tsv vendor/bubbletea go
+# Per-symbol ledger checks (stricter, plans/inventory/); these forward to the
+# installed cross-language-crystal-parity skill
+make check-port-inventory
+make check-source-parity
+make check-test-parity
+make check-parity
+make verify-parity-skill
 
 # Example parity specs
 make parity-specs

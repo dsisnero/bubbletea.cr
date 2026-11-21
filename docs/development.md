@@ -65,8 +65,17 @@ Read [Resuming Work](resuming.md) first. Current focus and next work live in
 | `make test` | Run all Crystal specs |
 | `make clean` | Remove temporary files and build artifacts |
 | `make build-examples` | Build submodule examples against local `src/` into `./temp/examples` (skips `bubbles` examples) |
-| `make check-go-port-inventory` | Check Go port inventory |
-| `make check-go-source-parity` | Check Go source parity |
-| `make check-go-test-parity` | Check Go test parity |
+| `make check-port-inventory` | Check the per-symbol port ledger (canonical parity skill) |
+| `make check-source-parity` | Check the per-symbol source ledger (canonical parity skill) |
+| `make check-test-parity` | Check the per-symbol test ledger (canonical parity skill) |
+| `make check-parity` | Run every parity ledger check |
+| `make verify-parity-skill` | Verify the installed parity skill and `regex` backend |
+| `make check-go-port-inventory` | Check the coarse `docs/` Go port inventory |
+| `make check-go-source-parity` | Check the coarse `docs/` Go source parity |
+| `make check-go-test-parity` | Check the coarse `docs/` Go test parity |
 | `make parity-specs` | Run example parity specs with local caches |
 | `make parity-shell` | Print parity environment setup command |
+
+The `check-parity` targets run thin wrappers in `./scripts/` that `exec` the
+installed `cross-language-crystal-parity` skill (see **Parity tooling** in
+`AGENTS.md`); nothing in this repo duplicates that implementation.

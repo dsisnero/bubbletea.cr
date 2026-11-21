@@ -60,8 +60,13 @@ ameba src spec
 crystal spec
 
 # Parity verification
-make check-go-port-inventory
+make check-parity        # per-symbol ledgers (canonical skill scripts)
+make check-go-port-inventory   # coarse docs/ ledgers
 make check-go-source-parity
 make check-go-test-parity
+make verify-parity-skill
 make parity-specs
 ```
+
+The per-symbol checks live in `plans/inventory/` and forward to the installed
+`cross-language-crystal-parity` skill; `docs/go_*.tsv` is the coarse ledger.
