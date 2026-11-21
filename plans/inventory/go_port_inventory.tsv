@@ -25,10 +25,10 @@ commands.go::func::RequestWindowSize	func	ported	src/tea/commands.cr	Command hel
 commands.go::func::Sequence	func	ported	src/tea/commands.cr	Command helpers and timers
 commands.go::func::Tick	func	ported	src/tea/commands.cr	Command helpers and timers
 commands.go::type::BatchMsg	type	ported	src/tea/commands.cr	Command helpers and timers
-commands_test.go::test::TestBatch	test	missing	-	Go test port not yet started
-commands_test.go::test::TestEvery	test	missing	-	Go test port not yet started
-commands_test.go::test::TestSequence	test	missing	-	Go test port not yet started
-commands_test.go::test::TestTick	test	missing	-	Go test port not yet started
+commands_test.go::test::TestBatch	test	ported	spec/commands_spec.cr	Batch nil/mixed command semantics
+commands_test.go::test::TestEvery	test	ported	spec/commands_spec.cr	Every delivery
+commands_test.go::test::TestSequence	test	ported	spec/commands_spec.cr	Sequence mixed nil semantics
+commands_test.go::test::TestTick	test	ported	spec/commands_spec.cr	Tick delivery
 cursed_renderer_test.go::test::TestCursedRenderer_mouseVsFlush	test	ported	spec/tea_spec.cr	on_mouse vs flush race regression (upstream #1690)
 cursed_renderer_test.go::test::TestCursedRenderer_restoresKittyKeyboardStack	test	ported	spec/cursed_renderer_spec.cr	kitty keyboard stack restore across stop/start and screen switches
 cursed_renderer_test.go::test::TestCursedRenderer_updatesKittyKeyboardFlagsInPlace	test	ported	spec/cursed_renderer_spec.cr	kitty keyboard flags updated in place
@@ -204,8 +204,8 @@ examples/set-window-title/main.go::method::model.View	method	missing	-	Example n
 examples/simple/main.go::method::model.Init	method	missing	-	Example not yet ported
 examples/simple/main.go::method::model.Update	method	missing	-	Example not yet ported
 examples/simple/main.go::method::model.View	method	missing	-	Example not yet ported
-examples/simple/main_test.go::test::TestApp	test	missing	-	Example not yet ported
-examples/simple/main_test.go::test::TestAppInteractive	test	missing	-	Example not yet ported
+examples/simple/main_test.go::test::TestApp	test	skipped	-	upstream test is commented out/skipped; golden parity in bubbletea-examples
+examples/simple/main_test.go::test::TestAppInteractive	test	skipped	-	upstream test is commented out/skipped; golden parity in bubbletea-examples
 examples/space/main.go::method::model.Init	method	missing	-	Example not yet ported
 examples/space/main.go::method::model.Update	method	missing	-	Example not yet ported
 examples/space/main.go::method::model.View	method	missing	-	Example not yet ported
@@ -278,7 +278,7 @@ exec.go::method::osExecCommand.SetStdin	method	ported	src/tea/exec.cr	External c
 exec.go::method::osExecCommand.SetStdout	method	ported	src/tea/exec.cr	External command execution
 exec.go::type::ExecCallback	type	ported	src/tea/exec.cr	External command execution
 exec.go::type::ExecCommand	type	ported	src/tea/exec.cr	External command execution
-exec_test.go::test::TestTeaExec	test	missing	-	Go test port not yet started
+exec_test.go::test::TestTeaExec	test	ported	spec/exec_spec.cr	success/failure command table
 exec_test.go::test::TestTeaExecWithNilInput	test	ported	spec/exec_spec.cr	ExecProcess with WithInput(nil)
 focus.go::struct::BlurMsg	struct	ported	src/tea/messages.cr	Focus and blur messages
 focus.go::struct::FocusMsg	struct	ported	src/tea/messages.cr	Focus and blur messages
@@ -450,7 +450,7 @@ keyboard.go::struct::KeyboardEnhancementsMsg	struct	ported	src/tea/messages.cr	K
 logging.go::func::LogToFile	func	ported	src/tea/logging.cr	Logging support
 logging.go::func::LogToFileWith	func	ported	src/tea/logging.cr	Logging support
 logging.go::type::LogOptionsSetter	type	ported	src/tea/logging.cr	Logging support
-logging_test.go::test::TestLogToFile	test	missing	-	Go test port not yet started
+logging_test.go::test::TestLogToFile	test	ported	spec/logging_spec.cr	LogToFile prefix/file coverage
 mod.go::const::ModAlt	const	ported	src/tea.cr	Key modifier constants in tea.cr
 mod.go::const::ModCapsLock	const	ported	src/tea.cr	Key modifier constants in tea.cr
 mod.go::const::ModCtrl	const	ported	src/tea.cr	Key modifier constants in tea.cr
@@ -502,7 +502,7 @@ options.go::func::WithoutRenderer	func	ported	src/tea/options.cr	Program runtime
 options.go::func::WithoutSignalHandler	func	ported	src/tea/options.cr	Program runtime options
 options.go::func::WithoutSignals	func	ported	src/tea/options.cr	Program runtime options
 options.go::type::ProgramOption	type	ported	src/tea/options.cr	Program runtime options
-options_test.go::test::TestOptions	test	missing	-	Go test port not yet started
+options_test.go::test::TestOptions	test	ported	spec/options_spec.cr	program option coverage
 paste.go::method::PasteMsg.String	method	ported	src/tea/messages.cr	Paste messages
 paste.go::struct::PasteEndMsg	struct	ported	src/tea/messages.cr	Paste messages
 paste.go::struct::PasteMsg	struct	ported	src/tea/messages.cr	Paste messages
@@ -531,8 +531,8 @@ renderer.go::func::Println	func	ported	src/tea/renderer.cr	Renderer interface an
 screen.go::func::ClearScreen	func	ported	src/tea/screen.cr	Screen control commands
 screen.go::struct::ModeReportMsg	struct	ported	src/tea/screen.cr	Screen control commands
 screen.go::struct::WindowSizeMsg	struct	ported	src/tea/screen.cr	Screen control commands
-screen_test.go::test::TestClearMsg	test	missing	-	Go test port not yet started
-screen_test.go::test::TestViewModel	test	missing	-	Go test port not yet started
+screen_test.go::test::TestClearMsg	test	ported	spec/screen_spec.cr	TestClearMsg sequence coverage
+screen_test.go::test::TestViewModel	test	ported	spec/screen_spec.cr	view construction parity
 signals_test.go::test::TestHandleSignalsReturnsAfterContextCancelDuringPendingSend	test	skipped	-	Crystal traps spawn detached fibers; Go goroutine deadlock does not apply
 tea.go::const::MouseModeAllMotion	const	ported	src/tea.cr	Core runtime loop and Program
 tea.go::const::MouseModeCellMotion	const	ported	src/tea.cr	Core runtime loop and Program
@@ -577,23 +577,23 @@ tea.go::type::ProgressBarState	type	ported	src/tea.cr	Core runtime loop and Prog
 tea_test.go::test::TestProgressBarStateStringOutOfRange	test	ported	spec/screen_spec.cr	ProgressBarState#string returns Unknown out of range
 tea_test.go::test::TestTeaNoCapabilityQueryWithoutInput	test	ported	spec/terminal_queries_spec.cr	startup query skipped when input disabled
 tea_test.go::test::TestTeaNoTerminalQueriesWithoutInput	test	ported	spec/terminal_queries_spec.cr	input-dependent queries skipped when input disabled
-tea_test.go::test::TestTeaBatchMsg	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaContext	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaContextBatchDeadlock	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaContextImplodeDeadlock	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaGoroutinePanic	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaKill	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaModel	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaNestedSequenceMsg	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaNoRun	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaPanic	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaQuit	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaSend	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaSequenceMsg	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaSequenceMsgWithBatchMsg	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaWaitKill	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaWaitQuit	test	missing	-	Go test port not yet started
-tea_test.go::test::TestTeaWithFilter	test	missing	-	Go test port not yet started
+tea_test.go::test::TestTeaBatchMsg	test	ported	spec/tea_spec.cr	"handles batch messages"
+tea_test.go::test::TestTeaContext	test	ported	spec/tea_spec.cr	"handles context cancellation"
+tea_test.go::test::TestTeaContextBatchDeadlock	test	ported	spec/tea_spec.cr	"handles batch message without deadlock"
+tea_test.go::test::TestTeaContextImplodeDeadlock	test	ported	spec/tea_spec.cr	"handles context implosion without deadlock"
+tea_test.go::test::TestTeaGoroutinePanic	test	ported	spec/tea_spec.cr	"catches panics in nested command batches"
+tea_test.go::test::TestTeaKill	test	ported	spec/tea_spec.cr	"waits for kill (ProgramKilledError)"
+tea_test.go::test::TestTeaModel	test	ported	spec/tea_spec.cr	"runs basic program"
+tea_test.go::test::TestTeaNestedSequenceMsg	test	ported	spec/tea_spec.cr	"handles nested sequence messages"
+tea_test.go::test::TestTeaNoRun	test	ported	spec/tea_spec.cr	"creates program without running"
+tea_test.go::test::TestTeaPanic	test	ported	spec/tea_spec.cr	"handles panics"
+tea_test.go::test::TestTeaQuit	test	ported	spec/tea_spec.cr	"quits on command"
+tea_test.go::test::TestTeaSend	test	ported	spec/tea_spec.cr	"sends messages"
+tea_test.go::test::TestTeaSequenceMsg	test	ported	spec/tea_spec.cr	"handles sequence messages"
+tea_test.go::test::TestTeaSequenceMsgWithBatchMsg	test	ported	spec/tea_spec.cr	"handles sequence with batch messages"
+tea_test.go::test::TestTeaWaitKill	test	ported	spec/tea_spec.cr	"waits for kill (waiter fan-out)"
+tea_test.go::test::TestTeaWaitQuit	test	ported	spec/tea_spec.cr	"waits for quit"
+tea_test.go::test::TestTeaWithFilter	test	ported	spec/tea_spec.cr	"filters messages"
 termcap.go::func::RequestCapability	func	ported	src/tea/messages.cr	Termcap capability messages
 termcap.go::method::CapabilityMsg.String	method	ported	src/tea/messages.cr	Termcap capability messages
 termcap.go::struct::CapabilityMsg	struct	ported	src/tea/messages.cr	Termcap capability messages

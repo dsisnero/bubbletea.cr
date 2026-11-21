@@ -18,26 +18,20 @@ inventory_dir: "plans/inventory/"
 
 ## Where we are
 
-**Recently completed:** the upstream `v2.1.0` update
-([plans/bubbletea-v2.1.0-update.md](bubbletea-v2.1.0-update.md)). It adds
-Program Status Protocol (OSC 7501) reporting, tty `COLUMNS`/`LINES` fallback
-dimensions, and a signal-shutdown guard. The `ansi` shard owns the OSC 7501
-types and encoder, and `ultraviolet` now has the decoder event on `main`. The
-ported code uses the typed event when available and keeps a raw-OSC fallback
-for tagged releases; the tag is tracked in
-[shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md).
+**Recently completed:** the baseline test-ledger audit. All 28 `missing` rows
+were mapped: 26 to existing Crystal specs and 2 marked `skipped` because the
+upstream example tests are commented out/skipped. One uncovered case
+(`TestTeaGoroutinePanic`) gained a spec in `spec/tea_spec.cr`. The ledger is
+now 37 `ported`, 3 `skipped`, 0 `missing`.
 
-**Current focus:** no active chunk; `v2.1.0` is complete and is the latest
-upstream release.
+**Current focus:** no active chunk; the audit and `v2.1.0` are complete.
 
 **Next up (in order):**
 
-1. **Audit the remaining baseline test-ledger rows.** 28 rows in
-   `plans/inventory/go_test_parity.tsv` are still `missing` from the initial
-   auto-generated baseline. Walk upstream tests, point each at its Crystal spec
-   (or leave it `missing` with a reason), and keep the checker green.
-2. **Keep example parity green** in the `bubbletea-examples` submodule.
-3. **Watch for the next upstream release** and the shard issues above.
+1. **Keep example parity green** in the `bubbletea-examples` submodule.
+2. **Watch for the next upstream release** and the ultraviolet tag that ships
+   `ProgramStatusSupportEvent` (see
+   [shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md)).
 
 ### Chunk status
 
@@ -53,18 +47,18 @@ upstream release.
 | Program Status Protocol | Complete | Local shim; see shard issues |
 | Example parity | Complete | `spec/parity/`, `spec/*_parity_spec.cr` |
 | Lint baseline | Complete | `make lint` — 0 findings |
-| Test-ledger audit | Not started | 28 baseline rows (see **Next up** #1) |
+| Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
-### Last known state (2026-10-19)
+### Last known state (2026-11-20)
 
 - Last parity feature: v2.1.0 update
   ([plan](bubbletea-v2.1.0-update.md))
 - `make format` — pass
-- `make lint` — pass (19 files, 0 findings)
-- `make test` — 156 examples, 0 failures
-- `make check-go-{port-inventory,source-parity,test-parity}` — pass
-- `scripts/check_{port,source,test}_parity.sh` over `plans/inventory/` — pass
-  (613 port items, 573 source items, 40 tests)
+- `make lint` — pass (18 files, 0 findings)
+- `make test` — 157 examples, 0 failures
+- `make check-parity` — pass (PARITY_DISCOVERY_BACKEND=regex)
+- Ledgers: 613 port items (373 ported, 3 skipped), 573 source items,
+  40 tests (37 ported, 3 skipped)
 - `make parity-specs` — 4 examples, 0 failures
 
 ## Feature Roadmap
@@ -265,15 +259,15 @@ shutdown fix.
 
 | Manifest | Ported/Mapped | Missing/Skipped | Total |
 |----------|:------------:|:---------------:|:-----:|
-| `go_port_inventory.tsv` | 347 | 265 (+1 skipped) | 613 |
+| `go_port_inventory.tsv` | 373 | 237 (+3 skipped) | 613 |
 | `go_source_parity.tsv` | 336 | 237 | 573 |
-| `go_test_parity.tsv` | 11 | 28 (+1 skipped) | 40 |
+| `go_test_parity.tsv` | 37 | 0 (+3 skipped) | 40 |
 
 - "Missing" items in port_inventory are mostly test/examples/tutorials — not API-level targets.
 - Source parity "missing" items are test APIs, example files, and tutorial code that don't have direct Crystal source equivalents.
-- The 28 `missing` rows in `go_test_parity.tsv` are the untouched auto-generated
-  baseline (see **Next up** #1); the audited `v2.0.8`–`v2.1.0` tests are marked
-  `ported`, except the Go-specific signal test (`skipped`).
+- `go_test_parity.tsv` has no `missing` rows. Three are `skipped`: the
+  Go-goroutine-specific signal test and the two upstream example tests that are
+  commented out/skipped. The rest are `ported` with a Crystal spec reference.
 
 ## Known Divergences
 

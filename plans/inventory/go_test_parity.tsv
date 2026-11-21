@@ -1,42 +1,42 @@
 # baseline=github.com/charmbracelet/bubbletea@f9df43c4f2c021d8740a2628d59cd810a862eb98 (v2.1.0)
 # source_test_id	status	crystal_refs	notes
-commands_test.go::test::TestBatch	missing	-	baseline
-commands_test.go::test::TestEvery	missing	-	baseline
-commands_test.go::test::TestSequence	missing	-	baseline
-commands_test.go::test::TestTick	missing	-	baseline
+commands_test.go::test::TestBatch	ported	spec/commands_spec.cr	Batch nil/mixed command semantics
+commands_test.go::test::TestEvery	ported	spec/commands_spec.cr	Every delivery
+commands_test.go::test::TestSequence	ported	spec/commands_spec.cr	Sequence mixed nil semantics
+commands_test.go::test::TestTick	ported	spec/commands_spec.cr	Tick delivery
 cursed_renderer_test.go::test::TestCursedRenderer_mouseVsFlush	ported	spec/tea_spec.cr	on_mouse vs flush race regression (upstream #1690)
 cursed_renderer_test.go::test::TestCursedRenderer_restoresKittyKeyboardStack	ported	spec/cursed_renderer_spec.cr	kitty keyboard stack restore across stop/start and screen switches
 cursed_renderer_test.go::test::TestCursedRenderer_updatesKittyKeyboardFlagsInPlace	ported	spec/cursed_renderer_spec.cr	kitty keyboard flags updated in place
-examples/simple/main_test.go::test::TestApp	missing	-	baseline
-examples/simple/main_test.go::test::TestAppInteractive	missing	-	baseline
-exec_test.go::test::TestTeaExec	missing	-	baseline
+examples/simple/main_test.go::test::TestApp	skipped	-	upstream test is commented out/skipped; golden parity in bubbletea-examples
+examples/simple/main_test.go::test::TestAppInteractive	skipped	-	upstream test is commented out/skipped; golden parity in bubbletea-examples
+exec_test.go::test::TestTeaExec	ported	spec/exec_spec.cr	success/failure command table
 exec_test.go::test::TestTeaExecWithNilInput	ported	spec/exec_spec.cr	ExecProcess with WithInput(nil)
-logging_test.go::test::TestLogToFile	missing	-	baseline
-options_test.go::test::TestOptions	missing	-	baseline
+logging_test.go::test::TestLogToFile	ported	spec/logging_spec.cr	LogToFile prefix/file coverage
+options_test.go::test::TestOptions	ported	spec/options_spec.cr	program option coverage
 programstatus_test.go::test::TestCursedRenderer_programStatus	ported	spec/program_status_spec.cr	renderer status lifecycle
 programstatus_test.go::test::TestTranslateProgramStatusSupport	ported	spec/program_status_spec.cr	OSC 7501 support reply translation
-screen_test.go::test::TestClearMsg	missing	-	baseline
-screen_test.go::test::TestViewModel	missing	-	baseline
+screen_test.go::test::TestClearMsg	ported	spec/screen_spec.cr	TestClearMsg sequence coverage
+screen_test.go::test::TestViewModel	ported	spec/screen_spec.cr	view construction parity
 signals_test.go::test::TestHandleSignalsReturnsAfterContextCancelDuringPendingSend	skipped	-	Crystal traps spawn detached fibers; Go goroutine deadlock does not apply
 tea_test.go::test::TestProgressBarStateStringOutOfRange	ported	spec/screen_spec.cr	ProgressBarState#string returns Unknown out of range
 tea_test.go::test::TestTeaNoCapabilityQueryWithoutInput	ported	spec/terminal_queries_spec.cr	startup query skipped when input disabled
 tea_test.go::test::TestTeaNoTerminalQueriesWithoutInput	ported	spec/terminal_queries_spec.cr	input-dependent queries skipped when input disabled
-tea_test.go::test::TestTeaBatchMsg	missing	-	baseline
-tea_test.go::test::TestTeaContext	missing	-	baseline
-tea_test.go::test::TestTeaContextBatchDeadlock	missing	-	baseline
-tea_test.go::test::TestTeaContextImplodeDeadlock	missing	-	baseline
-tea_test.go::test::TestTeaGoroutinePanic	missing	-	baseline
-tea_test.go::test::TestTeaKill	missing	-	baseline
-tea_test.go::test::TestTeaModel	missing	-	baseline
-tea_test.go::test::TestTeaNestedSequenceMsg	missing	-	baseline
-tea_test.go::test::TestTeaNoRun	missing	-	baseline
-tea_test.go::test::TestTeaPanic	missing	-	baseline
-tea_test.go::test::TestTeaQuit	missing	-	baseline
-tea_test.go::test::TestTeaSend	missing	-	baseline
-tea_test.go::test::TestTeaSequenceMsg	missing	-	baseline
-tea_test.go::test::TestTeaSequenceMsgWithBatchMsg	missing	-	baseline
-tea_test.go::test::TestTeaWaitKill	missing	-	baseline
-tea_test.go::test::TestTeaWaitQuit	missing	-	baseline
-tea_test.go::test::TestTeaWithFilter	missing	-	baseline
+tea_test.go::test::TestTeaBatchMsg	ported	spec/tea_spec.cr	"handles batch messages"
+tea_test.go::test::TestTeaContext	ported	spec/tea_spec.cr	"handles context cancellation"
+tea_test.go::test::TestTeaContextBatchDeadlock	ported	spec/tea_spec.cr	"handles batch message without deadlock"
+tea_test.go::test::TestTeaContextImplodeDeadlock	ported	spec/tea_spec.cr	"handles context implosion without deadlock"
+tea_test.go::test::TestTeaGoroutinePanic	ported	spec/tea_spec.cr	"catches panics in nested command batches"
+tea_test.go::test::TestTeaKill	ported	spec/tea_spec.cr	"waits for kill (ProgramKilledError)"
+tea_test.go::test::TestTeaModel	ported	spec/tea_spec.cr	"runs basic program"
+tea_test.go::test::TestTeaNestedSequenceMsg	ported	spec/tea_spec.cr	"handles nested sequence messages"
+tea_test.go::test::TestTeaNoRun	ported	spec/tea_spec.cr	"creates program without running"
+tea_test.go::test::TestTeaPanic	ported	spec/tea_spec.cr	"handles panics"
+tea_test.go::test::TestTeaQuit	ported	spec/tea_spec.cr	"quits on command"
+tea_test.go::test::TestTeaSend	ported	spec/tea_spec.cr	"sends messages"
+tea_test.go::test::TestTeaSequenceMsg	ported	spec/tea_spec.cr	"handles sequence messages"
+tea_test.go::test::TestTeaSequenceMsgWithBatchMsg	ported	spec/tea_spec.cr	"handles sequence with batch messages"
+tea_test.go::test::TestTeaWaitKill	ported	spec/tea_spec.cr	"waits for kill (waiter fan-out)"
+tea_test.go::test::TestTeaWaitQuit	ported	spec/tea_spec.cr	"waits for quit"
+tea_test.go::test::TestTeaWithFilter	ported	spec/tea_spec.cr	"filters messages"
 tty_test.go::test::TestFallbackDimensions	ported	spec/tty_spec.cr	COLUMNS/LINES and 80x24 fallback
 tty_test.go::test::TestProgramNonTTYDimensions	ported	spec/tty_spec.cr	non-tty output keeps configured size

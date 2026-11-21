@@ -684,5 +684,38 @@ describe "Tea" do
       err.should be_a(Tea::ProgramKilledError)
       err.not_nil!.cause.should be_a(Tea::ProgramPanicError)
     end
+
+    it "catches panics in nested command batches" do
+      # Port of Go test TestTeaGoroutinePanic: a panic raised by commands inside
+      # a BatchMsg of nested Batch/Sequence messages must terminate the program
+      # with a panic error instead of hanging or crashing the process.
+      model = TestModel.new
+      program = Tea.new_program(
+        model,
+        Tea.with_input(IO::Memory.new("")),
+        Tea.with_output(IO::Memory.new),
+        Tea.without_signals,
+      )
+
+      panic_cmd = -> : Tea::Msg? { raise "testing goroutine panic behavior" }
+
+      spawn do
+        until model.executed?
+          Fiber.yield
+        end
+
+        commands = Array(Tea::Cmd).new(10)
+        5.times do
+          commands << -> : Tea::Msg? { Tea::SequenceMsg.new([panic_cmd]) }
+          commands << -> : Tea::Msg? { Tea::BatchMsg.new([panic_cmd]) }
+        end
+        program.send(Tea::BatchMsg.new(commands))
+      end
+
+      _, err = program.run
+
+      err.should be_a(Tea::ProgramKilledError)
+      err.not_nil!.cause.should be_a(Tea::ProgramPanicError)
+    end
   end
 end
