@@ -1,11 +1,12 @@
 # ultraviolet.1 — Program Status Protocol (OSC 7501) decoder support
 
 **Shard:** `ultraviolet` (`github.com/dsisnero/ultraviolet`)
-**Pinned version:** `1.1.1` (`shard.lock`)
+**Pinned version:** `1.1.2` (`shard.lock`)
 **Upstream reference:** `github.com/charmbracelet/ultraviolet` commit
 `6b8d4baf91b4` (2026-10-08), used by bubbletea v2.1.0
 **Local tracking number:** 1 (no upstream issue filed yet)
-**Status:** open — the encoder landed in `ansi`, the decoder event has not
+**Status:** packaging resolved in `v1.1.2` — the fallback removal (steps 2–3
+under Verification) is still open
 
 ## Status
 
@@ -19,11 +20,10 @@ The decoder landed on `main` at `756d7a7`:
 
 `ansi` already owns the types and encoder (`aa47d48`).
 
-## Packaging blocker
+## Packaging blocker (resolved)
 
-No release tag includes the decoder yet: `v1.1.1` still points at `150cc99`,
-and `shard.yml` still says `version: 1.1.1`. Pinning a branch or commit from
-this repo does not resolve:
+Until `v1.1.2` no release tag included the decoder: `v1.1.1` still pointed at
+`150cc99`. Pinning a branch or commit from this repo does not resolve:
 
 ```
 - `ultraviolet (branch main)` required by `shard.yml`
@@ -31,8 +31,18 @@ this repo does not resolve:
 ```
 
 Shards cannot satisfy a git-ref pin from one source against the `*`
-requirement from `lipgloss`. The action needed is a tagged release
-(e.g. `v1.2.0`).
+requirement from `lipgloss`, and the same failure occurs with a `commit:` pin —
+the blocker is the requirement kind, not the ref. `shard.override.yml` bypasses
+it locally but is not a packaging answer.
+
+Resolution: ultraviolet tagged `v1.1.2` (self-numbered patch line; upstream
+publishes no tags, see its `CHANGELOG.md` Versioning section). Consumers now
+resolve it by tag, so `shards update ultraviolet` here moves the lock from
+`1.1.1` to `1.1.2`, and the sibling repos are refreshed with
+`make update_dependents` in the ultraviolet checkout.
+
+`Ultraviolet.has_constant?("ProgramStatusSupportEvent")` is therefore true in
+this repo's builds, which makes the raw-OSC fallback dead code.
 
 ## Downstream impact
 

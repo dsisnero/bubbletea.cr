@@ -30,7 +30,9 @@ update:
 	shards update
 
 format:
-	crystal tool format --check
+	# Scope to this project: bubbletea-examples/ is a submodule with its own
+	# lib/, and formatting vendored shards makes this gate fail on their code.
+	crystal tool format --check src spec
 
 lint:
 	ameba --fix

@@ -24,14 +24,24 @@ upstream example tests are commented out/skipped. One uncovered case
 (`TestTeaGoroutinePanic`) gained a spec in `spec/tea_spec.cr`. The ledger is
 now 37 `ported`, 3 `skipped`, 0 `missing`.
 
-**Current focus:** no active chunk; the audit and `v2.1.0` are complete.
+**Current focus:** the `v1.1.2` bump of `ultraviolet` breaks one Go-fixture spec.
+`spec/parity/v2_control_sequences_spec.cr` fails on a frame boundary: Go emits
+`<CR><LF><ESC>[A<ESC>[30C`, the installed renderer emits `<CR><ESC>[30C`. The
+fixture is the oracle here — do **not** regenerate it. The fix belongs in
+ultraviolet's inline renderer and ships as its `v1.1.3`; see that repo's
+`plans/parity.md` current focus.
 
 **Next up (in order):**
 
-1. **Keep example parity green** in the `bubbletea-examples` submodule.
-2. **Watch for the next upstream release** and the ultraviolet tag that ships
-   `ProgramStatusSupportEvent` (see
-   [shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md)).
+1. **Unblock the fixture spec** once ultraviolet `v1.1.3` carries the inline
+   renderer fix: `shards update ultraviolet`, then `make test` must pass with
+   the fixture untouched.
+2. **Delete the raw-OSC fallback** — `v1.1.2` ships
+   `ProgramStatusSupportEvent`, so `ProgramStatusSupport.reply?` and the
+   `UnknownOscEvent` branch are dead code. Steps are in
+   [shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md).
+3. **Keep example parity green** in the `bubbletea-examples` submodule.
+4. **Tag `v2.1.0`** to match the vendored Go release once 1–3 are green.
 
 ### Chunk status
 
@@ -49,17 +59,19 @@ now 37 `ported`, 3 `skipped`, 0 `missing`.
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
-### Last known state (2026-11-20)
+### Last known state (2026-11-23)
 
-- Last parity feature: v2.1.0 update
-  ([plan](bubbletea-v2.1.0-update.md))
-- `make format` — pass
+- Dependency bump: `ultraviolet` `1.1.2` (first tag that ships
+  `ProgramStatusSupportEvent`), `ansi` refreshed to `4625557` (the stale
+  `aa47d48` lock predated `Ansi.each_grapheme_cluster` and failed to compile).
+- `make format` — pass (target now scoped to `src spec`; the submodule's `lib/`
+  made the previous unscoped run check vendored shards)
 - `make lint` — pass (18 files, 0 findings)
-- `make test` — 157 examples, 0 failures
+- `make test` — **1 failure**: `spec/parity/v2_control_sequences_spec.cr:43`
+  (`v2 control sequence parity`), the inline-renderer drift described above
 - `make check-parity` — pass (PARITY_DISCOVERY_BACKEND=regex)
-- Ledgers: 613 port items (373 ported, 3 skipped), 573 source items,
-  40 tests (37 ported, 3 skipped)
-- `make parity-specs` — 4 examples, 0 failures
+- Ledgers: unchanged (613 port items, 573 source items, 40 tests)
+- `make parity-specs` — fails on the same spec
 
 ## Feature Roadmap
 
