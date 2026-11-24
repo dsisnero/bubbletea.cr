@@ -18,11 +18,35 @@ inventory_dir: "plans/inventory/"
 
 ## Where we are
 
-**Recently completed:** the `bubbletea-examples` refresh. Every parity golden is
-now generated from the pinned Go sources by `bubbletea-examples/goldens` — a
-small Go module with one harness per example — the submodule builds against this
-repository's `HEAD`, and its suite reports 82 examples, 0 failures, 12 pending.
-Three real bugs surfaced on the way and are fixed here:
+**Recently completed:** the shard bumps, the first example rewrite, and the fixes
+they forced. Every parity golden is generated from the pinned Go sources by
+`bubbletea-examples/goldens` — a small Go module with one harness per example —
+the submodule builds against this repository's `HEAD`, and its suite reports
+82 examples, 0 failures, 12 pending.
+
+- **Dependencies are current and the oracle matches them**: `ultraviolet`
+  **1.1.7** (root and submodule), `bubbles` **v2.2.2** (tag), `vendor/bubbles`
+  **v2.2.2**; `goldens/go.mod` replaces both pinned Go modules, so goldens are
+  built from the same widget and runtime sources the port tracks.
+- **`textinputs` is ported and green** — real `textinput` widgets with upstream
+  styles, char limits, password echo, focus cycling, ctrl+r cursor-mode cycling
+  and the submit button. Its capture is deterministic: `Init` returns nil (no
+  `textinput.Blink`) and each phase is paced more than a frame apart. This is the
+  template for the remaining five examples.
+- **`bubbles.1` fixed** (`shards_issues/bubbles.1.md`): `Viewport.parseMatches`
+  advanced a `String` by characters where Go advances bytes, so highlights
+  vanished on any non-ASCII content; v2.2.2 uses `byte_slice` and `pager` is
+  green again (1795-byte golden).
+- **`dynamic-textarea` closed**: `bubbles`' `Textarea#prompt_view` now always
+  applies `computedPrompt()`, as `vendor/bubbles` does, so the renderer stops
+  rewriting gutter cells Go skips.
+- **`file_picker` closed**: `humanize_bytes` was 1024-based and printed `KB`
+  where Go's `go-humanize` is 1000-based.
+- **RNG harnesses are reproducible**: `generate.py` forces
+  `GODEBUG=randseednop=0`, so a harness that calls `rand.Seed` regenerates byte
+  for byte.
+
+Three runtime bugs surfaced earlier in this stretch and are fixed here:
 
 - `Program#run` recreated its `msgs`/`cmds` channels, so anything sent between
   `new_program` and `run` was dropped. Go delivers those messages; the event
@@ -34,29 +58,30 @@ Three real bugs surfaced on the way and are fixed here:
 - `spec/pipe_no_input_parity_spec.cr` ran `examples/pipe.cr`, a path that does
   not exist, so it only passed its exit-code assertion.
 
-The `bubbles` port was also fixed where the examples exposed it: `humanize_bytes`
-divided by 1024 and printed `KB` where Go's `go-humanize` is 1000-based
-(`131kB`), which was the whole `file_picker` difference. Its `Textarea#prompt_view`
-returned the raw prompt when no prompt func was set, dropping
-`computedPrompt()`; Go applies it either way (`vendor/bubbles` v2.1.1
-`textarea.go:1462-1475`). That missing style made the renderer rewrite gutter
-cells Go skips, which was the entire `dynamic-textarea` gap; pinning
-`dsisnero/bubbles` main (`c933ae5`) closes it.
-
 Earlier in the same stretch the raw-OSC program-status fallback was deleted, the
 support query was split from the reply (`RequestProgramStatusSupportMsg`), and
 the v2 control-sequence fixture was re-derived from Go.
 
-**Current focus:** close the open parity items below; **`v2.1.0` is not tagged
-yet** and must not be until they are done. Everything landed so far is verified
-and pushed: the library gates are green, the 58 example goldens are generated
-from the pinned Go sources, and the submodule suite is 82 examples,
-0 failures, 12 pending. `program-status` and `dynamic-textarea` are both ported
-with green goldens.
+**Current focus:** port the five remaining approximation examples and close the
+documented `pending` specs; **`v2.1.0` is not tagged yet** and must not be until
+they are done. Everything landed so far is verified and pushed: the library gates
+are green, the example goldens are generated from the pinned Go sources, and the
+submodule suite is 82 examples, 0 failures, 12 pending.
 
 **Next up (in order):**
 
-1. **Port the five remaining approximation examples properly** — `clickable`,
+1. **Do this first — the shared RNG prerequisite.** `doom_fire`, `list_fancy`
+   and the already-pending `list_fancy_h_a` put RNG output in the frame, so
+   parity needs Crystal to replay Go's `math/rand` v1 stream (`rngSource`: the
+   607-word lagged Fibonacci seeded via `seedrand`), not just a seeded
+   `Random`. Land one shared helper in the specs and prove it against the
+   existing `list_fancy_h_a` golden (it is reproducible from the Go side:
+   `generate.py` forces `GODEBUG=randseednop=0`), then reuse it in the two
+   examples. Nothing else blocks the rewrites — `lib/bubbletea` in the submodule
+   is verified identical to this repository's `src/`, so specs run against
+   `HEAD`.
+
+2. **Port the five remaining approximation examples properly** — `clickable`,
    `doom_fire`, `list_fancy`, `split_editors` and `tui_daemon_combo` are not
    missing a capture harness; they are *approximations* of the Go example, so
    there is nothing faithful to capture. Line counts against the pin:
@@ -69,57 +94,61 @@ with green goldens.
    | `doom_fire` | 116 | 133 | palette/rand + tick pacing |
    | `list_fancy` | 317 | 476 | list delegate/pagination styling |
 
-   `textinputs` is done (ported, green, one commit) and is the shape the rest
-   should follow.
+   Work smallest-first, one example per commit, in this order:
+   `tui_daemon_combo` → `split_editors` → `clickable` → `doom_fire` →
+   `list_fancy`. `textinputs` is done and is the shape to follow: rewrite the
+   example against `vendor/bubbletea` at the pin, add `goldens/<name>/harness.go`,
+   run `python3 goldens/generate.py <name>`, flip the spec to `it`. If a capture
+   turns out timing-dependent, use the `textinputs` recipe: wrap the model so
+   `Init` returns nil and pace each phase more than a frame apart.
 
-   Order the work smallest-first and take one example per commit: rewrite the
-   example against `vendor/bubbletea` at the pin, then a harness in
-   `goldens/<name>/`, then a golden from `python3 goldens/generate.py <name>`,
-   then flip the spec to `it`. `doom_fire` and `list_fancy` also need the RNG
-   convention below.
-
-   **Do this first (shared prerequisite):** `doom_fire`, `list_fancy` and the
-   already-pending `list_fancy_h_a` all put RNG output in the frame, so parity
-   needs Crystal to replay Go's `math/rand` v1 stream (`rngSource`: 607-word
-   lagged Fibonacci seeded via `seedrand`), not just a seeded `Random`. Land one
-   shared helper in the specs and prove it against the existing `list_fancy_h_a`
-   golden before porting the two RNG examples. `generate.py` now forces
-   `GODEBUG=randseednop=0`, so the Go side is reproducible regardless of the
-   caller. Nothing else blocks the five rewrites; `lib/bubbletea` in the
-   submodule is verified identical to this repository's `src/`, so specs run
-   against `HEAD`.
-
-2. **Port the last upstream example** — `glamour` needs the `glamour` shard,
-   which has no Crystal port, so it is blocked until that exists.
-3. **Close the documented `pending` specs** — the exact 13 today:
-   - six above (approximations);
+3. **Close the documented `pending` specs** (the exact 12 are listed below):
+   - `paginator` and `textarea` — capture a scheduling-dependent frame count and
+     need a normalized comparison instead of byte equality (one shared helper;
+     `textarea`'s example is otherwise a faithful port). Their goldens are still
+     the pre-v2.2.2 captures, so regenerate them when the helper lands.
    - `focus_blur` (`ultraviolet` has no IRM cell-insert fallback),
      `set_terminal_color` (Go clears with EL0; this port moves right, erases,
      steps back) and `space` (high-volume styled block redraw stream drifts in
-     the renderer/lipgloss path) — all three are upstream renderer work, and each
-     records that the visible frame is identical;
-   - `paginator` and `textarea`, which capture a scheduling-dependent frame
-     count and need a normalized comparison instead of byte equality (shared
-     helper — `textarea`'s example is a faithful port otherwise);
-   - `list_fancy H->a`, which needs the same RNG convention as item 1;
-   - `spec/canvas_spec.cr`, the teatest-based spec: it needs
-     `-Dpreview_mt -Dexecution_context` *and* the `teatest` dev shard, which is
-     not declared. The golden-based `spec/canvas_parity_spec.cr` already passes,
-     so this one is optional coverage — do not confuse the two.
-   `file_picker` and `dynamic_textarea` are green: `bubbles` now humanises sizes
-   on the same 1000 base as Go's `go-humanize`, and applies `Textarea`'s prompt
-   style the way upstream does. Note `file_picker`'s golden embeds the size of
-   the fixture's `a_dir`, which the filesystem reports (exFAT says 131kB, APFS
-   says ~96B), so the fixture needs a normalization before the suite can run on
-   another volume.
-4. **Only then tag `v2.1.0`** — from this repository run `make format`,
+     the renderer/lipgloss path) — upstream renderer work, each recording that
+     the visible frame is identical. `space`'s golden is likewise pre-v2.2.2.
+   - `list_fancy H->a` — unblocked by item 1.
+   - `spec/canvas_spec.cr` — the teatest-based spec needs `-Dpreview_mt
+     -Dexecution_context` *and* the `teatest` dev shard, which is not declared.
+     The golden-based `spec/canvas_parity_spec.cr` already passes, so this is
+     optional coverage — do not confuse the two.
+4. **`glamour`** — the last upstream example; it needs the `glamour` shard, which
+   has no Crystal port, so it is blocked until that exists.
+5. **Only then tag `v2.1.0`** — from this repository run `make format`,
    `make lint`, `make test`, `make check-parity`, `make parity-specs`, and
    `make build-examples`; in `bubbletea-examples`, with `lib/bubbletea` pinned
    to this repository's `HEAD`, run `crystal spec`.
-5. **Re-derive the control-sequence fixture if either pin moves** —
+6. **Re-derive the control-sequence fixture if either pin moves** —
    `spec/parity/v2_control_sequences_spec.cr` was verified against
    `vendor/bubbletea` `f9df43c` with ultraviolet `6b8d4ba` and `8ecbcf0`; the
    spec records the recipe.
+
+### Exact pending inventory (12)
+
+`spec/canvas_spec.cr` (teatest, needs flags + shard) · `clickable` ·
+`doom_fire` · `focus_blur` · `list_fancy` · `list_fancy H->a` · `paginator` ·
+`set_terminal_color` · `space` · `split_editors` · `textarea` ·
+`tui_daemon_combo`.
+
+Green and worth keeping green: `pager` (was blocked on `bubbles.1`),
+`textinputs`, `dynamic_textarea`, `file_picker`, `capability`.
+
+### Resume in one line
+
+Read this block, then from the repository root run `make format`,
+`make lint`, `make test`, `make check-parity`, `make parity-specs`,
+`make build-examples`, and in `bubbletea-examples` (with `lib/bubbletea` pinned
+to this repository's `HEAD`) `crystal spec` — expect 160 library examples and
+82 example specs, 0 failures, 12 pending. Then start at **Next up** item 1.
+
+Work that must not be done here: `lib/` is patched and released separately, so
+write shard bugs up in `shards_issues/<shard>.<n>.md` instead of editing it
+(see **Known shard bugs**).
 
 ### Known shard bugs (fixed outside this repository)
 
