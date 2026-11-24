@@ -31,7 +31,9 @@ emits `<CR><ESC>[30C` at that boundary, and `make test` is green with the
 Go-derived fixture. The local lock is at ultraviolet `v1.1.4` (no commit
 needed — `shard.lock` is untracked); see that repo's `plans/parity.md`. The
 raw-OSC program-status fallback is also gone: `translate_input_event` maps
-`Ultraviolet::ProgramStatusSupportEvent` directly, as Go's `input.go` does.
+`Ultraviolet::ProgramStatusSupportEvent` directly, as Go's `input.go` does, and
+the support query now travels as `RequestProgramStatusSupportMsg` so a reply no
+longer re-triggers the query.
 
 **Current focus:** example parity in the `bubbletea-examples` submodule. Its
 working tree carries uncommitted changes, so it must build and match the Go
@@ -251,7 +253,9 @@ shutdown fix.
 
 - [x] **Program Status Protocol (OSC 7501)** — types, `View#program_status`,
       renderer reporting (including clear-on-id-change and leave-on-close),
-      support query and reply translation
+      support query and reply translation. `RequestProgramStatusSupportMsg`
+      mirrors Go's unexported `programStatusSupportMsg`, so the query and the
+      terminal's reply are distinct messages.
   - Source: `programstatus.go` → `src/tea/program_status.cr`
   - Upstream commit: `41bc626` (PR #1841)
   - Types/encoder: `ansi` shard; reply detection: `ultraviolet`'s

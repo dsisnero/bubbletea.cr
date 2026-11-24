@@ -122,6 +122,58 @@ describe Tea::CursedRenderer do
   end
 end
 
+private class ProgramStatusRequestModel
+  include Tea::Model
+
+  def init : Tea::Cmd?
+    Tea.request_program_status_support
+  end
+
+  def update(msg : Tea::Msg) : Tuple(Tea::Model, Tea::Cmd?)
+    return {self, Tea.quit} if msg.is_a?(Tea::RequestProgramStatusSupportMsg)
+
+    {self, nil}
+  end
+
+  def view : Tea::View
+    Tea::View.new("")
+  end
+end
+
+private class ProgramStatusReplyModel
+  include Tea::Model
+
+  getter replies = 0
+
+  def init : Tea::Cmd?
+    nil
+  end
+
+  def update(msg : Tea::Msg) : Tuple(Tea::Model, Tea::Cmd?)
+    if msg.is_a?(Tea::ProgramStatusSupportMsg)
+      @replies += 1
+      return {self, Tea.quit}
+    end
+
+    {self, nil}
+  end
+
+  def view : Tea::View
+    Tea::View.new("")
+  end
+end
+
+private def run_program_status_program(model : Tea::Model, output : IO::Memory, &)
+  program = Tea.new_program(
+    model,
+    Tea.with_input(IO::Memory.new),
+    Tea.with_output(output),
+    Tea.without_signals,
+  )
+  yield program
+  program.run
+end
+
 describe "program status support" do
   it "translates a program status support reply" do
     # Port of Go test TestTranslateProgramStatusSupport.
@@ -140,5 +192,30 @@ describe "program status support" do
     msg = program.translate_input_event(event)
 
     msg.should_not be_a(Tea::ProgramStatusSupportMsg)
+  end
+
+  it "writes the OSC 7501 query when the model asks for support" do
+    output = IO::Memory.new
+    _model, err = run_program_status_program(ProgramStatusRequestModel.new, output) { }
+    err.should be_nil
+
+    output.to_s.should contain(Ansi::RequestProgramStatusSupport)
+  end
+
+  it "hands the reply to the model without re-querying the terminal" do
+    # Go keeps the request (unexported programStatusSupportMsg) and the
+    # terminal's reply (ProgramStatusSupportMsg) as distinct messages, so a
+    # reply is a user-visible event and never re-triggers the query.
+    output = IO::Memory.new
+    final, err = run_program_status_program(ProgramStatusReplyModel.new, output) do |program|
+      spawn do
+        sleep 300.milliseconds
+        program.send(program.translate_input_event(Ultraviolet::ProgramStatusSupportEvent.new))
+      end
+    end
+    err.should be_nil
+
+    final.as(ProgramStatusReplyModel).replies.should eq 1
+    output.to_s.should_not contain(Ansi::RequestProgramStatusSupport)
   end
 end

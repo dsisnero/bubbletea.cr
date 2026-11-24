@@ -556,7 +556,7 @@ module Tea
               execute_query("\e]12;?\a")
             when RequestCursorPositionMsg
               execute_query(Ansi::RequestCursorPositionReport)
-            when ProgramStatusSupportMsg
+            when RequestProgramStatusSupportMsg
               execute_query(Ansi::RequestProgramStatusSupport)
             when TerminalVersionRequestMsg
               execute_query("\e[>q")
