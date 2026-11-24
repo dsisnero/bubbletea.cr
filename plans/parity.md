@@ -24,18 +24,20 @@ upstream example tests are commented out/skipped. One uncovered case
 (`TestTeaGoroutinePanic`) gained a spec in `spec/tea_spec.cr`. The ledger is
 now 37 `ported`, 3 `skipped`, 0 `missing`.
 
-**Current focus:** the `v1.1.2` bump of `ultraviolet` breaks one Go-fixture spec.
-`spec/parity/v2_control_sequences_spec.cr` fails on a frame boundary: Go emits
-`<CR><LF><ESC>[A<ESC>[30C`, the installed renderer emits `<CR><ESC>[30C`. The
-fixture is the oracle here — do **not** regenerate it. The fix belongs in
-ultraviolet's inline renderer and ships as its `v1.1.3`; see that repo's
-`plans/parity.md` current focus.
+**Current focus:** the `v1.1.2` bump of `ultraviolet` broke one Go-fixture spec.
+`spec/parity/v2_control_sequences_spec.cr` failed on a frame boundary: it
+expected `<CR><LF><ESC>[A<ESC>[30C`, the installed renderer emitted
+`<CR><ESC>[30C`. **Resolved:** the expected bytes were stale, captured from
+ultraviolet `524a660` before upstream removed its inline `scrollHeight`
+behaviour; Go built from the vendored sources (and from the pinned Go
+ultraviolet) emits `<CR><ESC>[30C`. The fixture is re-derived from Go and the
+spec records that provenance; ultraviolet `v1.1.4` also dropped the port's own
+leftover `scrollHeight` machinery. See that repo's `plans/parity.md`.
 
 **Next up (in order):**
 
-1. **Unblock the fixture spec** once ultraviolet `v1.1.3` carries the inline
-   renderer fix: `shards update ultraviolet`, then `make test` must pass with
-   the fixture untouched.
+1. **Bump to ultraviolet `v1.1.4`** — `shards update ultraviolet`, then
+   `make test` must stay green with the Go-derived fixture.
 2. **Delete the raw-OSC fallback** — `v1.1.2` ships
    `ProgramStatusSupportEvent`, so `ProgramStatusSupport.reply?` and the
    `UnknownOscEvent` branch are dead code. Steps are in
