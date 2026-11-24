@@ -35,14 +35,22 @@ raw-OSC program-status fallback is also gone: `translate_input_event` maps
 the support query now travels as `RequestProgramStatusSupportMsg` so a reply no
 longer re-triggers the query.
 
-**Current focus:** example parity in the `bubbletea-examples` submodule. Its
-working tree carries uncommitted changes, so it must build and match the Go
-examples before `v2.1.0` is tagged here.
+**Current focus:** tagging `v2.1.0` to match the vendored Go release. Every gate
+is green, including a forced `make build-examples` rebuild against this `src/`
+(36 examples compile; the 25 `bubbles`-dependent ones are skipped by design),
+so the release is ready barring review.
 
 **Next up (in order):**
 
-1. **Tag `v2.1.0`** to match the vendored Go release once example parity is
-   green and the remaining divergences above are accepted as final.
+1. **Land the `bubbletea-examples` working tree** — shard bumps
+   (`ultraviolet` `1.1.4`, `lipgloss` `2.0.4`, `colorprofile` `0.1.1`, the
+   `terminfo` fork, `ameba`, `crimage`, `mosaic`, `baked_file_system`) plus
+   formatter churn are uncommitted in that repo; commit them there, then bump
+   this repository's submodule pointer.
+2. **Re-derive the control-sequence fixture if either pin moves** —
+   `spec/parity/v2_control_sequences_spec.cr` was verified against
+   `vendor/bubbletea` `f9df43c` with ultraviolet `6b8d4ba` and `8ecbcf0`; the
+   spec records the recipe.
 
 ### Chunk status
 
@@ -72,6 +80,9 @@ examples before `v2.1.0` is tagged here.
 - `make test` — pass (157 examples, 0 failures)
 - `make check-parity` — pass (PARITY_DISCOVERY_BACKEND=regex)
 - `make parity-specs` — pass (4 examples, 0 failures)
+- `make build-examples` — pass after a forced rebuild (36 examples compile
+  against this `src/`; the 25 that need the `bubbles` shard are skipped by
+  design)
 - Ledgers: unchanged (613 port items, 573 source items, 40 tests)
 - The fixture in `spec/parity/v2_control_sequences_spec.cr` is re-derived from
   Go and verified against the pinned sources; see the spec's provenance note.
