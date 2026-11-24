@@ -4,6 +4,9 @@ require "../src/bubbletea"
 
 describe "Logging" do
   describe "log_to_file" do
+    # Port of Go test TestLogToFile. Note the divergence: Crystal has no
+    # process-wide default logger with Go's SetOutput/SetPrefix pair, so this
+    # only opens the file; `log_to_file_with` configures the caller's logger.
     it "logs to file with prefix" do
       temp_dir = "/tmp/bubbletea_test_#{Time.utc.to_unix}"
       Dir.mkdir(temp_dir)

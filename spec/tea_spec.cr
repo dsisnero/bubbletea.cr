@@ -273,6 +273,7 @@ describe "Tea" do
   end
 
   describe "Model" do
+    # Port of Go test TestTeaModel.
     it "runs basic program" do
       buf = IO::Memory.new
       input = IO::Memory.new("q")
@@ -294,6 +295,7 @@ describe "Tea" do
       buf.size.should be > 0
     end
 
+    # Port of Go test TestTeaQuit.
     it "quits on command" do
       buf = IO::Memory.new
       input = IO::Memory.new("")
@@ -320,6 +322,7 @@ describe "Tea" do
       err.should be_nil
     end
 
+    # Port of Go test TestTeaWaitQuit.
     it "waits for quit" do
       buf = IO::Memory.new
       input = IO::Memory.new("")
@@ -372,6 +375,7 @@ describe "Tea" do
       err.should be_nil
     end
 
+    # Port of Go test TestTeaWaitKill.
     it "waits for kill" do
       buf = IO::Memory.new
       input = IO::Memory.new("")
@@ -424,6 +428,7 @@ describe "Tea" do
       err.should be_a(Tea::ProgramKilledError)
     end
 
+    # Port of Go test TestTeaWithFilter.
     it "filters messages" do
       [0_u32, 1_u32, 2_u32].each do |prevent_count|
         buf = IO::Memory.new
@@ -460,6 +465,7 @@ describe "Tea" do
       end
     end
 
+    # Port of Go test TestTeaContext.
     it "handles context cancellation" do
       ctx = Tea::ExecutionContext.new
 
@@ -478,6 +484,7 @@ describe "Tea" do
       err.should be_a(Tea::ProgramKilledError)
     end
 
+    # Port of Go test TestTeaContextImplodeDeadlock.
     it "handles context implosion without deadlock" do
       ctx = Tea::ExecutionContext.new
 
@@ -496,6 +503,7 @@ describe "Tea" do
       err.should be_a(Tea::ProgramKilledError)
     end
 
+    # Port of Go test TestTeaContextBatchDeadlock.
     it "handles batch message without deadlock" do
       ctx = Tea::ExecutionContext.new
 
@@ -520,6 +528,7 @@ describe "Tea" do
       err.should be_a(Tea::ProgramKilledError)
     end
 
+    # Port of Go test TestTeaBatchMsg.
     it "handles batch messages" do
       buf = IO::Memory.new
       input = IO::Memory.new("")
@@ -550,6 +559,7 @@ describe "Tea" do
       model.counter.should eq 2
     end
 
+    # Port of Go test TestTeaSequenceMsg.
     it "handles sequence messages" do
       buf = IO::Memory.new
       input = IO::Memory.new("")
@@ -575,6 +585,7 @@ describe "Tea" do
       model.counter.should eq 2
     end
 
+    # Port of Go test TestTeaSequenceMsgWithBatchMsg.
     it "handles sequence with batch messages" do
       buf = IO::Memory.new
       input = IO::Memory.new("")
@@ -601,6 +612,7 @@ describe "Tea" do
       model.counter.should eq 3
     end
 
+    # Port of Go test TestTeaNestedSequenceMsg.
     it "handles nested sequence messages" do
       buf = IO::Memory.new
       input = IO::Memory.new("")
@@ -630,6 +642,7 @@ describe "Tea" do
       model.counter.should eq 5
     end
 
+    # Port of Go test TestTeaSend.
     it "sends messages" do
       model = TestModel.new
       program = Tea.new_program(
@@ -652,6 +665,7 @@ describe "Tea" do
       program.send(Tea::QuitMsg.new)
     end
 
+    # Port of Go test TestTeaNoRun.
     it "creates program without running" do
       buf = IO::Memory.new
       input = IO::Memory.new
@@ -663,6 +677,7 @@ describe "Tea" do
       program.should be_a(Tea::Program)
     end
 
+    # Port of Go test TestTeaPanic.
     it "handles panics" do
       model = TestModel.new
       program = Tea.new_program(

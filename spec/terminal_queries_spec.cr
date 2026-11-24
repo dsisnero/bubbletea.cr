@@ -95,6 +95,7 @@ describe "terminal queries without input" do
   # responses leak into the shell after exit.
   startup_query = Ansi::RequestModeSynchronizedOutput + Ansi::RequestModeUnicodeCore
 
+  # Port of Go test TestTeaNoCapabilityQueryWithoutInput.
   it "skips the startup capability query when input is disabled" do
     output = run_query_program(QuerySkipQuitModel.new, nil)
 
@@ -107,6 +108,7 @@ describe "terminal queries without input" do
     output.should contain(startup_query)
   end
 
+  # Port of Go test TestTeaNoTerminalQueriesWithoutInput.
   it "skips input-dependent commands when input is disabled" do
     output = run_query_program(QuerySkipBatchModel.new, nil)
 

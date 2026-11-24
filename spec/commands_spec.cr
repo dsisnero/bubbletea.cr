@@ -2,6 +2,7 @@ require "spec"
 require "../src/bubbletea"
 
 describe "Every" do
+  # Port of Go test TestEvery.
   it "returns expected message" do
     expected = "every ms"
     cmd = Tea.every(1.millisecond) { Tea.wrap(expected) }

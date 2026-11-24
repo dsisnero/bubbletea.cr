@@ -2,6 +2,7 @@ require "spec"
 require "../src/bubbletea"
 
 describe "Options" do
+  # Port of Go test TestOptions; its subtests map to the nested describes below.
   describe "output" do
     it "sets custom output" do
       buf = IO::Memory.new
