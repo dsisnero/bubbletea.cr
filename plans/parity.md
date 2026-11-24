@@ -36,7 +36,12 @@ Three real bugs surfaced on the way and are fixed here:
 
 The `bubbles` port was also fixed where the examples exposed it: `humanize_bytes`
 divided by 1024 and printed `KB` where Go's `go-humanize` is 1000-based
-(`131kB`), which was the whole `file_picker` difference.
+(`131kB`), which was the whole `file_picker` difference. Its `Textarea#prompt_view`
+returned the raw prompt when no prompt func was set, dropping
+`computedPrompt()`; Go applies it either way (`vendor/bubbles` v2.1.1
+`textarea.go:1462-1475`). That missing style made the renderer rewrite gutter
+cells Go skips, which was the entire `dynamic-textarea` gap; pinning
+`dsisnero/bubbles` main (`c933ae5`) closes it.
 
 Earlier in the same stretch the raw-OSC program-status fallback was deleted, the
 support query was split from the reply (`RequestProgramStatusSupportMsg`), and
@@ -46,32 +51,31 @@ the v2 control-sequence fixture was re-derived from Go.
 yet** and must not be until they are done. Everything landed so far is verified
 and pushed: the library gates are green, the 58 example goldens are generated
 from the pinned Go sources, and the submodule suite is 82 examples,
-0 failures, 14 pending. `program-status` and `dynamic-textarea` are now ported
-too — the former with a green golden, the latter recorded as `pending` on a
-renderer cell-skip difference.
+0 failures, 13 pending. `program-status` and `dynamic-textarea` are both ported
+with green goldens.
 
 **Next up (in order):**
 
 1. **Port the last upstream example** — `glamour` needs the `glamour` shard,
-   which has no Crystal port, so it is blocked until that exists. (`program-status`
-   and `dynamic-textarea` are ported; the latter's byte comparison is `pending`
-   on the renderer cell-skip gap below.)
+   which has no Crystal port, so it is blocked until that exists.
+   (`program-status` and `dynamic-textarea` are ported and green.)
 2. **Give the six placeholder specs a real capture** — `clickable`,
    `doom_fire`, `list_fancy`, `split_editors`, `textinputs` and
    `tui_daemon_combo` are `pending` with "capture harness not implemented yet",
    so those examples have no output coverage at all. `canvas` additionally
    needs `-Dpreview_mt -Dexecution_context`.
-3. **Close the five documented `pending` specs** — `focus_blur`
+3. **Close the four remaining documented `pending` specs** — `focus_blur`
    (`ultraviolet` has no IRM cell-insert fallback), `set_terminal_color` (Go
-   clears with EL0; this port moves right, erases, steps back),
-   `dynamic_textarea` (Go skips unchanged gutter cells with `CSI 2 C`; this
-   renderer rewrites them), and `textarea` / `paginator`, which capture a
-   scheduling-dependent frame count and need a normalized comparison instead of
-   byte equality. `file_picker` is green: `bubbles` now humanises sizes on the
-   same 1000 base as Go's `go-humanize`; note its golden embeds the size of the
-   fixture's `a_dir`, which the filesystem reports (exFAT says 131kB, APFS
-   says ~96B), so the fixture needs a normalization before the suite can run
-   on another volume.
+   clears with EL0; this port moves right, erases, steps back), and `textarea` /
+   `paginator`, which capture a scheduling-dependent frame count and need a
+   normalized comparison instead of byte equality. `file_picker` and
+   `dynamic_textarea` are green: `bubbles` now humanises sizes on the same 1000
+   base as Go's `go-humanize`, and applies `Textarea`'s prompt style the way
+   upstream does. Note `file_picker`'s golden embeds the size of the fixture's
+   `a_dir`, which the filesystem reports (exFAT says 131kB, APFS says ~96B), so
+   the fixture needs a normalization before the suite can run on another volume.
+   `space` also stays `pending` (high-volume styled block redraw stream), but its
+   golden is now reproducible from the pin.
 4. **Only then tag `v2.1.0`** — from this repository run `make format`,
    `make lint`, `make test`, `make check-parity`, `make parity-specs`, and
    `make build-examples`; in `bubbletea-examples`, with `lib/bubbletea` pinned
@@ -93,16 +97,18 @@ renderer cell-skip difference.
 | Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
 | Upstream v2.1.0 upgrade | Complete | [Plan](bubbletea-v2.1.0-update.md) |
 | Program Status Protocol | Complete | OSC 7501 types/encoder from `ansi`, replies typed by `ultraviolet` |
-| Example parity | 63 of 64 ported | Goldens generated from Go by `bubbletea-examples/goldens`; `glamour` blocked on its shard, 6 placeholder specs, 5 documented `pending` — see Next up |
+| Example parity | 63 of 64 ported | Goldens generated from Go by `bubbletea-examples/goldens`, now with `vendor/bubbles` replaced in so the oracle is the pinned widget source; `glamour` blocked on its shard, 6 placeholder specs, 4 documented `pending` — see Next up |
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
 ### Last known state (2026-11-24)
 
-- Dependencies: `ultraviolet` `1.1.4` (has shipped
-  `ProgramStatusSupportEvent` since `1.1.2`, and dropped the inline
-  `scrollHeight` machinery), `ansi` refreshed to `4625557` (the stale
-  `aa47d48` lock predated `Ansi.each_grapheme_cluster` and failed to compile).
+- Dependencies: `ultraviolet` `1.1.6` (root and submodule; `Terminal` is a
+  facade over `TerminalScreen`, which Bubble Tea does not use — its renderer is
+  built the way `vendor/bubbletea` `cursed_renderer.go` `reset()` builds it, so
+  patch releases need no renderer change), `ansi` refreshed to `4625557` (the
+  stale `aa47d48` lock predated `Ansi.each_grapheme_cluster` and failed to
+  compile), `bubbles` pinned to `c933ae5` on `main` (see below).
 - `make format` — pass (target now scoped to `src spec`; the submodule's `lib/`
   made the previous unscoped run check vendored shards)
 - `make lint` — pass (18 files, 0 findings)
@@ -113,13 +119,19 @@ renderer cell-skip difference.
   against this `src/`; the 25 that need the `bubbles` shard are skipped by
   design)
 - `bubbletea-examples` `crystal spec` (with `lib/bubbletea` pinned to this
-  repository's `HEAD`) — pass, 82 examples, 14 pending, 0 failures
+  repository's `HEAD`) — pass, 82 examples, 13 pending, 0 failures
 - Ledgers: port 372 `ported` / 1 `partial` / 240 `skipped` (example programs
   live in the submodule); source 336 `mapped` / 237 `skipped`; tests
   36 `ported` / 1 `partial` / 3 `skipped`
 - The fixture in `spec/parity/v2_control_sequences_spec.cr` is re-derived from
   Go and verified against the pinned sources; the example goldens are likewise
   produced by `bubbletea-examples/goldens`.
+- Golden rule worth keeping: a golden must be reproducible by its own harness.
+  `prevent_quit`'s was not — it matched bubbles v2.0.0, not the pin — because
+  the resolver served the registry's `bubbles` instead of `vendor/bubbles`.
+  `goldens/go.mod` now replaces both pinned Go modules, and
+  `python3 goldens/generate.py <name>` run twice is the cheapest staleness
+  check.
 
 ## Feature Roadmap
 
