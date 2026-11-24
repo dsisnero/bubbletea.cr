@@ -34,6 +34,10 @@ Three real bugs surfaced on the way and are fixed here:
 - `spec/pipe_no_input_parity_spec.cr` ran `examples/pipe.cr`, a path that does
   not exist, so it only passed its exit-code assertion.
 
+The `bubbles` port was also fixed where the examples exposed it: `humanize_bytes`
+divided by 1024 and printed `KB` where Go's `go-humanize` is 1000-based
+(`131kB`), which was the whole `file_picker` difference.
+
 Earlier in the same stretch the raw-OSC program-status fallback was deleted, the
 support query was split from the reply (`RequestProgramStatusSupportMsg`), and
 the v2 control-sequence fixture was re-derived from Go.
@@ -57,14 +61,17 @@ renderer cell-skip difference.
    `tui_daemon_combo` are `pending` with "capture harness not implemented yet",
    so those examples have no output coverage at all. `canvas` additionally
    needs `-Dpreview_mt -Dexecution_context`.
-3. **Close the six documented `pending` specs** — `file_picker` (`bubbles`
-   divides by 1024 where Go's `go-humanize` uses 1000), `focus_blur`
+3. **Close the five documented `pending` specs** — `focus_blur`
    (`ultraviolet` has no IRM cell-insert fallback), `set_terminal_color` (Go
    clears with EL0; this port moves right, erases, steps back),
    `dynamic_textarea` (Go skips unchanged gutter cells with `CSI 2 C`; this
    renderer rewrites them), and `textarea` / `paginator`, which capture a
    scheduling-dependent frame count and need a normalized comparison instead of
-   byte equality.
+   byte equality. `file_picker` is green: `bubbles` now humanises sizes on the
+   same 1000 base as Go's `go-humanize`; note its golden embeds the size of the
+   fixture's `a_dir`, which the filesystem reports (exFAT says 131kB, APFS
+   says ~96B), so the fixture needs a normalization before the suite can run
+   on another volume.
 4. **Only then tag `v2.1.0`** — from this repository run `make format`,
    `make lint`, `make test`, `make check-parity`, `make parity-specs`, and
    `make build-examples`; in `bubbletea-examples`, with `lib/bubbletea` pinned
@@ -86,7 +93,7 @@ renderer cell-skip difference.
 | Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
 | Upstream v2.1.0 upgrade | Complete | [Plan](bubbletea-v2.1.0-update.md) |
 | Program Status Protocol | Complete | OSC 7501 types/encoder from `ansi`, replies typed by `ultraviolet` |
-| Example parity | 63 of 64 ported | Goldens generated from Go by `bubbletea-examples/goldens`; `glamour` blocked on its shard, 6 placeholder specs, 6 documented `pending` — see Next up |
+| Example parity | 63 of 64 ported | Goldens generated from Go by `bubbletea-examples/goldens`; `glamour` blocked on its shard, 6 placeholder specs, 5 documented `pending` — see Next up |
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
