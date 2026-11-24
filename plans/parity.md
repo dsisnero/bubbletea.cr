@@ -38,23 +38,35 @@ Earlier in the same stretch the raw-OSC program-status fallback was deleted, the
 support query was split from the reply (`RequestProgramStatusSupportMsg`), and
 the v2 control-sequence fixture was re-derived from Go.
 
-**Current focus:** tag `v2.1.0`.
+**Current focus:** close the open parity items below; **`v2.1.0` is not tagged
+yet** and must not be until they are done. Everything landed so far is verified
+and pushed: the library gates are green, the 58 example goldens are generated
+from the pinned Go sources, and the submodule suite is 79 examples,
+0 failures, 14 pending.
 
 **Next up (in order):**
 
-1. **Port the last three upstream examples** — `program-status` (it demos this
-   release's OSC 7501 work), `dynamic-textarea`, and `glamour` (needs the
-   glamour shard).
-2. **Close the cross-repo gaps behind the five `pending` example specs.**
-   `bubbles`' `humanize_bytes` divides by 1024 where Go's `go-humanize` is
-   1000-based (`file_picker`); `ultraviolet` never takes Go's IRM cell-insert
-   fallback (`focus_blur`) or its EL0 clear idiom (`set_terminal_color`);
-   `textarea` and `paginator` capture a scheduling-dependent frame count and
-   need a normalized comparison rather than byte equality.
-3. **Give six examples any output coverage** — `clickable`, `doom_fire`,
-   `list_fancy`, `split_editors`, `textinputs` and `tui_daemon_combo` still have
-   placeholder `pending` specs; `canvas` needs `-Dpreview_mt`.
-4. **Re-derive the control-sequence fixture if either pin moves** —
+1. **Port the three unported upstream examples** — `program-status` (it demos
+   this release's OSC 7501 work), `dynamic-textarea`, and `glamour` (needs the
+   glamour shard). Each needs `bubbletea-examples/src/<name>.cr`, a harness at
+   `bubbletea-examples/goldens/<name>/harness.go`, a parity spec, and a golden
+   from `python3 goldens/generate.py <name>`.
+2. **Give the six placeholder specs a real capture** — `clickable`,
+   `doom_fire`, `list_fancy`, `split_editors`, `textinputs` and
+   `tui_daemon_combo` are `pending` with "capture harness not implemented yet",
+   so those examples have no output coverage at all. `canvas` additionally
+   needs `-Dpreview_mt -Dexecution_context`.
+3. **Close the five documented `pending` specs** — `file_picker` (`bubbles`
+   divides by 1024 where Go's `go-humanize` uses 1000), `focus_blur`
+   (`ultraviolet` has no IRM cell-insert fallback), `set_terminal_color` (Go
+   clears with EL0; this port moves right, erases, steps back), and `textarea`
+   / `paginator`, which capture a scheduling-dependent frame count and need a
+   normalized comparison instead of byte equality.
+4. **Only then tag `v2.1.0`** — from this repository run `make format`,
+   `make lint`, `make test`, `make check-parity`, `make parity-specs`, and
+   `make build-examples`; in `bubbletea-examples`, with `lib/bubbletea` pinned
+   to this repository's `HEAD`, run `crystal spec`.
+5. **Re-derive the control-sequence fixture if either pin moves** —
    `spec/parity/v2_control_sequences_spec.cr` was verified against
    `vendor/bubbletea` `f9df43c` with ultraviolet `6b8d4ba` and `8ecbcf0`; the
    spec records the recipe.
@@ -71,7 +83,7 @@ the v2 control-sequence fixture was re-derived from Go.
 | Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
 | Upstream v2.1.0 upgrade | Complete | [Plan](bubbletea-v2.1.0-update.md) |
 | Program Status Protocol | Complete | OSC 7501 types/encoder from `ansi`, replies typed by `ultraviolet` |
-| Example parity | Complete (61 examples) | Goldens generated from Go by `bubbletea-examples/goldens`; 3 upstream examples unported, 14 specs `pending` with reasons |
+| Example parity | 61 of 64 ported | Goldens generated from Go by `bubbletea-examples/goldens`; 3 examples unported, 6 placeholder specs, 5 documented `pending` — see Next up |
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
