@@ -370,8 +370,9 @@ module Tea
       cancel_signal = Channel(Nil).new(1)
       @finished = Channel(Nil).new
       @shutdown_done = false
-      @msgs = Channel(Msg).new
-      @cmds = Channel(Cmd).new
+      # Reuse the channels created in initialize: messages and commands may be
+      # sent before run (Go's Send blocks on an unbuffered channel until the
+      # loop starts), and recreating them here dropped everything queued.
       @errs = Channel(Exception).new(1)
 
       run_context.on_cancel do

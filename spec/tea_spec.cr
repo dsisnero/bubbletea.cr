@@ -665,6 +665,32 @@ describe "Tea" do
       program.send(Tea::QuitMsg.new)
     end
 
+    it "delivers messages sent before the program starts" do
+      # Go's Program.Send blocks on the loop's channel, so a message sent before
+      # Run is delivered once the loop starts. Recreating the channel inside run
+      # dropped everything queued before the loop existed.
+      buf = IO::Memory.new
+      model = TestModel.new
+      program = Tea.new_program(
+        model,
+        Tea.with_input(IO::Memory.new("")),
+        Tea.with_output(buf),
+        Tea.without_signals,
+      )
+
+      program.send(IncrementMsg.new)
+
+      spawn do
+        sleep 50.milliseconds
+        program.send(Tea::QuitMsg.new)
+      end
+
+      _, err = program.run
+
+      err.should be_nil
+      model.counter.should eq 1
+    end
+
     # Port of Go test TestTeaNoRun.
     it "creates program without running" do
       buf = IO::Memory.new
