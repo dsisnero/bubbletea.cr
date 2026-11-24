@@ -18,55 +18,43 @@ inventory_dir: "plans/inventory/"
 
 ## Where we are
 
-**Recently completed:** the baseline test-ledger audit. All 28 `missing` rows
-were mapped: 26 to existing Crystal specs and 2 marked `skipped` because the
-upstream example tests are commented out/skipped. One uncovered case
-(`TestTeaGoroutinePanic`) gained a spec in `spec/tea_spec.cr`. The ledger is
-now 37 `ported`, 3 `skipped`, 0 `missing`. The `v1.1.2` bump of `ultraviolet`
-also broke `spec/parity/v2_control_sequences_spec.cr` on a frame boundary; that
-is resolved: the expected bytes were stale, captured from ultraviolet `524a660`
-before upstream removed its inline `scrollHeight` behaviour, so the fixture was
-re-derived from the pinned Go sources and the spec records the recipe. Go
-emits `<CR><ESC>[30C` at that boundary, and `make test` is green with the
-Go-derived fixture. The local lock is at ultraviolet `v1.1.4` (no commit
-needed — `shard.lock` is untracked); see that repo's `plans/parity.md`. The
-raw-OSC program-status fallback is also gone: `translate_input_event` maps
-`Ultraviolet::ProgramStatusSupportEvent` directly, as Go's `input.go` does, and
-the support query now travels as `RequestProgramStatusSupportMsg` so a reply no
-longer re-triggers the query.
+**Recently completed:** the `bubbletea-examples` refresh. Every parity golden is
+now generated from the pinned Go sources by `bubbletea-examples/goldens` — a
+small Go module with one harness per example — the submodule builds against this
+repository's `HEAD`, and its suite reports 79 examples, 0 failures, 14 pending.
+Three real bugs surfaced on the way and are fixed here:
 
-**Current focus:** tagging `v2.1.0` to match the vendored Go release. Every gate
-is green, including a forced `make build-examples` rebuild against this `src/`
-(36 examples compile; the 25 `bubbles`-dependent ones are skipped by design),
-so the library itself is ready barring review.
+- `Program#run` recreated its `msgs`/`cmds` channels, so anything sent between
+  `new_program` and `run` was dropped. Go delivers those messages; the event
+  loop now keeps the channels `initialize` builds, with a regression spec.
+- `start_renderer` slept `interval` and then did the flush work inside the loop,
+  so repaints drifted to ~22-25ms where Go's `time.Ticker` holds 16.7ms, which
+  changed how many frames `paginator` and `spinner` emit. The renderer now
+  tracks a deadline and drops missed ticks.
+- `spec/pipe_no_input_parity_spec.cr` ran `examples/pipe.cr`, a path that does
+  not exist, so it only passed its exit-code assertion.
+
+Earlier in the same stretch the raw-OSC program-status fallback was deleted, the
+support query was split from the reply (`RequestProgramStatusSupportMsg`), and
+the v2 control-sequence fixture was re-derived from Go.
+
+**Current focus:** tag `v2.1.0`.
 
 **Next up (in order):**
 
-1. **Refresh `bubbletea-examples` before it can be called green.**
-   - Its 58 `spec/golden/*.go.golden` captures predate the current renderer:
-     they push keyboard enhancements with `CSI = 1;1 u` and pop with
-     `CSI = 0;1 u`, and end an inline frame with `\r\n\n`, while Go
-     (f9df43c with ultraviolet `6b8d4ba`/`8ecbcf0`) emits `CSI > 1 u`,
-     `CSI < u` and `\r`. Same drift as the control-sequence fixture, so
-     regenerate them from Go, never from this port.
-   - 61 of the 64 upstream examples are ported; `glamour` needs a shard this
-     project does not depend on, and `dynamic-textarea` and `program-status`
-     are still unported (the last one demos this release's OSC 7501 work).
-   - Measured against this repository's `HEAD`: `crystal spec` in the submodule
-     reports 79 examples, 55 failures, 2 errors, 9 pending. 55 of those are
-     byte-golden comparisons (`spec/golden/*.go.golden`), one is
-     `spec/pipe_no_input_parity_spec.cr` running `examples/pipe.cr`, a path that
-     does not exist (the example lives at `src/pipe.cr`, so the spec only
-     passes its exit-code assertion by accident), and one is
-     `spec/list_default_teatest_spec.cr` timing out in `WaitFor` after its
-     filter keypress.
-   - The working tree's lock was internally inconsistent (`ultraviolet` `1.1.4`
-     against an `ansi` commit that predates `Ansi::ProgramStatus`, and
-     `bubbles` resolved to a dev commit whose `cursor.cr` required a
-     non-existent `../../../../src/bubbletea`). Resolve `bubbles` to its
-     `2.1.2` tag and `ansi` to `4625557`, which is what makes the examples
-     compile against this repository's `HEAD`.
-2. **Re-derive the control-sequence fixture if either pin moves** —
+1. **Port the last three upstream examples** — `program-status` (it demos this
+   release's OSC 7501 work), `dynamic-textarea`, and `glamour` (needs the
+   glamour shard).
+2. **Close the cross-repo gaps behind the five `pending` example specs.**
+   `bubbles`' `humanize_bytes` divides by 1024 where Go's `go-humanize` is
+   1000-based (`file_picker`); `ultraviolet` never takes Go's IRM cell-insert
+   fallback (`focus_blur`) or its EL0 clear idiom (`set_terminal_color`);
+   `textarea` and `paginator` capture a scheduling-dependent frame count and
+   need a normalized comparison rather than byte equality.
+3. **Give six examples any output coverage** — `clickable`, `doom_fire`,
+   `list_fancy`, `split_editors`, `textinputs` and `tui_daemon_combo` still have
+   placeholder `pending` specs; `canvas` needs `-Dpreview_mt`.
+4. **Re-derive the control-sequence fixture if either pin moves** —
    `spec/parity/v2_control_sequences_spec.cr` was verified against
    `vendor/bubbletea` `f9df43c` with ultraviolet `6b8d4ba` and `8ecbcf0`; the
    spec records the recipe.
@@ -83,7 +71,7 @@ so the library itself is ready barring review.
 | Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
 | Upstream v2.1.0 upgrade | Complete | [Plan](bubbletea-v2.1.0-update.md) |
 | Program Status Protocol | Complete | OSC 7501 types/encoder from `ansi`, replies typed by `ultraviolet` |
-| Example parity | In progress | 61 of 64 upstream examples ported; goldens predate the current renderer (see Next up) |
+| Example parity | Complete (61 examples) | Goldens generated from Go by `bubbletea-examples/goldens`; 3 upstream examples unported, 14 specs `pending` with reasons |
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
@@ -96,17 +84,20 @@ so the library itself is ready barring review.
 - `make format` — pass (target now scoped to `src spec`; the submodule's `lib/`
   made the previous unscoped run check vendored shards)
 - `make lint` — pass (18 files, 0 findings)
-- `make test` — pass (157 examples, 0 failures)
+- `make test` — pass (160 examples, 0 failures)
 - `make check-parity` — pass (PARITY_DISCOVERY_BACKEND=regex)
 - `make parity-specs` — pass (4 examples, 0 failures)
 - `make build-examples` — pass after a forced rebuild (36 examples compile
   against this `src/`; the 25 that need the `bubbles` shard are skipped by
   design)
-- Ledgers: port 373 `ported` / 240 `skipped` (example programs live in the
-  submodule); source 336 `mapped` / 237 `skipped`; tests 37 `ported` /
-  3 `skipped`
+- `bubbletea-examples` `crystal spec` (with `lib/bubbletea` pinned to this
+  repository's `HEAD`) — pass, 79 examples, 14 pending, 0 failures
+- Ledgers: port 372 `ported` / 1 `partial` / 240 `skipped` (example programs
+  live in the submodule); source 336 `mapped` / 237 `skipped`; tests
+  36 `ported` / 1 `partial` / 3 `skipped`
 - The fixture in `spec/parity/v2_control_sequences_spec.cr` is re-derived from
-  Go and verified against the pinned sources; see the spec's provenance note.
+  Go and verified against the pinned sources; the example goldens are likewise
+  produced by `bubbletea-examples/goldens`.
 
 ## Feature Roadmap
 

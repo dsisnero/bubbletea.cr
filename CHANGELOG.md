@@ -33,6 +33,12 @@ Upstream Go bubbletea v2.0.10 → v2.1.0.
   no longer re-sends the OSC 7501 query. The query travels as the internal
   `RequestProgramStatusSupportMsg`, mirroring Go's unexported
   `programStatusSupportMsg`.
+- Messages sent between `new_program` and `Program#run` are delivered instead
+  of dropped: the event loop keeps the message and command channels the program
+  builds, matching Go's blocking `Send`.
+- The renderer flushes on Go's fixed frame schedule. Sleeping the frame interval
+  and then doing the work pushed every repaint back by the work time (~16.7ms
+  became ~22-25ms), which changed how many frames animated views emitted.
 
 ### Notes
 
