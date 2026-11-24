@@ -38,15 +38,26 @@ longer re-triggers the query.
 **Current focus:** tagging `v2.1.0` to match the vendored Go release. Every gate
 is green, including a forced `make build-examples` rebuild against this `src/`
 (36 examples compile; the 25 `bubbles`-dependent ones are skipped by design),
-so the release is ready barring review.
+so the library itself is ready barring review.
 
 **Next up (in order):**
 
-1. **Land the `bubbletea-examples` working tree** — shard bumps
-   (`ultraviolet` `1.1.4`, `lipgloss` `2.0.4`, `colorprofile` `0.1.1`, the
-   `terminfo` fork, `ameba`, `crimage`, `mosaic`, `baked_file_system`) plus
-   formatter churn are uncommitted in that repo; commit them there, then bump
-   this repository's submodule pointer.
+1. **Refresh `bubbletea-examples` before it can be called green.**
+   - Its 58 `spec/golden/*.go.golden` captures predate the current renderer:
+     they push keyboard enhancements with `CSI = 1;1 u` and pop with
+     `CSI = 0;1 u`, and end an inline frame with `\r\n\n`, while Go
+     (f9df43c with ultraviolet `6b8d4ba`/`8ecbcf0`) emits `CSI > 1 u`,
+     `CSI < u` and `\r`. Same drift as the control-sequence fixture, so
+     regenerate them from Go, never from this port.
+   - 61 of the 64 upstream examples are ported; `glamour` needs a shard this
+     project does not depend on, and `dynamic-textarea` and `program-status`
+     are still unported (the last one demos this release's OSC 7501 work).
+   - The working tree's lock was internally inconsistent (`ultraviolet` `1.1.4`
+     against an `ansi` commit that predates `Ansi::ProgramStatus`, and
+     `bubbles` resolved to a dev commit whose `cursor.cr` required a
+     non-existent `../../../../src/bubbletea`). Resolve `bubbles` to its
+     `2.1.2` tag and `ansi` to `4625557`, which is what makes the examples
+     compile against this repository's `HEAD`.
 2. **Re-derive the control-sequence fixture if either pin moves** —
    `spec/parity/v2_control_sequences_spec.cr` was verified against
    `vendor/bubbletea` `f9df43c` with ultraviolet `6b8d4ba` and `8ecbcf0`; the
@@ -64,7 +75,7 @@ so the release is ready barring review.
 | Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
 | Upstream v2.1.0 upgrade | Complete | [Plan](bubbletea-v2.1.0-update.md) |
 | Program Status Protocol | Complete | OSC 7501 types/encoder from `ansi`, replies typed by `ultraviolet` |
-| Example parity | Complete | `spec/parity/`, `spec/*_parity_spec.cr` |
+| Example parity | In progress | 61 of 64 upstream examples ported; goldens predate the current renderer (see Next up) |
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
