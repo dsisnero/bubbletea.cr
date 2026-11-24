@@ -1059,13 +1059,30 @@ module Tea
       renderer.start
 
       spawn do
+        # Go uses time.NewTicker, which keeps a fixed schedule: work done in a
+        # tick does not push the next tick back, and missed ticks are dropped
+        # rather than replayed. A plain `timeout(interval)` loop drifts by the
+        # work time, which changed the number of repaints an example emits.
+        next_flush = Time.monotonic + interval
+
         loop do
+          now = Time.monotonic
+          wait = next_flush - now
+          wait = 0.seconds if wait.negative?
+
           select
           when done.receive
             break
-          when timeout(interval)
+          when timeout(wait)
             flush
             renderer.flush(false)
+
+            next_flush += interval
+            now = Time.monotonic
+            if next_flush <= now
+              # Behind schedule: reschedule from now and drop the missed ticks.
+              next_flush = now + interval
+            end
           end
         end
       end
