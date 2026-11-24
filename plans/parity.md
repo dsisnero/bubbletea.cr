@@ -21,7 +21,7 @@ inventory_dir: "plans/inventory/"
 **Recently completed:** the `bubbletea-examples` refresh. Every parity golden is
 now generated from the pinned Go sources by `bubbletea-examples/goldens` — a
 small Go module with one harness per example — the submodule builds against this
-repository's `HEAD`, and its suite reports 82 examples, 0 failures, 15 pending.
+repository's `HEAD`, and its suite reports 82 examples, 0 failures, 14 pending.
 Three real bugs surfaced on the way and are fixed here:
 
 - `Program#run` recreated its `msgs`/`cmds` channels, so anything sent between
@@ -46,7 +46,7 @@ the v2 control-sequence fixture was re-derived from Go.
 yet** and must not be until they are done. Everything landed so far is verified
 and pushed: the library gates are green, the 58 example goldens are generated
 from the pinned Go sources, and the submodule suite is 82 examples,
-0 failures, 15 pending. `program-status` and `dynamic-textarea` are now ported
+0 failures, 14 pending. `program-status` and `dynamic-textarea` are now ported
 too — the former with a green golden, the latter recorded as `pending` on a
 renderer cell-skip difference.
 
@@ -113,7 +113,7 @@ renderer cell-skip difference.
   against this `src/`; the 25 that need the `bubbles` shard are skipped by
   design)
 - `bubbletea-examples` `crystal spec` (with `lib/bubbletea` pinned to this
-  repository's `HEAD`) — pass, 82 examples, 15 pending, 0 failures
+  repository's `HEAD`) — pass, 82 examples, 14 pending, 0 failures
 - Ledgers: port 372 `ported` / 1 `partial` / 240 `skipped` (example programs
   live in the submodule); source 336 `mapped` / 237 `skipped`; tests
   36 `ported` / 1 `partial` / 3 `skipped`
