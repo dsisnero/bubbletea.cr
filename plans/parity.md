@@ -22,28 +22,25 @@ inventory_dir: "plans/inventory/"
 were mapped: 26 to existing Crystal specs and 2 marked `skipped` because the
 upstream example tests are commented out/skipped. One uncovered case
 (`TestTeaGoroutinePanic`) gained a spec in `spec/tea_spec.cr`. The ledger is
-now 37 `ported`, 3 `skipped`, 0 `missing`.
+now 37 `ported`, 3 `skipped`, 0 `missing`. The `v1.1.2` bump of `ultraviolet`
+also broke `spec/parity/v2_control_sequences_spec.cr` on a frame boundary; that
+is resolved: the expected bytes were stale, captured from ultraviolet `524a660`
+before upstream removed its inline `scrollHeight` behaviour, so the fixture was
+re-derived from the pinned Go sources and the spec records the recipe. Go
+emits `<CR><ESC>[30C` at that boundary, and `make test` is green with the
+Go-derived fixture. The local lock is at ultraviolet `v1.1.4` (no commit
+needed — `shard.lock` is untracked); see that repo's `plans/parity.md`.
 
-**Current focus:** the `v1.1.2` bump of `ultraviolet` broke one Go-fixture spec.
-`spec/parity/v2_control_sequences_spec.cr` failed on a frame boundary: it
-expected `<CR><LF><ESC>[A<ESC>[30C`, the installed renderer emitted
-`<CR><ESC>[30C`. **Resolved:** the expected bytes were stale, captured from
-ultraviolet `524a660` before upstream removed its inline `scrollHeight`
-behaviour; Go built from the vendored sources (and from the pinned Go
-ultraviolet) emits `<CR><ESC>[30C`. The fixture is re-derived from Go and the
-spec records that provenance; ultraviolet `v1.1.4` also dropped the port's own
-leftover `scrollHeight` machinery. See that repo's `plans/parity.md`.
+**Current focus:** delete the raw-OSC program-status fallback. `ultraviolet`
+has shipped `ProgramStatusSupportEvent` since `v1.1.2`, so
+`ProgramStatusSupport.reply?` and the `UnknownOscEvent` branch are dead code.
+Steps are in [shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md).
 
 **Next up (in order):**
 
-1. **Bump to ultraviolet `v1.1.4`** — `shards update ultraviolet`, then
-   `make test` must stay green with the Go-derived fixture.
-2. **Delete the raw-OSC fallback** — `v1.1.2` ships
-   `ProgramStatusSupportEvent`, so `ProgramStatusSupport.reply?` and the
-   `UnknownOscEvent` branch are dead code. Steps are in
-   [shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md).
-3. **Keep example parity green** in the `bubbletea-examples` submodule.
-4. **Tag `v2.1.0`** to match the vendored Go release once 1–3 are green.
+1. **Keep example parity green** in the `bubbletea-examples` submodule.
+2. **Tag `v2.1.0`** to match the vendored Go release once 1 is green and the
+   fallback removal has landed.
 
 ### Chunk status
 
@@ -63,17 +60,19 @@ leftover `scrollHeight` machinery. See that repo's `plans/parity.md`.
 
 ### Last known state (2026-11-23)
 
-- Dependency bump: `ultraviolet` `1.1.2` (first tag that ships
-  `ProgramStatusSupportEvent`), `ansi` refreshed to `4625557` (the stale
+- Dependencies: `ultraviolet` `1.1.4` (has shipped
+  `ProgramStatusSupportEvent` since `1.1.2`, and dropped the inline
+  `scrollHeight` machinery), `ansi` refreshed to `4625557` (the stale
   `aa47d48` lock predated `Ansi.each_grapheme_cluster` and failed to compile).
 - `make format` — pass (target now scoped to `src spec`; the submodule's `lib/`
   made the previous unscoped run check vendored shards)
 - `make lint` — pass (18 files, 0 findings)
-- `make test` — **1 failure**: `spec/parity/v2_control_sequences_spec.cr:43`
-  (`v2 control sequence parity`), the inline-renderer drift described above
+- `make test` — pass (157 examples, 0 failures)
 - `make check-parity` — pass (PARITY_DISCOVERY_BACKEND=regex)
+- `make parity-specs` — pass (4 examples, 0 failures)
 - Ledgers: unchanged (613 port items, 573 source items, 40 tests)
-- `make parity-specs` — fails on the same spec
+- The fixture in `spec/parity/v2_control_sequences_spec.cr` is re-derived from
+  Go and verified against the pinned sources; see the spec's provenance note.
 
 ## Feature Roadmap
 
@@ -290,7 +289,7 @@ shutdown fix.
 | `signals_unix.go`, `signals_windows.go` | Absorbed into `src/tea.cr` via Crystal `Signal` module | Crystal's signal handling is idiomatic and equivalent |
 | `termios_bsd.go`, `termios_other.go`, `termios_unix.go`, `termios_windows.go` | Delegated to `ultraviolet` shard | Ultraviolet provides equivalent terminal raw-mode and size APIs |
 | `tty_windows.go` | Not ported (Crystal's Windows TTY is OS-level) | Handled by ultraviolet on Windows |
-| `programstatus.go` support reply | Typed `ProgramStatusSupportEvent` when available; raw OSC fallback otherwise | `ultraviolet` `main` has the decoder, but no release tag includes it; see `shards_issues/ultraviolet.1.md` |
+| `programstatus.go` support reply | Typed `ProgramStatusSupportEvent` when available; raw OSC fallback otherwise | The decoder ships since `ultraviolet` `v1.1.2`, so the fallback is dead code pending removal; see `shards_issues/ultraviolet.1.md` |
 | Go signal-goroutine shutdown fix | Guarded detached fibers in `src/tea.cr` | Crystal traps already run off-fiber; no blocking shutdown path to fix |
 
 ## Verification

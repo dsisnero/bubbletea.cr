@@ -1,7 +1,7 @@
 # ultraviolet.1 — Program Status Protocol (OSC 7501) decoder support
 
 **Shard:** `ultraviolet` (`github.com/dsisnero/ultraviolet`)
-**Pinned version:** `1.1.2` (`shard.lock`)
+**Pinned version:** `1.1.4` (`shard.lock`)
 **Upstream reference:** `github.com/charmbracelet/ultraviolet` commit
 `6b8d4baf91b4` (2026-10-08), used by bubbletea v2.1.0
 **Local tracking number:** 1 (no upstream issue filed yet)
