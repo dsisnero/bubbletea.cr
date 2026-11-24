@@ -76,11 +76,16 @@ with green goldens.
    then flip the spec to `it`. `doom_fire` and `list_fancy` also need the RNG
    convention below.
 
-   **Do this first (shared prerequisite):** document how harnesses pin Go's
-   global RNG (`GODEBUG=randseednop=0` plus `rand.Seed`), since `doom_fire`,
-   `list_fancy` and the already-pending `list_fancy_h_a` all depend on it.
-   Nothing else blocks the six rewrites; `lib/bubbletea` in the submodule is
-   verified identical to this repository's `src/`, so specs run against `HEAD`.
+   **Do this first (shared prerequisite):** `doom_fire`, `list_fancy` and the
+   already-pending `list_fancy_h_a` all put RNG output in the frame, so parity
+   needs Crystal to replay Go's `math/rand` v1 stream (`rngSource`: 607-word
+   lagged Fibonacci seeded via `seedrand`), not just a seeded `Random`. Land one
+   shared helper in the specs and prove it against the existing `list_fancy_h_a`
+   golden before porting the two RNG examples. `generate.py` now forces
+   `GODEBUG=randseednop=0`, so the Go side is reproducible regardless of the
+   caller. Nothing else blocks the six rewrites; `lib/bubbletea` in the
+   submodule is verified identical to this repository's `src/`, so specs run
+   against `HEAD`.
 
 2. **Port the last upstream example** — `glamour` needs the `glamour` shard,
    which has no Crystal port, so it is blocked until that exists.
@@ -113,6 +118,22 @@ with green goldens.
    `spec/parity/v2_control_sequences_spec.cr` was verified against
    `vendor/bubbletea` `f9df43c` with ultraviolet `6b8d4ba` and `8ecbcf0`; the
    spec records the recipe.
+
+### Known shard bugs (fixed outside this repository)
+
+`lib/` is patched and released separately, so these are recorded here rather
+than fixed in place. Both were found while porting `textinputs`.
+
+- **`ultraviolet` renderer, `NoTTY` profile: styled spaces are not blank.** A
+  space cell carrying an SGR reverse attribute is kept as non-blank, so the row
+  is painted one cell wider than Go's, which trims it. Repro:
+  `crystal spec spec/textinputs_parity_spec.cr` in `bubbletea-examples` — the
+  golden has `> hi` where this port emits `> hi `. The example is not at fault:
+  its view is Go's token for token (37 tokens, identical cells and styles).
+- **`lipgloss`/`colorprofile` colour encoding.** The port emits true colour
+  (`38;2;88;88;88`) where Go emits the indexed form (`38;5;240`) for the same
+  colour. Invisible under `NoTTY` captures, but it changes bytes wherever a
+  colour profile is active.
 
 ### Chunk status
 
