@@ -23,3 +23,5 @@
 
 # npm tooling (tree-sitter parsers for local docs tooling)
 /node_modules/
+/package.json
+/package-lock.json
