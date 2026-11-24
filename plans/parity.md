@@ -52,6 +52,14 @@ so the library itself is ready barring review.
    - 61 of the 64 upstream examples are ported; `glamour` needs a shard this
      project does not depend on, and `dynamic-textarea` and `program-status`
      are still unported (the last one demos this release's OSC 7501 work).
+   - Measured against this repository's `HEAD`: `crystal spec` in the submodule
+     reports 79 examples, 55 failures, 2 errors, 9 pending. 55 of those are
+     byte-golden comparisons (`spec/golden/*.go.golden`), one is
+     `spec/pipe_no_input_parity_spec.cr` running `examples/pipe.cr`, a path that
+     does not exist (the example lives at `src/pipe.cr`, so the spec only
+     passes its exit-code assertion by accident), and one is
+     `spec/list_default_teatest_spec.cr` timing out in `WaitFor` after its
+     filter keypress.
    - The working tree's lock was internally inconsistent (`ultraviolet` `1.1.4`
      against an `ansi` commit that predates `Ansi::ProgramStatus`, and
      `bubbles` resolved to a dev commit whose `cursor.cr` required a
