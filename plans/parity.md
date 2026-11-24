@@ -21,7 +21,7 @@ inventory_dir: "plans/inventory/"
 **Recently completed:** the `bubbletea-examples` refresh. Every parity golden is
 now generated from the pinned Go sources by `bubbletea-examples/goldens` — a
 small Go module with one harness per example — the submodule builds against this
-repository's `HEAD`, and its suite reports 82 examples, 0 failures, 14 pending.
+repository's `HEAD`, and its suite reports 82 examples, 0 failures, 12 pending.
 Three real bugs surfaced on the way and are fixed here:
 
 - `Program#run` recreated its `msgs`/`cmds` channels, so anything sent between
@@ -51,24 +51,26 @@ the v2 control-sequence fixture was re-derived from Go.
 yet** and must not be until they are done. Everything landed so far is verified
 and pushed: the library gates are green, the 58 example goldens are generated
 from the pinned Go sources, and the submodule suite is 82 examples,
-0 failures, 13 pending. `program-status` and `dynamic-textarea` are both ported
+0 failures, 12 pending. `program-status` and `dynamic-textarea` are both ported
 with green goldens.
 
 **Next up (in order):**
 
-1. **Port the six approximation examples properly** — `clickable`, `doom_fire`,
-   `list_fancy`, `split_editors`, `textinputs` and `tui_daemon_combo` are not
+1. **Port the five remaining approximation examples properly** — `clickable`,
+   `doom_fire`, `list_fancy`, `split_editors` and `tui_daemon_combo` are not
    missing a capture harness; they are *approximations* of the Go example, so
    there is nothing faithful to capture. Line counts against the pin:
 
    | example | Crystal | Go | main gaps |
    | --- | --- | --- | --- |
-   | `textinputs` | 72 | 196 | textinput widgets, lipgloss chrome |
    | `tui_daemon_combo` | 67 | 139 | daemon/combo composition |
    | `split_editors` | 78 | 235 | two textareas, focus handling, lipgloss |
    | `clickable` | 277 | 446 | lipgloss rounded borders/colors/padding, `ksuid`, random words (Crystal draws ASCII `+--+`) |
    | `doom_fire` | 116 | 133 | palette/rand + tick pacing |
    | `list_fancy` | 317 | 476 | list delegate/pagination styling |
+
+   `textinputs` is done (ported, green, one commit) and is the shape the rest
+   should follow.
 
    Order the work smallest-first and take one example per commit: rewrite the
    example against `vendor/bubbletea` at the pin, then a harness in
@@ -83,7 +85,7 @@ with green goldens.
    shared helper in the specs and prove it against the existing `list_fancy_h_a`
    golden before porting the two RNG examples. `generate.py` now forces
    `GODEBUG=randseednop=0`, so the Go side is reproducible regardless of the
-   caller. Nothing else blocks the six rewrites; `lib/bubbletea` in the
+   caller. Nothing else blocks the five rewrites; `lib/bubbletea` in the
    submodule is verified identical to this repository's `src/`, so specs run
    against `HEAD`.
 
@@ -121,19 +123,26 @@ with green goldens.
 
 ### Known shard bugs (fixed outside this repository)
 
-`lib/` is patched and released separately, so these are recorded here rather
-than fixed in place. Both were found while porting `textinputs`.
+`lib/` is patched and released separately, so these are written up in
+`shards_issues/<shard>.<n>.md` — with a minimal Crystal-only repro, the Go
+reference behaviour, root cause at `file:line` and a suggested fix — rather than
+fixed in place. Update the file when a fix lands, then flip the spec.
 
-- **`ultraviolet` renderer, `NoTTY` profile: styled spaces are not blank.** A
-  space cell carrying an SGR reverse attribute is kept as non-blank, so the row
-  is painted one cell wider than Go's, which trims it. Repro:
-  `crystal spec spec/textinputs_parity_spec.cr` in `bubbletea-examples` — the
-  golden has `> hi` where this port emits `> hi `. The example is not at fault:
-  its view is Go's token for token (37 tokens, identical cells and styles).
-- **`lipgloss`/`colorprofile` colour encoding.** The port emits true colour
-  (`38;2;88;88;88`) where Go emits the indexed form (`38;5;240`) for the same
-  colour. Invisible under `NoTTY` captures, but it changes bytes wherever a
-  colour profile is active.
+- **`shards_issues/bubbles.1.md` — FIXED in `bubbles` `v2.2.2`.**
+  `Viewport.parseMatches` desynced on any non-ASCII content, so search
+  highlights were dropped or misplaced (the port advanced a `String` by
+  characters where Go advances bytes). It is now `remaining.byte_slice(...)`, and
+  `spec/pager_parity_spec.cr` is back to `it` and green (1795-byte golden).
+- **`shards_issues/lipgloss.1.md`** — `Style#render` converts indexed colours to
+  RGB under the `TrueColor` profile, so `Color("240")` renders `38;2;88;88;88`
+  where Go renders `38;5;240`. Invisible under `NoTTY` captures; it changes bytes
+  wherever a colour profile is active.
+
+Earlier notes that blamed the `ultraviolet` renderer for the `textinputs`
+trailing-space drift were wrong: both vendored renderers paint a styled trailing
+space and trim a plain one, and the cell was wrong. `bubbles` main fixed it in
+`1dc6521` (`fix(textinput): keep the placeholder cursor style out of later
+views`), and `textinputs` is green.
 
 ### Chunk status
 
@@ -147,18 +156,21 @@ than fixed in place. Both were found while porting `textinputs`.
 | Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
 | Upstream v2.1.0 upgrade | Complete | [Plan](bubbletea-v2.1.0-update.md) |
 | Program Status Protocol | Complete | OSC 7501 types/encoder from `ansi`, replies typed by `ultraviolet` |
-| Example parity | 63 of 64 files, 57 faithful | 63 examples have a Crystal file and `glamour` is blocked on its shard; of those, six (`clickable`, `doom_fire`, `list_fancy`, `split_editors`, `textinputs`, `tui_daemon_combo`) are still approximations that need a real port. Goldens are generated from the pinned Go sources by `bubbletea-examples/goldens`, with `vendor/bubbles` replaced in — see Next up |
+| Example parity | 63 of 64 files, 58 faithful | 63 examples have a Crystal file and `glamour` is blocked on its shard; of those, five (`clickable`, `doom_fire`, `list_fancy`, `split_editors`, `tui_daemon_combo`) are still approximations that need a real port. Goldens are generated from the pinned Go sources by `bubbletea-examples/goldens`, with `vendor/bubbles` replaced in — see Next up |
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
 ### Last known state (2026-11-24)
 
-- Dependencies: `ultraviolet` `1.1.6` (root and submodule; `Terminal` is a
+- Dependencies: `ultraviolet` `1.1.7` (root and submodule; `Terminal` is a
   facade over `TerminalScreen`, which Bubble Tea does not use — its renderer is
   built the way `vendor/bubbletea` `cursed_renderer.go` `reset()` builds it, so
-  patch releases need no renderer change), `ansi` refreshed to `4625557` (the
+  patch releases need no renderer change; 1.1.7's style-colour work broke
+  nothing here), `ansi` refreshed to `4625557` (the
   stale `aa47d48` lock predated `Ansi.each_grapheme_cluster` and failed to
-  compile), `bubbles` pinned to `c933ae5` on `main` (see below).
+  compile), `bubbles` pinned to the `v2.2.2` tag (it carries the viewport
+  highlight and textarea/textinput fixes) with `vendor/bubbles` moved to
+  `v2.2.2` to match (see below).
 - `make format` — pass (target now scoped to `src spec`; the submodule's `lib/`
   made the previous unscoped run check vendored shards)
 - `make lint` — pass (18 files, 0 findings)
@@ -169,7 +181,7 @@ than fixed in place. Both were found while porting `textinputs`.
   against this `src/`; the 25 that need the `bubbles` shard are skipped by
   design)
 - `bubbletea-examples` `crystal spec` (with `lib/bubbletea` pinned to this
-  repository's `HEAD`) — pass, 82 examples, 13 pending, 0 failures
+  repository's `HEAD`) — pass, 82 examples, 12 pending, 0 failures
 - Ledgers: port 372 `ported` / 1 `partial` / 240 `skipped` (example programs
   live in the submodule); source 336 `mapped` / 237 `skipped`; tests
   36 `ported` / 1 `partial` / 3 `skipped`

@@ -6,8 +6,8 @@
 | **Tested at** | `main` = `20ec13a7edae1175570b7f4b273a81995c4c627f` |
 | **Upstream pin** | `vendor/bubbles` **v2.2.2** (`0c1a491`) |
 | **Severity** | High — search highlighting is silently wrong for any file that isn't pure ASCII |
-| **Status** | Open |
-| **Blocker for** | `bubbletea.cr` example parity: `examples/pager` (`spec/pager_parity_spec.cr`) |
+| **Status** | **Fixed** in `v2.2.2` (`remaining.byte_slice` in `parseMatches`); `spec/pager_parity_spec.cr` is green again |
+| **Blocker for** | `bubbletea.cr` example parity: `examples/pager` (`spec/pager_parity_spec.cr`) — no longer blocked |
 
 ## Summary
 
