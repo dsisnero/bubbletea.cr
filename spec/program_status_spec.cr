@@ -126,18 +126,15 @@ describe "program status support" do
   it "translates a program status support reply" do
     # Port of Go test TestTranslateProgramStatusSupport.
     program = Tea::Program.new
-    msg =
-      {% if Ultraviolet.has_constant?("ProgramStatusSupportEvent") %}
-        program.translate_input_event(Ultraviolet::ProgramStatusSupportEvent.new)
-      {% else %}
-        # Tagged ultraviolet 1.1.1 still reports OSC 7501 as UnknownOscEvent.
-        program.translate_input_event(Ultraviolet::UnknownOscEvent.new("\e]7501;?\a"))
-      {% end %}
+    msg = program.translate_input_event(Ultraviolet::ProgramStatusSupportEvent.new)
 
     msg.should be_a(Tea::ProgramStatusSupportMsg)
   end
 
   it "leaves other unknown OSC sequences untouched" do
+    # Go's translateInputEvent has no UnknownOscEvent case, so an OSC 7501-
+    # shaped sequence that ultraviolet did not decode as a support reply is
+    # passed through untouched.
     program = Tea::Program.new
     event = Ultraviolet::UnknownOscEvent.new("\e]9999;?\a")
     msg = program.translate_input_event(event)

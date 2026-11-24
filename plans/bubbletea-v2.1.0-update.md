@@ -38,10 +38,9 @@ shard has the protocol yet, so this port implements it locally:
 
 The `ansi` shard now provides `ProgramStatus`, the state/kind constants, and
 the OSC 7501 encoder, so this port aliases those types instead of duplicating
-them. Support replies use `Ultraviolet::ProgramStatusSupportEvent` when the shard
-provides it; tagged `v1.1.1` predates it, so a raw-OSC fallback remains until
-the next ultraviolet release. See
-[shards_issues/ultraviolet.1.md](../shards_issues/ultraviolet.1.md).
+them. Support replies arrive as `Ultraviolet::ProgramStatusSupportEvent`; the
+raw-OSC fallback that bridged ultraviolet releases before the typed decoder
+landed has since been removed.
 
 ### Fallback dimensions
 

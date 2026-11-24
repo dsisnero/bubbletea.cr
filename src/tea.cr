@@ -744,10 +744,6 @@ module Tea
     # Matches Go's translateInputEvent function
     # ameba:disable Metrics/CyclomaticComplexity
     def translate_input_event(event : Ultraviolet::Event) : Msg
-      if status_msg = program_status_event_msg(event)
-        return status_msg
-      end
-
       case event
       when Ultraviolet::ClipboardEvent
         ClipboardMsg.new(event.content)
@@ -790,14 +786,8 @@ module Tea
         KeyboardEnhancementsMsg.new(convert_uv_enhancements(event))
       when Ultraviolet::ModeReportEvent
         ModeReportMsg.new(event.mode, event.value)
-      when Ultraviolet::UnknownOscEvent
-        # Tagged ultraviolet releases still emit the raw OSC reply; newer
-        # builds decode it into ProgramStatusSupportEvent above.
-        if ProgramStatusSupport.reply?(event.value)
-          ProgramStatusSupportMsg.new
-        else
-          Tea.wrap(event)
-        end
+      when Ultraviolet::ProgramStatusSupportEvent
+        ProgramStatusSupportMsg.new
       else
         Tea.wrap(event)
       end
@@ -827,15 +817,6 @@ module Tea
       result |= Ultraviolet::ModSuper if Tea::KeyModHelpers.super?(uv_mod)
       result |= Ultraviolet::ModHyper if Tea::KeyModHelpers.hyper?(uv_mod)
       result
-    end
-
-    # Returns the program status support message when the installed
-    # ultraviolet decodes OSC 7501 into a typed event.
-    private def program_status_event_msg(event : Ultraviolet::Event) : Msg?
-      {% if Ultraviolet.has_constant?("ProgramStatusSupportEvent") %}
-        return ProgramStatusSupportMsg.new if event.is_a?(Ultraviolet::ProgramStatusSupportEvent)
-      {% end %}
-      nil
     end
 
     # Convert ultraviolet Mouse to Tea Mouse

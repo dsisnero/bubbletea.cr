@@ -3,11 +3,8 @@ module Tea
   # terminal whether the program is idle, working, waiting on the user, done,
   # or failed, and why. Set it on `View#program_status`.
   #
-  # Types and encoding come from the `ansi` shard. Support replies use the
-  # typed `Ultraviolet::ProgramStatusSupportEvent` when the installed shard
-  # provides it; tagged releases still need raw OSC parsing, so the fallback
-  # below remains until a release ships the decoder
-  # (see `shards_issues/ultraviolet.1.md`).
+  # Types and encoding come from the `ansi` shard; support replies arrive as
+  # `Ultraviolet::ProgramStatusSupportEvent`.
   #
   # See: https://www.superlogical.com/rex/docs/build/program-status
   alias ProgramStatus = Ansi::ProgramStatus
@@ -36,18 +33,6 @@ module Tea
   # Status Protocol.
   struct ProgramStatusSupportMsg
     include Msg
-  end
-
-  # ProgramStatusSupport detects the raw OSC 7501 support reply.
-  #
-  # Fallback for ultraviolet releases that predate the typed decoder event
-  # (see `shards_issues/ultraviolet.1.md`).
-  module ProgramStatusSupport
-    # True when +sequence+ is an OSC 7501 support reply (`OSC 7501 ; ?`).
-    def self.reply?(sequence : String) : Bool
-      prefix = "\e]7501;"
-      sequence.starts_with?(prefix) && sequence[prefix.size]? == '?'
-    end
   end
 
   # RequestProgramStatusSupport asks the terminal whether it supports the

@@ -27,10 +27,9 @@ Upstream Go bubbletea v2.0.10 → v2.1.0.
 
 ### Notes
 
-- OSC 7501 types and encoding come from the `ansi` shard. Support replies use
-  the typed `Ultraviolet::ProgramStatusSupportEvent` when available, with a
-  raw-OSC fallback for ultraviolet releases that predate the decoder (tracked
-  in `shards_issues/ultraviolet.1.md`).
+- OSC 7501 types and encoding come from the `ansi` shard, and support replies
+  are decoded by `ultraviolet` into `ProgramStatusSupportEvent` (the early
+  raw-OSC fallback was retired once that release shipped).
 
 ## [2.0.10] — 2026-10-19 — Upstream parity (v2.0.10)
 
