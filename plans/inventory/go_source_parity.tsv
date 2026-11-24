@@ -35,236 +35,236 @@ cursor.go::type::CursorShape	mapped	src/tea.cr	Cursor and view helpers in tea.cr
 environ.go::method::EnvMsg.Getenv	mapped	src/tea.cr	Environment message in tea.cr
 environ.go::method::EnvMsg.LookupEnv	mapped	src/tea.cr	Environment message in tea.cr
 environ.go::type::EnvMsg	mapped	src/tea.cr	Environment message in tea.cr
-examples/altscreen-toggle/main.go::method::model.Init	missing	-	Example not yet ported
-examples/altscreen-toggle/main.go::method::model.Update	missing	-	Example not yet ported
-examples/altscreen-toggle/main.go::method::model.View	missing	-	Example not yet ported
-examples/autocomplete/main.go::method::keymap.FullHelp	missing	-	Example not yet ported
-examples/autocomplete/main.go::method::keymap.ShortHelp	missing	-	Example not yet ported
-examples/autocomplete/main.go::method::model.Cursor	missing	-	Example not yet ported
-examples/autocomplete/main.go::method::model.Init	missing	-	Example not yet ported
-examples/autocomplete/main.go::method::model.Update	missing	-	Example not yet ported
-examples/autocomplete/main.go::method::model.View	missing	-	Example not yet ported
-examples/canvas/main.go::method::model.Init	missing	-	Example not yet ported
-examples/canvas/main.go::method::model.Update	missing	-	Example not yet ported
-examples/canvas/main.go::method::model.View	missing	-	Example not yet ported
-examples/capability/main.go::method::model.Init	missing	-	Example not yet ported
-examples/capability/main.go::method::model.Update	missing	-	Example not yet ported
-examples/capability/main.go::method::model.View	missing	-	Example not yet ported
-examples/cellbuffer/main.go::method::cellbuffer.String	missing	-	Example not yet ported
-examples/cellbuffer/main.go::method::model.Init	missing	-	Example not yet ported
-examples/cellbuffer/main.go::method::model.Update	missing	-	Example not yet ported
-examples/cellbuffer/main.go::method::model.View	missing	-	Example not yet ported
-examples/chat/main.go::method::model.Init	missing	-	Example not yet ported
-examples/chat/main.go::method::model.Update	missing	-	Example not yet ported
-examples/chat/main.go::method::model.View	missing	-	Example not yet ported
-examples/clickable/main.go::method::model.Init	missing	-	Example not yet ported
-examples/clickable/main.go::method::model.Update	missing	-	Example not yet ported
-examples/clickable/main.go::method::model.View	missing	-	Example not yet ported
-examples/clickable/main.go::struct::LayerHitMsg	missing	-	Example not yet ported
-examples/colorprofile/main.go::method::model.Init	missing	-	Example not yet ported
-examples/colorprofile/main.go::method::model.Update	missing	-	Example not yet ported
-examples/colorprofile/main.go::method::model.View	missing	-	Example not yet ported
-examples/composable-views/main.go::method::mainModel.Init	missing	-	Example not yet ported
-examples/composable-views/main.go::method::mainModel.Next	missing	-	Example not yet ported
-examples/composable-views/main.go::method::mainModel.Update	missing	-	Example not yet ported
-examples/composable-views/main.go::method::mainModel.View	missing	-	Example not yet ported
-examples/cursor-style/main.go::method::model.Init	missing	-	Example not yet ported
-examples/cursor-style/main.go::method::model.Update	missing	-	Example not yet ported
-examples/cursor-style/main.go::method::model.View	missing	-	Example not yet ported
-examples/debounce/main.go::method::model.Init	missing	-	Example not yet ported
-examples/debounce/main.go::method::model.Update	missing	-	Example not yet ported
-examples/debounce/main.go::method::model.View	missing	-	Example not yet ported
-examples/doom-fire/main.go::method::model.Init	missing	-	Example not yet ported
-examples/doom-fire/main.go::method::model.Update	missing	-	Example not yet ported
-examples/doom-fire/main.go::method::model.View	missing	-	Example not yet ported
-examples/dynamic-textarea/main.go::method::model.Init	missing	-	v2.0.6: new example, not yet ported
-examples/dynamic-textarea/main.go::method::model.Update	missing	-	v2.0.6: new example, not yet ported
-examples/dynamic-textarea/main.go::method::model.View	missing	-	v2.0.6: new example, not yet ported
-examples/exec/main.go::method::model.Init	missing	-	Example not yet ported
-examples/exec/main.go::method::model.Update	missing	-	Example not yet ported
-examples/exec/main.go::method::model.View	missing	-	Example not yet ported
-examples/eyes/main.go::method::model.Init	missing	-	Example not yet ported
-examples/eyes/main.go::method::model.Update	missing	-	Example not yet ported
-examples/eyes/main.go::method::model.View	missing	-	Example not yet ported
-examples/file-picker/main.go::method::model.Init	missing	-	Example not yet ported
-examples/file-picker/main.go::method::model.Update	missing	-	Example not yet ported
-examples/file-picker/main.go::method::model.View	missing	-	Example not yet ported
-examples/focus-blur/main.go::method::model.Init	missing	-	Example not yet ported
-examples/focus-blur/main.go::method::model.Update	missing	-	Example not yet ported
-examples/focus-blur/main.go::method::model.View	missing	-	Example not yet ported
-examples/fullscreen/main.go::method::model.Init	missing	-	Example not yet ported
-examples/fullscreen/main.go::method::model.Update	missing	-	Example not yet ported
-examples/fullscreen/main.go::method::model.View	missing	-	Example not yet ported
-examples/glamour/main.go::method::example.Init	missing	-	Example not yet ported
-examples/glamour/main.go::method::example.Update	missing	-	Example not yet ported
-examples/glamour/main.go::method::example.View	missing	-	Example not yet ported
-examples/help/main.go::method::keyMap.FullHelp	missing	-	Example not yet ported
-examples/help/main.go::method::keyMap.ShortHelp	missing	-	Example not yet ported
-examples/help/main.go::method::model.Init	missing	-	Example not yet ported
-examples/help/main.go::method::model.Update	missing	-	Example not yet ported
-examples/help/main.go::method::model.View	missing	-	Example not yet ported
-examples/http/main.go::method::errMsg.Error	missing	-	Example not yet ported
-examples/http/main.go::method::model.Init	missing	-	Example not yet ported
-examples/http/main.go::method::model.Update	missing	-	Example not yet ported
-examples/http/main.go::method::model.View	missing	-	Example not yet ported
-examples/isbn-form/main.go::method::model.Init	missing	-	Example not yet ported
-examples/isbn-form/main.go::method::model.Update	missing	-	Example not yet ported
-examples/isbn-form/main.go::method::model.View	missing	-	Example not yet ported
-examples/keyboard-enhancements/main.go::method::model.Init	missing	-	Example not yet ported
-examples/keyboard-enhancements/main.go::method::model.Update	missing	-	Example not yet ported
-examples/keyboard-enhancements/main.go::method::model.View	missing	-	Example not yet ported
-examples/list-default/main.go::method::item.Description	missing	-	Example not yet ported
-examples/list-default/main.go::method::item.FilterValue	missing	-	Example not yet ported
-examples/list-default/main.go::method::item.Title	missing	-	Example not yet ported
-examples/list-default/main.go::method::model.Init	missing	-	Example not yet ported
-examples/list-default/main.go::method::model.Update	missing	-	Example not yet ported
-examples/list-default/main.go::method::model.View	missing	-	Example not yet ported
-examples/list-fancy/delegate.go::method::delegateKeyMap.FullHelp	missing	-	Example not yet ported
-examples/list-fancy/delegate.go::method::delegateKeyMap.ShortHelp	missing	-	Example not yet ported
-examples/list-fancy/main.go::method::item.Description	missing	-	Example not yet ported
-examples/list-fancy/main.go::method::item.FilterValue	missing	-	Example not yet ported
-examples/list-fancy/main.go::method::item.Title	missing	-	Example not yet ported
-examples/list-fancy/main.go::method::model.Init	missing	-	Example not yet ported
-examples/list-fancy/main.go::method::model.Update	missing	-	Example not yet ported
-examples/list-fancy/main.go::method::model.View	missing	-	Example not yet ported
-examples/list-simple/main.go::method::item.FilterValue	missing	-	Example not yet ported
-examples/list-simple/main.go::method::itemDelegate.Height	missing	-	Example not yet ported
-examples/list-simple/main.go::method::itemDelegate.Render	missing	-	Example not yet ported
-examples/list-simple/main.go::method::itemDelegate.Spacing	missing	-	Example not yet ported
-examples/list-simple/main.go::method::itemDelegate.Update	missing	-	Example not yet ported
-examples/list-simple/main.go::method::model.Init	missing	-	Example not yet ported
-examples/list-simple/main.go::method::model.Update	missing	-	Example not yet ported
-examples/list-simple/main.go::method::model.View	missing	-	Example not yet ported
-examples/mouse/main.go::method::model.Init	missing	-	Example not yet ported
-examples/mouse/main.go::method::model.Update	missing	-	Example not yet ported
-examples/mouse/main.go::method::model.View	missing	-	Example not yet ported
-examples/package-manager/main.go::method::model.Init	missing	-	Example not yet ported
-examples/package-manager/main.go::method::model.Update	missing	-	Example not yet ported
-examples/package-manager/main.go::method::model.View	missing	-	Example not yet ported
-examples/pager/main.go::method::model.Init	missing	-	Example not yet ported
-examples/pager/main.go::method::model.Update	missing	-	Example not yet ported
-examples/pager/main.go::method::model.View	missing	-	Example not yet ported
-examples/paginator/main.go::method::model.Init	missing	-	Example not yet ported
-examples/paginator/main.go::method::model.Update	missing	-	Example not yet ported
-examples/paginator/main.go::method::model.View	missing	-	Example not yet ported
-examples/pipe/main.go::method::model.Init	missing	-	Example not yet ported
-examples/pipe/main.go::method::model.Update	missing	-	Example not yet ported
-examples/pipe/main.go::method::model.View	missing	-	Example not yet ported
-examples/prevent-quit/main.go::method::model.Init	missing	-	Example not yet ported
-examples/prevent-quit/main.go::method::model.Update	missing	-	Example not yet ported
-examples/prevent-quit/main.go::method::model.View	missing	-	Example not yet ported
-examples/print-key/main.go::method::model.Init	missing	-	Example not yet ported
-examples/print-key/main.go::method::model.Update	missing	-	Example not yet ported
-examples/print-key/main.go::method::model.View	missing	-	Example not yet ported
-examples/program-status/main.go::method::model.Init	missing	-	Go example not ported
-examples/program-status/main.go::method::model.Update	missing	-	Go example not ported
-examples/program-status/main.go::method::model.View	missing	-	Go example not ported
-examples/progress-animated/main.go::method::model.Init	missing	-	Example not yet ported
-examples/progress-animated/main.go::method::model.Update	missing	-	Example not yet ported
-examples/progress-animated/main.go::method::model.View	missing	-	Example not yet ported
-examples/progress-bar/main.go::method::model.Init	missing	-	Example not yet ported
-examples/progress-bar/main.go::method::model.Update	missing	-	Example not yet ported
-examples/progress-bar/main.go::method::model.View	missing	-	Example not yet ported
-examples/progress-download/main.go::method::progressWriter.Start	missing	-	Example not yet ported
-examples/progress-download/main.go::method::progressWriter.Write	missing	-	Example not yet ported
-examples/progress-download/tui.go::method::model.Init	missing	-	Example not yet ported
-examples/progress-download/tui.go::method::model.Update	missing	-	Example not yet ported
-examples/progress-download/tui.go::method::model.View	missing	-	Example not yet ported
-examples/progress-static/main.go::method::model.Init	missing	-	Example not yet ported
-examples/progress-static/main.go::method::model.Update	missing	-	Example not yet ported
-examples/progress-static/main.go::method::model.View	missing	-	Example not yet ported
-examples/query-term/main.go::method::model.Init	missing	-	Example not yet ported
-examples/query-term/main.go::method::model.Update	missing	-	Example not yet ported
-examples/query-term/main.go::method::model.View	missing	-	Example not yet ported
-examples/realtime/main.go::method::model.Init	missing	-	Example not yet ported
-examples/realtime/main.go::method::model.Update	missing	-	Example not yet ported
-examples/realtime/main.go::method::model.View	missing	-	Example not yet ported
-examples/result/main.go::method::model.Init	missing	-	Example not yet ported
-examples/result/main.go::method::model.Update	missing	-	Example not yet ported
-examples/result/main.go::method::model.View	missing	-	Example not yet ported
-examples/send-msg/main.go::method::model.Init	missing	-	Example not yet ported
-examples/send-msg/main.go::method::model.Update	missing	-	Example not yet ported
-examples/send-msg/main.go::method::model.View	missing	-	Example not yet ported
-examples/send-msg/main.go::method::resultMsg.String	missing	-	Example not yet ported
-examples/sequence/main.go::func::SleepPrintln	missing	-	Example not yet ported
-examples/sequence/main.go::method::model.Init	missing	-	Example not yet ported
-examples/sequence/main.go::method::model.Update	missing	-	Example not yet ported
-examples/sequence/main.go::method::model.View	missing	-	Example not yet ported
-examples/set-terminal-color/main.go::method::colorType.String	missing	-	Example not yet ported
-examples/set-terminal-color/main.go::method::model.Init	missing	-	Example not yet ported
-examples/set-terminal-color/main.go::method::model.Update	missing	-	Example not yet ported
-examples/set-terminal-color/main.go::method::model.View	missing	-	Example not yet ported
-examples/set-window-title/main.go::method::model.Init	missing	-	Example not yet ported
-examples/set-window-title/main.go::method::model.Update	missing	-	Example not yet ported
-examples/set-window-title/main.go::method::model.View	missing	-	Example not yet ported
-examples/simple/main.go::method::model.Init	missing	-	Example not yet ported
-examples/simple/main.go::method::model.Update	missing	-	Example not yet ported
-examples/simple/main.go::method::model.View	missing	-	Example not yet ported
-examples/space/main.go::method::model.Init	missing	-	Example not yet ported
-examples/space/main.go::method::model.Update	missing	-	Example not yet ported
-examples/space/main.go::method::model.View	missing	-	Example not yet ported
-examples/spinner/main.go::method::model.Init	missing	-	Example not yet ported
-examples/spinner/main.go::method::model.Update	missing	-	Example not yet ported
-examples/spinner/main.go::method::model.View	missing	-	Example not yet ported
-examples/spinners/main.go::method::model.Init	missing	-	Example not yet ported
-examples/spinners/main.go::method::model.Update	missing	-	Example not yet ported
-examples/spinners/main.go::method::model.View	missing	-	Example not yet ported
-examples/splash/main.go::method::model.Init	missing	-	Example not yet ported
-examples/splash/main.go::method::model.Update	missing	-	Example not yet ported
-examples/splash/main.go::method::model.View	missing	-	Example not yet ported
-examples/split-editors/main.go::method::model.Cursor	missing	-	Example not yet ported
-examples/split-editors/main.go::method::model.Init	missing	-	Example not yet ported
-examples/split-editors/main.go::method::model.Update	missing	-	Example not yet ported
-examples/split-editors/main.go::method::model.View	missing	-	Example not yet ported
-examples/stopwatch/main.go::method::model.Init	missing	-	Example not yet ported
-examples/stopwatch/main.go::method::model.Update	missing	-	Example not yet ported
-examples/stopwatch/main.go::method::model.View	missing	-	Example not yet ported
-examples/suspend/main.go::method::model.Init	missing	-	Example not yet ported
-examples/suspend/main.go::method::model.Update	missing	-	Example not yet ported
-examples/suspend/main.go::method::model.View	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Bug	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Electric	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Fire	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Flying	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Grass	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Ground	missing	-	Example not yet ported
-examples/table-resize/main.go::const::None	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Normal	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Poison	missing	-	Example not yet ported
-examples/table-resize/main.go::const::Water	missing	-	Example not yet ported
-examples/table-resize/main.go::method::model.Init	missing	-	Example not yet ported
-examples/table-resize/main.go::method::model.Update	missing	-	Example not yet ported
-examples/table-resize/main.go::method::model.View	missing	-	Example not yet ported
-examples/table/main.go::method::model.Init	missing	-	Example not yet ported
-examples/table/main.go::method::model.Update	missing	-	Example not yet ported
-examples/table/main.go::method::model.View	missing	-	Example not yet ported
-examples/tabs/main.go::method::model.Init	missing	-	Example not yet ported
-examples/tabs/main.go::method::model.Update	missing	-	Example not yet ported
-examples/tabs/main.go::method::model.View	missing	-	Example not yet ported
-examples/textarea/main.go::method::model.Init	missing	-	Example not yet ported
-examples/textarea/main.go::method::model.Update	missing	-	Example not yet ported
-examples/textarea/main.go::method::model.View	missing	-	Example not yet ported
-examples/textinput/main.go::method::model.Init	missing	-	Example not yet ported
-examples/textinput/main.go::method::model.Update	missing	-	Example not yet ported
-examples/textinput/main.go::method::model.View	missing	-	Example not yet ported
-examples/textinputs/main.go::method::model.Init	missing	-	Example not yet ported
-examples/textinputs/main.go::method::model.Update	missing	-	Example not yet ported
-examples/textinputs/main.go::method::model.View	missing	-	Example not yet ported
-examples/timer/main.go::method::model.Init	missing	-	Example not yet ported
-examples/timer/main.go::method::model.Update	missing	-	Example not yet ported
-examples/timer/main.go::method::model.View	missing	-	Example not yet ported
-examples/tui-daemon-combo/main.go::method::model.Init	missing	-	Example not yet ported
-examples/tui-daemon-combo/main.go::method::model.Update	missing	-	Example not yet ported
-examples/tui-daemon-combo/main.go::method::model.View	missing	-	Example not yet ported
-examples/vanish/main.go::method::model.Init	missing	-	Example not yet ported
-examples/vanish/main.go::method::model.Update	missing	-	Example not yet ported
-examples/vanish/main.go::method::model.View	missing	-	Example not yet ported
-examples/views/main.go::method::model.Init	missing	-	Example not yet ported
-examples/views/main.go::method::model.Update	missing	-	Example not yet ported
-examples/views/main.go::method::model.View	missing	-	Example not yet ported
-examples/window-size/main.go::method::model.Init	missing	-	Example not yet ported
-examples/window-size/main.go::method::model.Update	missing	-	Example not yet ported
-examples/window-size/main.go::method::model.View	missing	-	Example not yet ported
+examples/altscreen-toggle/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/altscreen-toggle/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/altscreen-toggle/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/autocomplete/main.go::method::keymap.FullHelp	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/autocomplete/main.go::method::keymap.ShortHelp	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/autocomplete/main.go::method::model.Cursor	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/autocomplete/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/autocomplete/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/autocomplete/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/canvas/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/canvas/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/canvas/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/capability/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/capability/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/capability/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/cellbuffer/main.go::method::cellbuffer.String	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/cellbuffer/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/cellbuffer/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/cellbuffer/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/chat/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/chat/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/chat/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/clickable/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/clickable/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/clickable/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/clickable/main.go::struct::LayerHitMsg	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/colorprofile/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/colorprofile/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/colorprofile/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/composable-views/main.go::method::mainModel.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/composable-views/main.go::method::mainModel.Next	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/composable-views/main.go::method::mainModel.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/composable-views/main.go::method::mainModel.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/cursor-style/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/cursor-style/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/cursor-style/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/debounce/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/debounce/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/debounce/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/doom-fire/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/doom-fire/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/doom-fire/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/dynamic-textarea/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/dynamic-textarea/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/dynamic-textarea/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/exec/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/exec/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/exec/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/eyes/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/eyes/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/eyes/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/file-picker/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/file-picker/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/file-picker/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/focus-blur/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/focus-blur/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/focus-blur/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/fullscreen/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/fullscreen/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/fullscreen/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/glamour/main.go::method::example.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/glamour/main.go::method::example.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/glamour/main.go::method::example.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/help/main.go::method::keyMap.FullHelp	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/help/main.go::method::keyMap.ShortHelp	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/help/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/help/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/help/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/http/main.go::method::errMsg.Error	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/http/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/http/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/http/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/isbn-form/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/isbn-form/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/isbn-form/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/keyboard-enhancements/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/keyboard-enhancements/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/keyboard-enhancements/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-default/main.go::method::item.Description	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-default/main.go::method::item.FilterValue	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-default/main.go::method::item.Title	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-default/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-default/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-default/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-fancy/delegate.go::method::delegateKeyMap.FullHelp	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-fancy/delegate.go::method::delegateKeyMap.ShortHelp	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-fancy/main.go::method::item.Description	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-fancy/main.go::method::item.FilterValue	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-fancy/main.go::method::item.Title	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-fancy/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-fancy/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-fancy/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-simple/main.go::method::item.FilterValue	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-simple/main.go::method::itemDelegate.Height	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-simple/main.go::method::itemDelegate.Render	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-simple/main.go::method::itemDelegate.Spacing	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-simple/main.go::method::itemDelegate.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-simple/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-simple/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/list-simple/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/mouse/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/mouse/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/mouse/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/package-manager/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/package-manager/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/package-manager/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/pager/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/pager/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/pager/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/paginator/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/paginator/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/paginator/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/pipe/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/pipe/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/pipe/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/prevent-quit/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/prevent-quit/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/prevent-quit/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/print-key/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/print-key/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/print-key/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/program-status/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/program-status/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/program-status/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-animated/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-animated/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-animated/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-bar/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-bar/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-bar/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-download/main.go::method::progressWriter.Start	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-download/main.go::method::progressWriter.Write	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-download/tui.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-download/tui.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-download/tui.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-static/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-static/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/progress-static/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/query-term/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/query-term/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/query-term/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/realtime/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/realtime/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/realtime/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/result/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/result/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/result/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/send-msg/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/send-msg/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/send-msg/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/send-msg/main.go::method::resultMsg.String	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/sequence/main.go::func::SleepPrintln	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/sequence/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/sequence/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/sequence/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/set-terminal-color/main.go::method::colorType.String	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/set-terminal-color/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/set-terminal-color/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/set-terminal-color/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/set-window-title/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/set-window-title/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/set-window-title/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/simple/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/simple/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/simple/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/space/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/space/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/space/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/spinner/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/spinner/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/spinner/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/spinners/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/spinners/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/spinners/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/splash/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/splash/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/splash/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/split-editors/main.go::method::model.Cursor	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/split-editors/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/split-editors/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/split-editors/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/stopwatch/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/stopwatch/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/stopwatch/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/suspend/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/suspend/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/suspend/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Bug	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Electric	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Fire	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Flying	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Grass	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Ground	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::None	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Normal	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Poison	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::const::Water	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table-resize/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/table/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/tabs/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/tabs/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/tabs/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textarea/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textarea/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textarea/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textinput/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textinput/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textinput/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textinputs/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textinputs/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/textinputs/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/timer/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/timer/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/timer/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/tui-daemon-combo/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/tui-daemon-combo/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/tui-daemon-combo/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/vanish/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/vanish/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/vanish/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/views/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/views/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/views/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/window-size/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/window-size/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+examples/window-size/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
 exec.go::func::Exec	mapped	src/tea/exec.cr	External command execution
 exec.go::func::ExecProcess	mapped	src/tea/exec.cr	External command execution
 exec.go::method::osExecCommand.SetStderr	mapped	src/tea/exec.cr	External command execution
@@ -563,13 +563,13 @@ termcap.go::func::RequestCapability	mapped	src/tea/messages.cr	Termcap capabilit
 termcap.go::method::CapabilityMsg.String	mapped	src/tea/messages.cr	Termcap capability messages
 termcap.go::struct::CapabilityMsg	mapped	src/tea/messages.cr	Termcap capability messages
 tty.go::func::OpenTTY	mapped	src/tea/tty.cr	TTY setup and restore
-tutorials/basics/main.go::method::model.Init	missing	-	Example not yet ported
-tutorials/basics/main.go::method::model.Update	missing	-	Example not yet ported
-tutorials/basics/main.go::method::model.View	missing	-	Example not yet ported
-tutorials/commands/main.go::method::errMsg.Error	missing	-	Example not yet ported
-tutorials/commands/main.go::method::model.Init	missing	-	Example not yet ported
-tutorials/commands/main.go::method::model.Update	missing	-	Example not yet ported
-tutorials/commands/main.go::method::model.View	missing	-	Example not yet ported
+tutorials/basics/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+tutorials/basics/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+tutorials/basics/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+tutorials/commands/main.go::method::errMsg.Error	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+tutorials/commands/main.go::method::model.Init	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+tutorials/commands/main.go::method::model.Update	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
+tutorials/commands/main.go::method::model.View	skipped	-	Example program; Go golden parity lives in the bubbletea-examples submodule
 xterm.go::func::RequestTerminalVersion	mapped	src/tea/messages.cr	XTerm query/report messages
 xterm.go::method::TerminalVersionMsg.String	mapped	src/tea/messages.cr	XTerm query/report messages
 xterm.go::struct::TerminalVersionMsg	mapped	src/tea/messages.cr	XTerm query/report messages

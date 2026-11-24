@@ -47,6 +47,11 @@ module Tea
   # Program Status Protocol (OSC 7501). A supporting terminal replies with a
   # ProgramStatusSupportMsg. Terminals that don't support it never reply.
   #
+  # The command resolves to `RequestProgramStatusSupportMsg`, which the program
+  # writes out as the query; only the terminal's reply becomes a
+  # `ProgramStatusSupportMsg`. That split matches Go and keeps a reply from
+  # triggering another query.
+  #
   # The reply must be read from input, so this requires `with_input`.
   # Detection is optional: reports can be sent without it.
   def self.request_program_status_support : Cmd

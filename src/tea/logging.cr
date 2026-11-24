@@ -38,10 +38,11 @@ module Tea
   def self.log_to_file(path : String, prefix : String) : File
     file = File.open(path, "a")
 
-    # Add a space after the prefix if specified and doesn't have trailing space
-    if prefix.size > 0 && !prefix[-1].whitespace?
-      # Prefix will be used by caller with Log setup
-    end
+    # Go's LogToFile also points the process-wide logger at this file
+    # (`log.SetOutput`) and applies `prefix` (`log.SetPrefix`, adding a trailing
+    # space when needed). Crystal has no settable global logger, so callers who
+    # need configured logging use `log_to_file_with` with a `LogOptionsSetter`.
+    # See Known Divergences in plans/parity.md.
 
     file
   rescue ex

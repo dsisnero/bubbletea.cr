@@ -14,7 +14,8 @@ Upstream Go bubbletea v2.0.10 → v2.1.0.
   working, done, blocked, error, and clear, with record ids, blocked kinds,
   progress, title, and message
 - `Tea.request_program_status_support` / `ProgramStatusSupportMsg` — optional
-  support detection; replies are recognised from raw OSC input
+  support detection; a terminal reply reaches `Update` as
+  `ProgramStatusSupportMsg`
 - `Program#fallback_dimensions` — uses `COLUMNS`/`LINES` from the program
   environment, then the process environment, then 80x24 when the tty reports a
   non-positive size
@@ -24,6 +25,14 @@ Upstream Go bubbletea v2.0.10 → v2.1.0.
 - Non-tty programs keep their configured dimensions (0x0 by default) instead
   of assuming 80x24
 - Signal delivery is skipped once shutdown has started
+
+### Fixed
+
+- Asking the terminal for program-status support no longer delivers a
+  `ProgramStatusSupportMsg` that the terminal never sent, and a support reply
+  no longer re-sends the OSC 7501 query. The query travels as the internal
+  `RequestProgramStatusSupportMsg`, mirroring Go's unexported
+  `programStatusSupportMsg`.
 
 ### Notes
 

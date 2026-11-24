@@ -11,7 +11,7 @@ examples/simple/main_test.go::test::TestApp	skipped	-	upstream test is commented
 examples/simple/main_test.go::test::TestAppInteractive	skipped	-	upstream test is commented out/skipped; golden parity in bubbletea-examples
 exec_test.go::test::TestTeaExec	ported	spec/exec_spec.cr	success/failure command table
 exec_test.go::test::TestTeaExecWithNilInput	ported	spec/exec_spec.cr	ExecProcess with WithInput(nil)
-logging_test.go::test::TestLogToFile	ported	spec/logging_spec.cr	LogToFile prefix/file coverage
+logging_test.go::test::TestLogToFile	partial	spec/logging_spec.cr	Asserts file creation; Go's prefix/output wiring is a documented divergence
 options_test.go::test::TestOptions	ported	spec/options_spec.cr	program option coverage
 programstatus_test.go::test::TestCursedRenderer_programStatus	ported	spec/program_status_spec.cr	renderer status lifecycle
 programstatus_test.go::test::TestTranslateProgramStatusSupport	ported	spec/program_status_spec.cr	OSC 7501 support reply translation

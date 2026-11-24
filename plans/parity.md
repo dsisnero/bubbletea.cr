@@ -83,7 +83,9 @@ so the release is ready barring review.
 - `make build-examples` — pass after a forced rebuild (36 examples compile
   against this `src/`; the 25 that need the `bubbles` shard are skipped by
   design)
-- Ledgers: unchanged (613 port items, 573 source items, 40 tests)
+- Ledgers: port 373 `ported` / 240 `skipped` (example programs live in the
+  submodule); source 336 `mapped` / 237 `skipped`; tests 37 `ported` /
+  3 `skipped`
 - The fixture in `spec/parity/v2_control_sequences_spec.cr` is re-derived from
   Go and verified against the pinned sources; see the spec's provenance note.
 
@@ -304,6 +306,7 @@ shutdown fix.
 | `signals_unix.go`, `signals_windows.go` | Absorbed into `src/tea.cr` via Crystal `Signal` module | Crystal's signal handling is idiomatic and equivalent |
 | `termios_bsd.go`, `termios_other.go`, `termios_unix.go`, `termios_windows.go` | Delegated to `ultraviolet` shard | Ultraviolet provides equivalent terminal raw-mode and size APIs |
 | `tty_windows.go` | Not ported (Crystal's Windows TTY is OS-level) | Handled by ultraviolet on Windows |
+| `logging.go` default-logger wiring | `log_to_file` opens the file; `log_to_file_with` configures a caller-supplied `LogOptionsSetter` | Crystal has no settable process-wide logger, so Go's `log.SetOutput` / `log.SetPrefix` have no global target; callers wire their own logger |
 | Go signal-goroutine shutdown fix | Guarded detached fibers in `src/tea.cr` | Crystal traps already run off-fiber; no blocking shutdown path to fix |
 
 ## Verification
@@ -335,3 +338,18 @@ make parity-specs
 ```
 
 The per-symbol checks all pass; keep them green when touching the ledgers.
+
+### Ledger composition
+
+The port ledger tracks 613 upstream symbols and the source ledger 573 API items.
+Everything outside `examples/` and `tutorials/` is `ported` (372) or `partial`
+(1 — `LogToFile`, whose Go default-logger wiring has no Crystal target) or
+`skipped` with a rationale (3 — the two upstream example tests that are
+commented out and one signal test whose Go goroutine deadlock does not exist in
+Crystal). The 237 symbols under `examples/` and `tutorials/` are `skipped` here
+because those programs live in the `bubbletea-examples` submodule, where their
+Go golden parity is tracked; this shard ships the library, not the example
+programs.
+
+The test ledger (40 rows) is 36 `ported`, 1 `partial` (`TestLogToFile`, see the
+logging divergence) and 3 `skipped`, with no `missing` rows.
