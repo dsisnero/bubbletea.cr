@@ -21,7 +21,7 @@ inventory_dir: "plans/inventory/"
 **Recently completed:** the `bubbletea-examples` refresh. Every parity golden is
 now generated from the pinned Go sources by `bubbletea-examples/goldens` — a
 small Go module with one harness per example — the submodule builds against this
-repository's `HEAD`, and its suite reports 79 examples, 0 failures, 14 pending.
+repository's `HEAD`, and its suite reports 82 examples, 0 failures, 15 pending.
 Three real bugs surfaced on the way and are fixed here:
 
 - `Program#run` recreated its `msgs`/`cmds` channels, so anything sent between
@@ -41,27 +41,30 @@ the v2 control-sequence fixture was re-derived from Go.
 **Current focus:** close the open parity items below; **`v2.1.0` is not tagged
 yet** and must not be until they are done. Everything landed so far is verified
 and pushed: the library gates are green, the 58 example goldens are generated
-from the pinned Go sources, and the submodule suite is 79 examples,
-0 failures, 14 pending.
+from the pinned Go sources, and the submodule suite is 82 examples,
+0 failures, 15 pending. `program-status` and `dynamic-textarea` are now ported
+too — the former with a green golden, the latter recorded as `pending` on a
+renderer cell-skip difference.
 
 **Next up (in order):**
 
-1. **Port the three unported upstream examples** — `program-status` (it demos
-   this release's OSC 7501 work), `dynamic-textarea`, and `glamour` (needs the
-   glamour shard). Each needs `bubbletea-examples/src/<name>.cr`, a harness at
-   `bubbletea-examples/goldens/<name>/harness.go`, a parity spec, and a golden
-   from `python3 goldens/generate.py <name>`.
+1. **Port the last upstream example** — `glamour` needs the `glamour` shard,
+   which has no Crystal port, so it is blocked until that exists. (`program-status`
+   and `dynamic-textarea` are ported; the latter's byte comparison is `pending`
+   on the renderer cell-skip gap below.)
 2. **Give the six placeholder specs a real capture** — `clickable`,
    `doom_fire`, `list_fancy`, `split_editors`, `textinputs` and
    `tui_daemon_combo` are `pending` with "capture harness not implemented yet",
    so those examples have no output coverage at all. `canvas` additionally
    needs `-Dpreview_mt -Dexecution_context`.
-3. **Close the five documented `pending` specs** — `file_picker` (`bubbles`
+3. **Close the six documented `pending` specs** — `file_picker` (`bubbles`
    divides by 1024 where Go's `go-humanize` uses 1000), `focus_blur`
    (`ultraviolet` has no IRM cell-insert fallback), `set_terminal_color` (Go
-   clears with EL0; this port moves right, erases, steps back), and `textarea`
-   / `paginator`, which capture a scheduling-dependent frame count and need a
-   normalized comparison instead of byte equality.
+   clears with EL0; this port moves right, erases, steps back),
+   `dynamic_textarea` (Go skips unchanged gutter cells with `CSI 2 C`; this
+   renderer rewrites them), and `textarea` / `paginator`, which capture a
+   scheduling-dependent frame count and need a normalized comparison instead of
+   byte equality.
 4. **Only then tag `v2.1.0`** — from this repository run `make format`,
    `make lint`, `make test`, `make check-parity`, `make parity-specs`, and
    `make build-examples`; in `bubbletea-examples`, with `lib/bubbletea` pinned
@@ -83,11 +86,11 @@ from the pinned Go sources, and the submodule suite is 79 examples,
 | Upstream v2.0.10 upgrade | Complete | [Plan](bubbletea-v2.0.10-update.md) |
 | Upstream v2.1.0 upgrade | Complete | [Plan](bubbletea-v2.1.0-update.md) |
 | Program Status Protocol | Complete | OSC 7501 types/encoder from `ansi`, replies typed by `ultraviolet` |
-| Example parity | 61 of 64 ported | Goldens generated from Go by `bubbletea-examples/goldens`; 3 examples unported, 6 placeholder specs, 5 documented `pending` — see Next up |
+| Example parity | 63 of 64 ported | Goldens generated from Go by `bubbletea-examples/goldens`; `glamour` blocked on its shard, 6 placeholder specs, 6 documented `pending` — see Next up |
 | Lint baseline | Complete | `make lint` — 0 findings |
 | Test-ledger audit | Complete | 37 ported, 3 skipped, 0 missing |
 
-### Last known state (2026-11-23)
+### Last known state (2026-11-24)
 
 - Dependencies: `ultraviolet` `1.1.4` (has shipped
   `ProgramStatusSupportEvent` since `1.1.2`, and dropped the inline
@@ -103,7 +106,7 @@ from the pinned Go sources, and the submodule suite is 79 examples,
   against this `src/`; the 25 that need the `bubbles` shard are skipped by
   design)
 - `bubbletea-examples` `crystal spec` (with `lib/bubbletea` pinned to this
-  repository's `HEAD`) — pass, 79 examples, 14 pending, 0 failures
+  repository's `HEAD`) — pass, 82 examples, 15 pending, 0 failures
 - Ledgers: port 372 `ported` / 1 `partial` / 240 `skipped` (example programs
   live in the submodule); source 336 `mapped` / 237 `skipped`; tests
   36 `ported` / 1 `partial` / 3 `skipped`
